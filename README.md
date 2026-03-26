@@ -145,4 +145,7 @@ Vì vậy file `application.properties` vẫn an toàn để commit, còn giá t
 ## Ghi chú
 
 - Nếu sau này nhóm chuyển `pom.xml` sang Spring Boot đầy đủ, README sẽ được cập nhật thêm phần chạy ứng dụng bằng Maven.
-- Nếu credential database đã từng bị chia sẻ bằng plain text, nên đổi lại password trước khi đưa dự án vào môi trường thật.
+
+- Nếu credential database đã từng bị chia sẻ bằng plain text, nên đổi lại password trước khi đưa dự án vào môi trường thật
+## Cách tạo nhánh
+- Khi tạo 1 feature thì phải tách ra nhánh khác từ develop sau đó tạo với cú pháp feat/[Tên chức năng]
