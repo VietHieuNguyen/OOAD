@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title layout:title-pattern="$CONTENT_TITLE - Archive Admin">Archive Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body class="admin-body">
+    <div class="admin-wrapper">
+        <div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
+        <div class="admin-main">
+            <div th:replace="~{admin/fragments/header :: header}"></div>
+            <div class="admin-content" layout:fragment="content"></div>
+        </div>
+    </div>
+    <script th:src="@{/js/admin.js}"></script>
+</body>
+</html>

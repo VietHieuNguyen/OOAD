@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<header th:fragment="header" class="client-header">
+    <div class="header-container">
+        <a href="/" class="logo"><em>X-Books</em></a>
+        <nav class="main-nav">
+            <a href="/" class="nav-link active">Shop</a>
+            <a href="#" class="nav-link">Collections</a>
+            <a href="#" class="nav-link">Staff Picks</a>
+            <a href="#" class="nav-link">Journals</a>
+        </nav>
+        <div class="header-actions">
+            <a href="#" class="action-btn" title="Cart">
+                <svg th:replace="~{client/fragments/icons :: cart}"></svg>
+            </a>
+            <a href="/login" class="action-btn" title="Account">
+                <svg th:replace="~{client/fragments/icons :: user}"></svg>
+            </a>
+        </div>
+    </div>
+</header>
+</body>
+</html>

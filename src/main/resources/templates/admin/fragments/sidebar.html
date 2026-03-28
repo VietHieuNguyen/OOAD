@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside th:fragment="sidebar" class="admin-sidebar">
+    <div class="sidebar-brand">
+        <span class="brand-kicker">Management Suite</span>
+        <a th:href="@{/admin/dashboard}" class="brand-text">Archive Admin</a>
+    </div>
+
+    <nav class="sidebar-nav">
+        <a th:href="@{/admin/dashboard}" class="sidebar-link">
+            <svg th:replace="~{admin/fragments/icons :: dashboard}"></svg>
+            <span>Dashboard</span>
+        </a>
+        <a href="#inventory-panel" class="sidebar-link" data-scroll-target="inventory-panel">
+            <svg th:replace="~{admin/fragments/icons :: inventory}"></svg>
+            <span>Inventory</span>
+        </a>
+        <a href="#revenue-panel" class="sidebar-link" data-scroll-target="revenue-panel">
+            <svg th:replace="~{admin/fragments/icons :: orders}"></svg>
+            <span>Orders</span>
+        </a>
+        <a href="#activity-panel" class="sidebar-link" data-scroll-target="activity-panel">
+            <svg th:replace="~{admin/fragments/icons :: customers}"></svg>
+            <span>Customers</span>
+        </a>
+        <a href="#revenue-panel" class="sidebar-link" data-scroll-target="revenue-panel">
+            <svg th:replace="~{admin/fragments/icons :: reports}"></svg>
+            <span>Reports</span>
+        </a>
+        <a href="#activity-panel" class="sidebar-link" data-scroll-target="activity-panel">
+            <svg th:replace="~{admin/fragments/icons :: settings}"></svg>
+            <span>Settings</span>
+        </a>
+        <a href="#activity-panel" class="sidebar-link" data-scroll-target="activity-panel">
+            <svg th:replace="~{admin/fragments/icons :: help}"></svg>
+            <span>Help Center</span>
+        </a>
+    </nav>
+
+    <div class="sidebar-footer">
+        <a href="#inventory-panel" class="sidebar-create" data-scroll-target="inventory-panel">
+            <svg th:replace="~{admin/fragments/icons :: plus}"></svg>
+            <span>Add New Title</span>
+        </a>
+
+        <div class="sidebar-user">
+            <div class="user-avatar" th:text="${dashboard != null ? dashboard.currentUserInitials : 'AD'}">AD</div>
+            <div class="user-info">
+                <span class="user-name" th:text="${dashboard != null ? dashboard.currentUserName : 'Admin User'}">Admin User</span>
+                <span class="user-role" th:text="${dashboard != null ? dashboard.currentUserRole : 'Database-backed admin'}">Database-backed admin</span>
+            </div>
+        </div>
+
+        <div class="sidebar-meta">
+            <span class="sidebar-meta-label">Signed in with</span>
+            <span class="sidebar-meta-value" th:text="${dashboard != null ? dashboard.currentUserEmail : 'admin@bookstore.local'}">admin@bookstore.local</span>
+        </div>
+
+        <form th:action="@{/admin/logout}" method="post" class="sidebar-logout-form">
+            <button type="submit" class="sidebar-logout">
+                <svg th:replace="~{admin/fragments/icons :: logout}"></svg>
+                <span>Logout</span>
+            </button>
+        </form>
+    </div>
+</aside>
+</body>
+</html>

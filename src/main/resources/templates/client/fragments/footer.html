@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<footer th:fragment="footer" class="client-footer">
+    <div class="footer-container">
+        <div class="footer-left">
+            <span class="footer-logo"><em>X-Books</em></span>
+            <div class="footer-links">
+                <a href="#">PRIVACY POLICY</a>
+                <a href="#">TERMS OF SERVICE</a>
+                <a href="#">SHIPPING &amp; RETURNS</a>
+                <a href="#">WHOLESALE</a>
+                <a href="#">CONTACT</a>
+            </div>
+        </div>
+        <div class="footer-right">
+            <span class="copyright">&copy; 2024 X-BOOKS. CURATED FOR THE SCHOLARLY MIND.</span>
+            <div class="footer-icons">
+                <a href="#"><svg th:replace="~{client/fragments/icons :: globe}"></svg></a>
+            </div>
+        </div>
+    </div>
+</footer>
+</body>
+</html>
