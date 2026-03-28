@@ -66,7 +66,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             throw ex;
         } catch (RuntimeException ex) {
             log.error("Failed to sync Google account into local database", ex);
-            throw oauth2AuthenticationException("google_account_sync_failed", "Khong dong bo duoc tai khoan Google");
+            throw oauth2AuthenticationException("google_account_sync_failed", "Không đồng bộ được tài khoản Google");
         }
     }
 

@@ -54,7 +54,7 @@ public class AuthController {
                                RedirectAttributes redirectAttributes) {
         try {
             userService.registerCustomer(username, email, password, fullName, phoneNumber, address);
-            redirectAttributes.addFlashAttribute("success", "Dang ky thanh cong. Hay dang nhap.");
+            redirectAttributes.addFlashAttribute("success", "Đăng ký thành công. Vui lòng đăng nhập.");
             return "redirect:/login";
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -69,15 +69,15 @@ public class AuthController {
 
     private String resolveOauth2ErrorMessage(String oauth2Error) {
         return switch (oauth2Error) {
-            case "google_session_expired" -> "Phien dang nhap Google da het han hoac cookie xac thuc da bi mat. Hay bam lai nut Google va thu lai.";
-            case "google_invalid_grant" -> "Ma xac thuc Google da het han hoac da bi dung lai. Hay dang nhap Google tu dau, khong refresh hay mo lai link callback cu.";
-            case "google_invalid_client" -> "Cau hinh Google OAuth dang sai client secret hoac client id.";
-            case "google_access_denied" -> "Ban da huy hoac tu choi quyen dang nhap bang Google.";
-            case "google_connection_failed" -> "Khong ket noi duoc toi Google de hoan tat dang nhap.";
-            case "google_account_sync_failed" -> "Dang nhap Google thanh cong nhung khong luu duoc tai khoan vao database.";
-            case "invalid_google_account" -> "Tai khoan Google khong hop le hoac thieu email.";
-            case "account_disabled" -> "Tai khoan cua ban da bi khoa.";
-            default -> "Dang nhap Google that bai. Vui long thu lai.";
+            case "google_session_expired" -> "Phiên đăng nhập Google đã hết hạn hoặc cookie xác thực đã bị mất. Vui lòng bấm lại nút Google và thử lại.";
+            case "google_invalid_grant" -> "Mã xác thực Google đã hết hạn hoặc đã bị dừng lại. Vui lòng đăng nhập Google từ đầu, không refresh hay mở lại link callback cũ.";
+            case "google_invalid_client" -> "Cấu hình Google OAuth đang sai client secret hoặc client id.";
+            case "google_access_denied" -> "Bạn đã hủy hoặc từ chối quyền đăng nhập bằng Google.";
+            case "google_connection_failed" -> "Không kết nối được tới Google để hoàn tất đăng nhập.";
+            case "google_account_sync_failed" -> "Đăng nhập Google thành công nhưng không lưu được tài khoản vào database.";
+            case "invalid_google_account" -> "Tài khoản Google không hợp lệ hoặc thiếu email.";
+            case "account_disabled" -> "Tài khoản của bạn đã bị khóa.";
+            default -> "Đăng nhập Google thất bại. Vui lòng thử lại.";
         };
     }
 }

@@ -55,7 +55,7 @@ public class ForgotPasswordService {
         } catch (MailException ex) {
             user.setToken(null);
             userRepository.save(user);
-            throw new IllegalStateException("Khong gui duoc OTP. Kiem tra cau hinh email va thu lai.");
+            throw new IllegalStateException("Không gửi được OTP. Vui lòng kiểm tra cấu hình email");
         }
 
         return user.getEmail();
@@ -68,15 +68,15 @@ public class ForgotPasswordService {
         String otp = rawOtp == null ? "" : rawOtp.trim();
 
         if (!tokenState.isOtpState()) {
-            throw new IllegalStateException("OTP khong hop le hoac da het han.");
+            throw new IllegalStateException("OTP không hợp lệ hoặc đã hết hạn.");
         }
         if (tokenState.isExpired()) {
             user.setToken(null);
             userRepository.save(user);
-            throw new IllegalStateException("OTP da het han. Hay yeu cau ma moi.");
+            throw new IllegalStateException("OTP đã hết hạn. Vui lòng yêu cầu mã mới.");
         }
         if (!tokenState.value().equals(otp)) {
-            throw new IllegalArgumentException("OTP khong dung.");
+            throw new IllegalArgumentException("OTP không đúng.");
         }
 
         long verifiedExpiresAt = Instant.now().plus(VERIFIED_TTL).toEpochMilli();
@@ -91,7 +91,7 @@ public class ForgotPasswordService {
         TokenState tokenState = parseToken(user.getToken());
 
         if (!tokenState.isVerifiedState() || tokenState.isExpired()) {
-            throw new IllegalStateException("Ban can xac thuc OTP truoc khi doi mat khau.");
+            throw new IllegalStateException("Bạn cần xác thực OTP trước khi đổi mật khẩu.");
         }
 
         return user.getEmail();
@@ -103,12 +103,12 @@ public class ForgotPasswordService {
         TokenState tokenState = parseToken(user.getToken());
 
         if (!tokenState.isVerifiedState() || tokenState.isExpired()) {
-            throw new IllegalStateException("Phien doi mat khau da het han. Hay bat dau lai.");
+            throw new IllegalStateException("Phiên đổi mật khẩu đã hết hạn. Vui lòng bắt đầu lại.");
         }
 
         String normalizedPassword = newPassword == null ? "" : newPassword.trim();
         if (normalizedPassword.length() < MIN_PASSWORD_LENGTH) {
-            throw new IllegalArgumentException("Mat khau moi phai co it nhat 6 ky tu.");
+            throw new IllegalArgumentException("Mật khẩu mới phải có ít nhất 6 ký tự.");
         }
 
         user.setPasswordHash(passwordEncoder.encode(normalizedPassword));
@@ -119,13 +119,13 @@ public class ForgotPasswordService {
     private User getEligibleUser(String rawEmail) {
         String email = normalizeEmail(rawEmail);
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Email khong ton tai."));
+                .orElseThrow(() -> new IllegalArgumentException("Email không tồn tại."));
 
         if (!Boolean.TRUE.equals(user.getIsActive())) {
-            throw new IllegalStateException("Tai khoan da bi khoa.");
+            throw new IllegalStateException("Tài khoản đã bị khóa.");
         }
         if (user.getAuthProvider() == AuthProvider.GOOGLE) {
-            throw new IllegalStateException("Tai khoan nay dang dung Google Sign-In, khong dat lai mat khau cuc bo.");
+            throw new IllegalStateException("Tài khoản này đang dùng Google Sign-In, không đặt lại mật khẩu cục bộ.");
         }
 
         return user;
@@ -138,16 +138,16 @@ public class ForgotPasswordService {
         }
         message.setTo(recipient);
         message.setSubject("BookStore OTP reset password");
-        message.setText("Ma OTP dat lai mat khau cua ban la: " + otp + "\n\n"
-                + "Ma co hieu luc trong 10 phut.\n"
-                + "Neu ban khong yeu cau doi mat khau, hay bo qua email nay.");
+        message.setText("Mã OTP đặt lại mật khẩu của bạn là: " + otp + "\n\n"
+                + "Mã có hiệu lực trong 10 phút.\n"
+                + "Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.");
         mailSender.send(message);
     }
 
     private String normalizeEmail(String rawEmail) {
         String email = rawEmail == null ? "" : rawEmail.trim().toLowerCase(Locale.ROOT);
         if (email.isBlank()) {
-            throw new IllegalArgumentException("Email khong duoc de trong.");
+            throw new IllegalArgumentException("Email không được để trống.");
         }
         return email;
     }
