@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login — X-Books</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1a2e1a 0%, #233623 50%, #1a2e1a 100%);
+            padding: 2rem;
+        }
+
+        .login-card {
+            background: #faf8f5;
+            border-radius: 16px;
+            padding: 3rem 2.5rem;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            font-style: italic;
+            color: #1a2e1a;
+            margin-bottom: 0.25rem;
+        }
+
+        .brand-sub {
+            font-size: 0.85rem;
+            color: #6b7c6b;
+            margin-bottom: 2rem;
+        }
+
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-bottom: 1.25rem;
+            font-weight: 500;
+        }
+        .alert-error { background: #fbe9e7; color: #c62828; border: 1px solid #ef9a9a; }
+        .alert-success { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+
+        .form-group { margin-bottom: 1.25rem; }
+
+        .form-label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #3a4a3a;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: 1.5px solid #d4d0c8;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            background: #efecea;
+            color: #1a2e1a;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #2d4a2d;
+            box-shadow: 0 0 0 3px rgba(45,74,45,0.12);
+        }
+        .form-input::placeholder { color: #9ca39c; }
+
+        .password-wrapper { position: relative; }
+        .password-toggle {
+            position: absolute;
+            right: 12px; top: 50%;
+            transform: translateY(-50%);
+            background: none; border: none; cursor: pointer;
+            color: #6b7c6b; font-size: 1.1rem;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 0.9rem;
+            background: #1a2e1a;
+            color: #faf8f5;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.15s;
+            margin-top: 0.5rem;
+        }
+        .btn-primary:hover { background: #2d4a2d; transform: translateY(-1px); }
+
+        .footer-links {
+            position: fixed;
+            bottom: 1.5rem;
+            left: 0; right: 0;
+            text-align: center;
+            font-size: 0.7rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+        .footer-links a {
+            color: rgba(250,248,245,0.5);
+            text-decoration: none;
+            margin: 0 1rem;
+        }
+        .footer-links a:hover { color: rgba(250,248,245,0.8); }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <h1 class="brand">X-Books Admin</h1>
+    <p class="brand-sub">Nhập thông tin quản trị để tiếp tục.</p>
+
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+    <form th:action="@{/admin/login}" method="post">
+        <div class="form-group">
+            <label class="form-label" for="username">Tên đăng nhập</label>
+            <input class="form-input" type="text" id="username" name="username"
+                   placeholder="admin" required autofocus>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="password">Mật khẩu</label>
+            <div class="password-wrapper">
+                <input class="form-input" type="password" id="password" name="password"
+                       placeholder="••••••••••" required>
+                <button type="button" class="password-toggle" onclick="togglePassword()">👁</button>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-primary">Đăng nhập</button>
+    </form>
+</div>
+
+<div class="footer-links">
+    <a href="#">Chính sách bảo mật</a>
+    <a href="#">Điều khoản</a>
+</div>
+
+<script>
+    function togglePassword() {
+        const pwd = document.getElementById('password');
+        pwd.type = pwd.type === 'password' ? 'text' : 'password';
+    }
+</script>
+
+</body>
+</html>

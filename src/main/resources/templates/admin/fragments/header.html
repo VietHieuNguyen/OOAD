@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<header th:fragment="header" class="admin-header">
+    <div class="admin-header-copy">
+        <span class="admin-header-kicker">Archive Admin</span>
+        <h1 class="admin-header-title" th:text="${dashboard != null ? dashboard.greeting : 'Admin Dashboard'}">Morning, Editor.</h1>
+        <p class="admin-header-subtitle" th:text="${dashboard != null ? dashboard.subtitle : 'Live bookstore snapshot.'}">Here's the live bookstore snapshot.</p>
+    </div>
+
+    <div class="admin-header-status">
+        <span class="status-label">System Status</span>
+        <span class="status-value" th:text="${dashboard != null ? dashboard.systemStatusLabel : 'Online'}">Fully synced</span>
+        <span class="status-note" th:text="${dashboard != null ? dashboard.systemStatusNote : 'Database online'}">Database online</span>
+    </div>
+</header>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{client/layout}">
+<head><title>Sign In</title></head>
+<body>
+<main layout:fragment="content">
+    <section class="login-section">
+        <div class="login-card">
+            <div class="login-image">
+                <div class="login-image-overlay">
+                    <h1 class="login-brand"><em>X-Books</em></h1>
+                    <p class="login-quote">"A room without books is like a body without a soul."</p>
+                    <span class="login-est">EST. 2024</span>
+                </div>
+            </div>
+            <div class="login-form-container">
+                <h2 class="login-title">Welcome Back</h2>
+                <p class="login-subtitle">Continue your literary journey with us.</p>
+
+                <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+                <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+
+                <form th:action="@{/login}" method="post" class="login-form">
+                    <div class="form-group">
+                        <label class="form-label">EMAIL ADDRESS</label>
+                        <input type="text" name="usernameOrEmail" class="form-input" placeholder="curator@xbooks.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">PASSWORD</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" name="password" class="form-input" placeholder="••••••••" required id="loginPassword">
+                            <button type="button" class="toggle-password" onclick="togglePassword('loginPassword')">
+                                <svg th:replace="~{client/fragments/icons :: eye}"></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="remember"> Remember me
+                        </label>
+                        <a href="/forgot-password" class="forgot-link">Forgot password?</a>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">
+                        Sign In <svg th:replace="~{client/fragments/icons :: arrow-right}"></svg>
+                    </button>
+                </form>
+
+                <div class="divider" th:if="${googleLoginEnabled}">
+                    <span>OR CONTINUE WITH</span>
+                </div>
+
+                <div class="social-buttons" th:if="${googleLoginEnabled}">
+                    <a th:href="@{/oauth2/authorization/google}" class="btn btn-social">
+                        <svg th:replace="~{client/fragments/icons :: google}"></svg>
+                        GOOGLE
+                    </a>
+                </div>
+
+                <p class="register-prompt">
+                    New to the collection? <a href="/register" class="register-link"><strong>Create an account</strong></a>
+                </p>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

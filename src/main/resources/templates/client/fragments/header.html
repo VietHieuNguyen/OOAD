@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<header th:fragment="header" class="client-header">
+    <div class="header-container">
+        <a href="/" class="logo"><em>X-Books</em></a>
+        <nav class="main-nav">
+            <a href="/" class="nav-link active">Shop</a>
+            <a href="#" class="nav-link">Collections</a>
+            <a href="#" class="nav-link">Staff Picks</a>
+            <a href="#" class="nav-link">Journals</a>
+        </nav>
+        <div class="header-actions">
+            <a href="#" class="action-btn" title="Cart">
+                <svg th:replace="~{client/fragments/icons :: cart}"></svg>
+            </a>
+            <a th:if="${currentUser == null}" href="/login" class="action-btn" title="Account">
+                <svg th:replace="~{client/fragments/icons :: user}"></svg>
+            </a>
+            <a th:if="${currentUser != null}" href="/profile" class="action-btn" title="Profile" style="display: flex; align-items: center; justify-content: center;">
+                <div style="width: 24px; height: 24px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background-color: #333; color: white; font-size: 12px; font-weight: bold;">
+                    <img th:if="${currentUser.avatar != null and !currentUser.avatar.isEmpty()}" th:src="${currentUser.avatar}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;" />
+                    <span th:unless="${currentUser.avatar != null and !currentUser.avatar.isEmpty()}" th:text="${#strings.isEmpty(currentUser.username) ? 'U' : #strings.substring(currentUser.username,0,1).toUpperCase()}">U</span>
+                </div>
+            </a>
+        </div>
+    </div>
+</header>
+</body>
+</html>
