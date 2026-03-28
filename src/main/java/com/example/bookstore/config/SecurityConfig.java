@@ -19,13 +19,22 @@ public class SecurityConfig {
     private final CustomUserDetailsService userDetailsService;
     private final CustomOAuth2UserService oAuth2UserService;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+    private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
+    private final HttpCookieOAuth2AuthorizationRequestRepository authorizationRequestRepository;
+    private final CustomLoginSuccessHandler customLoginSuccessHandler;
 
     public SecurityConfig(CustomUserDetailsService userDetailsService,
                           CustomOAuth2UserService oAuth2UserService,
-                          OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler) {
+                          OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
+                          OAuth2LoginFailureHandler oAuth2LoginFailureHandler,
+                          HttpCookieOAuth2AuthorizationRequestRepository authorizationRequestRepository,
+                          CustomLoginSuccessHandler customLoginSuccessHandler) {
         this.userDetailsService = userDetailsService;
         this.oAuth2UserService = oAuth2UserService;
         this.oAuth2LoginSuccessHandler = oAuth2LoginSuccessHandler;
+        this.oAuth2LoginFailureHandler = oAuth2LoginFailureHandler;
+        this.authorizationRequestRepository = authorizationRequestRepository;
+        this.customLoginSuccessHandler = customLoginSuccessHandler;
     }
 
     @Bean
@@ -41,7 +50,6 @@ public class SecurityConfig {
         return provider;
     }
 
-    /* ───────── Admin Security Chain (higher priority) ───────── */
     @Bean
     @Order(1)
     public SecurityFilterChain adminFilterChain(HttpSecurity http) throws Exception {
@@ -54,13 +62,14 @@ public class SecurityConfig {
             .formLogin(form -> form
                 .loginPage("/admin/login")
                 .loginProcessingUrl("/admin/login")
-                .defaultSuccessUrl("/admin/dashboard", true)
+                .successHandler(customLoginSuccessHandler)
                 .failureUrl("/admin/login?error=true")
                 .usernameParameter("username")
                 .passwordParameter("password")
             )
             .logout(logout -> logout
                 .logoutUrl("/admin/logout")
+                .deleteCookies("JWT_TOKEN", "JSESSIONID")
                 .logoutSuccessUrl("/admin/login?logout=true")
             )
             .authenticationProvider(authenticationProvider());
@@ -68,7 +77,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-    /* ───────── Client Security Chain ───────── */
     @Bean
     @Order(2)
     public SecurityFilterChain clientFilterChain(HttpSecurity http) throws Exception {
@@ -78,7 +86,7 @@ public class SecurityConfig {
                     "/", "/login", "/register",
                     "/forgot-password", "/forgot-password/**",
                     "/css/**", "/js/**", "/images/**", "/fonts/**", "/webjars/**",
-                    "/oauth2/**", "/login/oauth2/**",
+                    "/oauth2/**", "/login/oauth2/**", "/debug/**",
                     "/error"
                 ).permitAll()
                 .anyRequest().authenticated()
@@ -86,21 +94,25 @@ public class SecurityConfig {
             .formLogin(form -> form
                 .loginPage("/login")
                 .loginProcessingUrl("/login")
-                .defaultSuccessUrl("/", true)
+                .successHandler(customLoginSuccessHandler)
                 .failureUrl("/login?error=true")
                 .usernameParameter("usernameOrEmail")
                 .passwordParameter("password")
             )
             .oauth2Login(oauth -> oauth
                 .loginPage("/login")
+                .authorizationEndpoint(authorization -> authorization
+                    .authorizationRequestRepository(authorizationRequestRepository)
+                )
                 .userInfoEndpoint(userInfo -> userInfo
                     .userService(oAuth2UserService)
                 )
                 .successHandler(oAuth2LoginSuccessHandler)
-                .failureUrl("/login?error=true")
+                .failureHandler(oAuth2LoginFailureHandler)
             )
             .logout(logout -> logout
                 .logoutUrl("/logout")
+                .deleteCookies("JWT_TOKEN", "JSESSIONID")
                 .logoutSuccessUrl("/login?logout=true")
             )
             .authenticationProvider(authenticationProvider());

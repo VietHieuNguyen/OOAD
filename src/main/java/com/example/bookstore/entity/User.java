@@ -51,6 +51,9 @@ public class User {
     @Column(length = 500)
     private String token;
 
+    @Column(length = 500)
+    private String avatar;
+
     @PrePersist
     protected void prePersist() {
         if (id == null || id.isBlank()) {
