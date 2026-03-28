@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{client/layout}">
+<head><title>Thanh toán</title></head>
+<body>
+<main layout:fragment="content">
+
+    <!-- Checkout Section -->
+    <section class="checkout-section">
+        <div class="checkout-container">
+            <h1 class="checkout-title"><em>Thanh toán đơn hàng</em></h1>
+
+            <!-- Error message -->
+            <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+            <form th:action="@{/checkout}" method="post" th:object="${checkoutDTO}" class="checkout-form">
+                <div class="checkout-grid">
+
+                    <!-- LEFT: Thông tin giao hàng + Phương thức thanh toán -->
+                    <div class="checkout-left">
+                        <!-- Địa chỉ giao hàng -->
+                        <div class="checkout-card">
+                            <h2 class="checkout-card-title">Địa chỉ giao hàng</h2>
+                            <div class="form-group">
+                                <label class="form-label" for="address">ĐỊA CHỈ NHẬN HÀNG</label>
+                                <input type="text" id="address" th:field="*{address}"
+                                       class="form-input" placeholder="Nhập địa chỉ giao hàng..."
+                                       required />
+                            </div>
+                            <div class="checkout-customer-info">
+                                <span class="info-label">Người nhận:</span>
+                                <span class="info-value" th:text="${customer.fullName}">Tên khách hàng</span>
+                            </div>
+                            <div class="checkout-customer-info" th:if="${customer.phoneNumber}">
+                                <span class="info-label">Số điện thoại:</span>
+                                <span class="info-value" th:text="${customer.phoneNumber}">0901234567</span>
+                            </div>
+                        </div>
+
+                        <!-- Phương thức thanh toán (Strategy Pattern) -->
+                        <div class="checkout-card">
+                            <h2 class="checkout-card-title">Phương thức thanh toán</h2>
+                            <p class="checkout-card-desc">Chọn cách bạn muốn thanh toán cho đơn hàng này</p>
+                            <div class="payment-methods">
+                                <label class="payment-option" th:each="method : ${paymentMethods}">
+                                    <input type="radio" th:field="*{paymentMethod}" th:value="${method}" required />
+                                    <div class="payment-option-content">
+                                        <div class="payment-option-radio"></div>
+                                        <div class="payment-option-info">
+                                            <span class="payment-option-name"
+                                                  th:text="${method.name() == 'COD' ? 'Thanh toán khi nhận hàng (COD)' : 'Chuyển khoản ngân hàng'}">
+                                                Phương thức
+                                            </span>
+                                            <span class="payment-option-desc"
+                                                  th:text="${method.name() == 'COD' ? 'Thanh toán trực tiếp cho shipper khi nhận hàng' : 'Chuyển khoản qua tài khoản ngân hàng, chờ xác nhận'}">
+                                                Mô tả
+                                            </span>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: Tóm tắt đơn hàng -->
+                    <div class="checkout-right">
+                        <div class="checkout-card checkout-summary">
+                            <h2 class="checkout-card-title">Tóm tắt đơn hàng</h2>
+
+                            <!-- Danh sách sản phẩm -->
+                            <div class="summary-items">
+                                <div class="summary-item" th:each="item : ${cart.items}">
+                                    <div class="summary-item-info">
+                                        <span class="summary-item-name" th:text="${item.book.title}">Tên sách</span>
+                                        <span class="summary-item-qty" th:text="'x' + ${item.quantity}">x1</span>
+                                    </div>
+                                    <span class="summary-item-price"
+                                          th:text="${#numbers.formatDecimal(item.unitPrice * item.quantity, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                        0 ₫
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="summary-divider"></div>
+
+                            <!-- Tạm tính -->
+                            <div class="summary-row">
+                                <span>Tạm tính</span>
+                                <span th:text="${#numbers.formatDecimal(cart.items.![unitPrice * quantity].stream().reduce(0, (a, b) -> a + b), 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                    0 ₫
+                                </span>
+                            </div>
+
+                            <!-- Phí vận chuyển -->
+                            <div class="summary-row">
+                                <span>Phí vận chuyển</span>
+                                <span th:text="${#numbers.formatDecimal(shippingFee, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                    30,000 ₫
+                                </span>
+                            </div>
+
+                            <div class="summary-divider"></div>
+
+                            <!-- Tổng cộng -->
+                            <div class="summary-row summary-total">
+                                <span>Tổng cộng</span>
+                                <span th:text="${#numbers.formatDecimal(cart.items.![unitPrice * quantity].stream().reduce(0, (a, b) -> a + b) + shippingFee, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                    0 ₫
+                                </span>
+                            </div>
+
+                            <!-- Nút đặt hàng -->
+                            <button type="submit" class="btn btn-primary btn-full checkout-btn">
+                                ĐẶT HÀNG
+                            </button>
+
+                            <a href="/" class="checkout-back-link">← Tiếp tục mua sắm</a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+
+</main>
+</body>
+</html>

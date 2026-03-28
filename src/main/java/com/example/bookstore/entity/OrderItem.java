@@ -45,4 +45,18 @@ public class OrderItem {
             orderItemId = IdGenerator.newId();
         }
     }
+
+    /**
+     * Tính thành tiền của một dòng sản phẩm trong đơn hàng.
+     * <p>Công thức: {@code quantity × priceAtPurchase}</p>
+     *
+     * @return Thành tiền (subtotal) của OrderItem này
+     */
+    public BigDecimal getSubTotal() {
+        if (priceAtPurchase == null || quantity == null) {
+            return BigDecimal.ZERO;
+        }
+        return priceAtPurchase.multiply(BigDecimal.valueOf(quantity));
+    }
 }
+
