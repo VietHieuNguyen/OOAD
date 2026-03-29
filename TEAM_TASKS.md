@@ -20,19 +20,33 @@ Tài liệu này dùng để tracking tiến độ dự án, ghi chú rõ ràng 
 
 ---
 
-## 2. Thành viên 2: Người phụ trách Cart & Tính Giá (CẦN LÀM)
-**Nhiệm vụ:** Hoàn thiện luồng thêm vào giỏ hàng và áp dụng giảm giá.
+## 2. Thành viên 2: Người phụ trách Cart & Tính Giá (ĐÃ HOÀN THÀNH 95%)
+**Nhiệm vụ:** Hoàn thiện luồng thêm vào giỏ hàng, áp dụng giảm giá, và giao diện các trang sản phẩm.
 **Design Pattern chính:** Decorator Pattern.
 
-**Quy hoạch scope công việc:**
-*   **Design Pattern Logic:** 
-    *   Thiết kế hệ thống tính giá đơn hàng lồng nhau (Nested Pricing) cho Giỏ Hàng.
-    *   **Thành phần Component:** `PricingService` hoặc interface `CartPricer`.
-    *   **Thành phần Decorator:** Viết các lớp Bọc thẻ giảm giá: `VoucherDiscountDecorator` (ví dụ giảm 10%), `VIPCustomerDecorator` (Giảm cứng 50k), `GiftWrapDecorator` (Cộng thêm tiền gói quà).
-*   **Business Logic:**
-    *   Viết code chính cho `CartService` (Hàm `addCartItem`, `removeCartItem`, `updateQuantity`). Hiện tại `CartService` chỉ mới có sẵn hàm `getOrCreateCart` và `clearCart`, bạn sẽ phát triển nối tiếp vào đây là an toàn nhất.
-*   **UI/Controller:**
-    *   Viết `CartController` và file `client/cart.html` để hiện giỏ hàng cho user tương tác, có form nhập mã giảm giá. 
+**Tiến độ - Các phần ĐÃ LÀM XONG:**
+*   **Decorator Pattern (Tính giá giỏ hàng):** Đã tạo interface `CartPricer` (Component), class `BaseCartPricer` (Concrete Component), abstract class `CartPricerDecorator` (Base Decorator), và 2 Concrete Decorator: `GiftWrapDecorator` (+20,000₫/item), `VoucherDiscountDecorator` (giảm % với cap tối đa). Package: `pattern/decorator/`.
+*   **Entity Voucher (Bảng mã giảm giá):** Tạo entity `Voucher` với các trường `code`, `discountPercentage`, `maxDiscountAmount`, `expirationDate`, `usageLimit`, `usedCount`, `isActive`. Có method `isValid()` kiểm tra hợp lệ.
+*   **Entity Wishlist (Bảng yêu thích):** Tạo entity `Wishlist` liên kết `Customer ↔ Book` với unique constraint, lưu `addedAt`. Hiển thị trên trang Profile.
+*   **Cập nhật Entity:**
+    *   `Cart.java`: Thêm `appliedVoucher` (@ManyToOne → Voucher), `giftWrap` (Boolean).
+    *   `Book.java`: Thêm `thumbnail` (String) cho ảnh bìa sách.
+    *   `Category.java`: Thêm `imageUrl` (String) cho ảnh danh mục.
+*   **MVC Layer (tuân thủ nghiêm ngặt Controller → Service → Repository):**
+    *   `BookService`, `CartService` (mở rộng: `addCartItem`, `removeCartItem`, `updateQuantity`, `applyVoucher`, `removeVoucher`, `toggleGiftWrap`, `calculatePriceBreakdown`), `WishlistService`.
+    *   `CollectionController` (GET /collections), `BookDetailController` (GET /books/{id}), `CartController` (GET /cart, POST /cart/add, /cart/remove, /cart/update, /cart/apply-voucher, /cart/remove-voucher, /cart/toggle-gift-wrap).
+    *   Cập nhật `ProfileController` (lấy wishlist từ DB), `HomeController` (inject books + categories).
+*   **UI (Templates Front-end):**
+    *   `collections.html`: Trang danh sách sách + sidebar filter + phân trang + sort.
+    *   `book-detail.html`: Trang chi tiết sách + Add to Cart + Add to Wishlist.
+    *   `cart.html`: Trang giỏ hàng + voucher input + gift wrap toggle + price breakdown (hiển thị Decorator).
+    *   `profile.html`: Cập nhật section Wishlist lấy dữ liệu thực từ DB, có nút xóa và add to cart.
+    *   Tất cả icon sử dụng SVG (heart, gift, trash, cart) thay vì emoji.
+*   **CSS:** +780 dòng CSS cho Collections, Book Detail, Cart, Wishlist theo design system vintage scholarly.
+*   **Security:** Thêm `/collections`, `/books/**`, `/.well-known/**` vào permitAll.
+*   **Login Flow:** Sửa redirect sau login → về trang chủ `/` thay vì `/profile`.
+
+*(Lưu ý: Bạn **không thay đổi** file `Order.java`, thư mục `service/payment`, và templates `/orders`, `/checkout` để tránh conflict. Các entity mới đã set `ddl-auto=update` để tự tạo bảng.)*
 
 ---
 

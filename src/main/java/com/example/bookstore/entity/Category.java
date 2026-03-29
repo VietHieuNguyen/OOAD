@@ -28,6 +28,9 @@ public class Category {
     @Column(nullable = false, unique = true, length = 120)
     private String name;
 
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
+
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = false)
     private Set<Book> books = new LinkedHashSet<>();
 
