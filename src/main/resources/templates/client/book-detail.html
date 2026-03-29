@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{client/layout}">
+<head><title th:text="${book.title}">Book Detail</title></head>
+<body>
+<main layout:fragment="content">
+    <section class="book-detail-section">
+        <div class="book-detail-container">
+            <a href="/collections" class="back-link">← Back to Collections</a>
+
+            <div class="book-detail-grid">
+                <!-- Book Image -->
+                <div class="book-detail-image-col">
+                    <div class="book-detail-image">
+                        <img th:if="${book.thumbnail}" th:src="${book.thumbnail}" th:alt="${book.title}">
+                        <div th:unless="${book.thumbnail}" class="book-detail-placeholder"></div>
+                    </div>
+                </div>
+
+                <!-- Book Info -->
+                <div class="book-detail-info-col">
+                    <span class="book-detail-category" th:if="${book.category != null}" th:text="${book.category.name}">Category</span>
+                    <h1 class="book-detail-title" th:text="${book.title}">Book Title</h1>
+                    <p class="book-detail-author">by <strong th:text="${book.author}">Author Name</strong></p>
+
+                    <div class="book-detail-price-block">
+                        <span class="book-detail-price"
+                              th:text="${#numbers.formatDecimal(book.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                    </div>
+
+                    <div class="book-detail-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">ISBN</span>
+                            <span class="meta-value" th:text="${book.isbn}">978-xxx</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">STOCK</span>
+                            <span class="meta-value"
+                                  th:text="${book.stockQuantity > 0 ? 'In Stock (' + book.stockQuantity + ')' : 'Out of Stock'}"
+                                  th:class="${book.stockQuantity > 0 ? 'in-stock' : 'out-of-stock'}">
+                                In Stock
+                            </span>
+                        </div>
+                    </div>
+
+                    <p class="book-detail-desc" th:if="${book.description}" th:text="${book.description}">Description</p>
+
+                    <!-- Add to Cart Form -->
+                    <form th:action="@{/cart/add}" method="post" class="book-detail-cart-form">
+                        <input type="hidden" name="bookId" th:value="${book.id}">
+                        <div class="qty-selector">
+                            <button type="button" class="qty-btn" onclick="changeQty(-1)">−</button>
+                            <input type="number" name="quantity" id="qtyInput" value="1" min="1" th:max="${book.stockQuantity}" class="qty-input" readonly>
+                            <button type="button" class="qty-btn" onclick="changeQty(1)">+</button>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full"
+                                th:disabled="${book.stockQuantity <= 0}">
+                            ADD TO CART
+                        </button>
+                    </form>
+                    <!-- Wishlist Toggle -->
+                    <form th:action="@{/wishlist/toggle}" method="post" class="wishlist-toggle-form">
+                        <input type="hidden" name="bookId" th:value="${book.id}">
+                        <input type="hidden" name="redirectUrl" th:value="'/books/' + ${book.id}">
+                        <button type="submit" class="btn btn-outline btn-full wishlist-toggle-btn">
+                            <svg th:replace="~{client/fragments/icons :: heart}"></svg>
+                            <span>ADD TO WISHLIST</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        function changeQty(delta) {
+            const input = document.getElementById('qtyInput');
+            let val = parseInt(input.value) + delta;
+            const max = parseInt(input.max) || 99;
+            if (val < 1) val = 1;
+            if (val > max) val = max;
+            input.value = val;
+        }
+    </script>
+</main>
+</body>
+</html>

@@ -23,7 +23,7 @@ public class CustomLoginSuccessHandler extends SavedRequestAwareAuthenticationSu
     public CustomLoginSuccessHandler(JwtService jwtService, UserRepository userRepository) {
         this.jwtService = jwtService;
         this.userRepository = userRepository;
-        setDefaultTargetUrl("/profile");
+        setDefaultTargetUrl("/");
         setAlwaysUseDefaultTargetUrl(false);
     }
 

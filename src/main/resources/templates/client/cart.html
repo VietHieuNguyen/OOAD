@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{client/layout}">
+<head><title>Cart</title></head>
+<body>
+<main layout:fragment="content">
+    <section class="cart-section">
+        <div class="cart-container">
+            <h1 class="cart-title"><em>Your Cart</em></h1>
+
+            <!-- Empty Cart -->
+            <div th:if="${cart.items == null or #lists.isEmpty(cart.items)}" class="cart-empty">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted); margin-bottom: 1rem;">
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
+                <p>Giỏ hàng của bạn đang trống.</p>
+                <a href="/collections" class="btn btn-primary" style="margin-top: 1rem;">EXPLORE COLLECTIONS</a>
+            </div>
+
+            <!-- Cart with items -->
+            <div th:unless="${cart.items == null or #lists.isEmpty(cart.items)}" class="cart-grid">
+                <!-- Left: Cart Items -->
+                <div class="cart-items-col">
+                    <!-- Alert messages -->
+                    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+                    <div class="cart-items-list">
+                        <div class="cart-item" th:each="item : ${cart.items}">
+                            <div class="cart-item-image">
+                                <img th:if="${item.book.thumbnail}" th:src="${item.book.thumbnail}" th:alt="${item.book.title}">
+                                <div th:unless="${item.book.thumbnail}" class="cart-item-placeholder"></div>
+                            </div>
+                            <div class="cart-item-details">
+                                <div class="cart-item-top">
+                                    <div>
+                                        <h3 class="cart-item-title" th:text="${item.book.title}">Book</h3>
+                                        <span class="cart-item-author" th:text="${item.book.author}">Author</span>
+                                    </div>
+                                    <form th:action="@{/cart/remove/{id}(id=${item.cartItemId})}" method="post" style="display:inline;">
+                                        <button type="submit" class="cart-remove-btn" title="Xóa">✕</button>
+                                    </form>
+                                </div>
+                                <div class="cart-item-bottom">
+                                    <form th:action="@{/cart/update}" method="post" class="cart-qty-form">
+                                        <input type="hidden" name="cartItemId" th:value="${item.cartItemId}">
+                                        <div class="qty-selector qty-sm">
+                                            <button type="submit" name="quantity" th:value="${item.quantity - 1}" class="qty-btn">−</button>
+                                            <span class="qty-display" th:text="${item.quantity}">1</span>
+                                            <button type="submit" name="quantity" th:value="${item.quantity + 1}" class="qty-btn">+</button>
+                                        </div>
+                                    </form>
+                                    <span class="cart-item-price"
+                                          th:text="${#numbers.formatDecimal(item.unitPrice * item.quantity, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gift Wrap Toggle -->
+                    <div class="cart-gift-wrap">
+                        <form th:action="@{/cart/toggle-gift-wrap}" method="post" class="gift-wrap-form">
+                            <label class="gift-wrap-label">
+                                <div class="gift-wrap-info">
+                                    <span class="gift-wrap-icon"><svg th:replace="~{client/fragments/icons :: gift}"></svg></span>
+                                    <div>
+                                        <strong>Gói quà tặng</strong>
+                                        <span class="gift-wrap-desc">Thêm 20,000 ₫ / mỗi sản phẩm</span>
+                                    </div>
+                                </div>
+                                <button type="submit"
+                                        th:class="${cart.giftWrap} ? 'gift-toggle active' : 'gift-toggle'"
+                                        th:text="${cart.giftWrap} ? 'Đã bật' : 'Bật'">
+                                    Bật
+                                </button>
+                            </label>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Right: Summary -->
+                <div class="cart-summary-col">
+                    <div class="cart-summary-card">
+                        <h2 class="cart-summary-title">Order Summary</h2>
+
+                        <!-- Voucher Input -->
+                        <div class="voucher-section">
+                            <div th:if="${voucherError}" class="alert alert-error" th:text="${voucherError}" style="margin-bottom: 0.75rem;"></div>
+                            <div th:if="${voucherSuccess}" class="alert alert-success" th:text="${voucherSuccess}" style="margin-bottom: 0.75rem;"></div>
+
+                            <div th:if="${cart.appliedVoucher != null}" class="voucher-applied">
+                                <div class="voucher-badge">
+                                    <span class="voucher-code-text" th:text="${cart.appliedVoucher.code}">CODE</span>
+                                    <span class="voucher-pct" th:text="'-' + ${cart.appliedVoucher.discountPercentage} + '%'">-10%</span>
+                                </div>
+                                <form th:action="@{/cart/remove-voucher}" method="post" style="display:inline;">
+                                    <button type="submit" class="voucher-remove">✕</button>
+                                </form>
+                            </div>
+
+                            <form th:if="${cart.appliedVoucher == null}" th:action="@{/cart/apply-voucher}" method="post" class="voucher-form">
+                                <input type="text" name="voucherCode" placeholder="Nhập mã giảm giá" class="form-input voucher-input">
+                                <button type="submit" class="btn btn-outline voucher-btn">ÁP DỤNG</button>
+                            </form>
+                        </div>
+
+                        <div class="summary-divider"></div>
+
+                        <!-- Price Breakdown (Decorator Pattern visual) -->
+                        <div class="price-breakdown">
+                            <div class="breakdown-row">
+                                <span>Tạm tính</span>
+                                <span th:text="${#numbers.formatDecimal(priceBreakdown['subtotal'], 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                            </div>
+                            <div class="breakdown-row" th:if="${cart.giftWrap}">
+                                <span>Phí gói quà</span>
+                                <span class="fee-positive" th:text="'+' + ${#numbers.formatDecimal(priceBreakdown['giftWrapFee'], 0, 'COMMA', 0, 'POINT')} + ' ₫'">+0 ₫</span>
+                            </div>
+                            <div class="breakdown-row discount" th:if="${cart.appliedVoucher != null and priceBreakdown['voucherDiscount'].compareTo(T(java.math.BigDecimal).ZERO) > 0}">
+                                <span th:text="'Mã giảm giá (' + ${cart.appliedVoucher.code} + ')'">Mã giảm giá</span>
+                                <span class="fee-negative" th:text="'-' + ${#numbers.formatDecimal(priceBreakdown['voucherDiscount'], 0, 'COMMA', 0, 'POINT')} + ' ₫'">-0 ₫</span>
+                            </div>
+                        </div>
+
+                        <div class="summary-divider"></div>
+
+                        <div class="breakdown-total">
+                            <span>Tổng cộng</span>
+                            <span class="total-amount" th:text="${#numbers.formatDecimal(priceBreakdown['total'], 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                        </div>
+
+                        <a href="/checkout" class="btn btn-primary btn-full checkout-btn">PROCEED TO CHECKOUT</a>
+                        <a href="/collections" class="checkout-back-link">← Continue Shopping</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

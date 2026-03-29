@@ -47,6 +47,9 @@ public class Book {
     @Column(length = 2000)
     private String description;
 
+    @Column(length = 500)
+    private String thumbnail;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;

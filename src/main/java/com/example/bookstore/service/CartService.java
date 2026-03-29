@@ -1,51 +1,266 @@
 package com.example.bookstore.service;
 
+import com.example.bookstore.entity.Book;
 import com.example.bookstore.entity.Cart;
+import com.example.bookstore.entity.CartItem;
 import com.example.bookstore.entity.Customer;
+import com.example.bookstore.entity.Voucher;
+import com.example.bookstore.pattern.decorator.BaseCartPricer;
+import com.example.bookstore.pattern.decorator.CartPricer;
+import com.example.bookstore.pattern.decorator.GiftWrapDecorator;
+import com.example.bookstore.pattern.decorator.VoucherDiscountDecorator;
+import com.example.bookstore.repository.BookRepository;
+import com.example.bookstore.repository.CartItemRepository;
 import com.example.bookstore.repository.CartRepository;
+import com.example.bookstore.repository.VoucherRepository;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Service quản lý giỏ hàng (phiên bản tối thiểu).
+ * Service quản lý giỏ hàng.
  *
- * <p>Cung cấp các chức năng cơ bản để module Checkout hoạt động độc lập.
- * Thành viên phụ trách Decorator Pattern sẽ bổ sung thêm
- * {@code addItem()}, {@code removeItem()}, {@code updateQuantity()} sau.</p>
+ * <p>Tích hợp <b>Decorator Pattern</b> để tính giá giỏ hàng linh hoạt.
+ * Phương thức {@link #calculatePriceBreakdown(Cart)} sử dụng chuỗi Decorator
+ * lồng nhau: BaseCartPricer → GiftWrapDecorator → VoucherDiscountDecorator.</p>
  */
 @Service
 public class CartService {
 
     private final CartRepository cartRepository;
+    private final CartItemRepository cartItemRepository;
+    private final BookRepository bookRepository;
+    private final VoucherRepository voucherRepository;
 
-    public CartService(CartRepository cartRepository) {
+    public CartService(CartRepository cartRepository,
+                       CartItemRepository cartItemRepository,
+                       BookRepository bookRepository,
+                       VoucherRepository voucherRepository) {
         this.cartRepository = cartRepository;
+        this.cartItemRepository = cartItemRepository;
+        this.bookRepository = bookRepository;
+        this.voucherRepository = voucherRepository;
     }
 
     /**
      * Lấy giỏ hàng hiện tại của khách hàng, hoặc tạo mới nếu chưa có.
-     *
-     * @param customer Khách hàng cần lấy giỏ hàng
-     * @return Giỏ hàng của khách hàng
      */
     @Transactional
     public Cart getOrCreateCart(Customer customer) {
-        return cartRepository.findByCustomer_Id(customer.getId())
+        Cart cart = cartRepository.findByCustomer_Id(customer.getId())
                 .orElseGet(() -> {
                     Cart newCart = new Cart();
                     newCart.setCustomer(customer);
                     return cartRepository.save(newCart);
                 });
+        // Force init lazy-loaded collections (open-in-view=false)
+        cart.getItems().forEach(item -> {
+            item.getBook().getTitle(); // init Book
+            if (item.getBook().getCategory() != null) {
+                item.getBook().getCategory().getName(); // init Category
+            }
+        });
+        if (cart.getAppliedVoucher() != null) {
+            cart.getAppliedVoucher().getCode(); // init Voucher
+        }
+        return cart;
     }
 
     /**
      * Xóa toàn bộ sản phẩm trong giỏ hàng sau khi đặt hàng thành công.
-     *
-     * @param cart Giỏ hàng cần xóa sạch
      */
     @Transactional
     public void clearCart(Cart cart) {
         cart.getItems().clear();
+        cart.setAppliedVoucher(null);
+        cart.setGiftWrap(false);
         cartRepository.save(cart);
+    }
+
+    /**
+     * Thêm sách vào giỏ hàng. Nếu sách đã có trong giỏ, tăng số lượng.
+     */
+    @Transactional
+    public void addCartItem(Customer customer, String bookId, int quantity) {
+        Cart cart = getOrCreateCart(customer);
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sách."));
+
+        if (quantity <= 0) quantity = 1;
+        if (book.getStockQuantity() < quantity) {
+            throw new IllegalStateException("Sách không đủ số lượng trong kho.");
+        }
+
+        // Kiểm tra xem sách đã có trong giỏ chưa
+        Optional<CartItem> existingItem = cart.getItems().stream()
+                .filter(item -> item.getBook().getId().equals(bookId))
+                .findFirst();
+
+        if (existingItem.isPresent()) {
+            CartItem item = existingItem.get();
+            item.setQuantity(item.getQuantity() + quantity);
+            cartItemRepository.save(item);
+        } else {
+            CartItem newItem = new CartItem();
+            newItem.setCart(cart);
+            newItem.setBook(book);
+            newItem.setQuantity(quantity);
+            newItem.setUnitPrice(book.getPrice());
+            cart.getItems().add(newItem);
+            cartRepository.save(cart);
+        }
+    }
+
+    /**
+     * Xóa một sản phẩm khỏi giỏ hàng.
+     */
+    @Transactional
+    public void removeCartItem(String cartItemId) {
+        cartItemRepository.deleteById(cartItemId);
+    }
+
+    /**
+     * Cập nhật số lượng sản phẩm trong giỏ.
+     */
+    @Transactional
+    public void updateQuantity(String cartItemId, int quantity) {
+        CartItem item = cartItemRepository.findById(cartItemId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sản phẩm trong giỏ."));
+
+        if (quantity <= 0) {
+            cartItemRepository.delete(item);
+        } else {
+            item.setQuantity(quantity);
+            cartItemRepository.save(item);
+        }
+    }
+
+    /**
+     * Áp dụng mã giảm giá vào giỏ hàng.
+     *
+     * @return Thông báo kết quả (thành công hoặc lỗi)
+     */
+    @Transactional
+    public String applyVoucher(Cart cart, String voucherCode) {
+        if (voucherCode == null || voucherCode.isBlank()) {
+            return "Vui lòng nhập mã giảm giá.";
+        }
+
+        Optional<Voucher> voucherOpt = voucherRepository.findByCode(voucherCode.trim().toUpperCase());
+        if (voucherOpt.isEmpty()) {
+            return "Mã giảm giá không tồn tại.";
+        }
+
+        Voucher voucher = voucherOpt.get();
+        if (!voucher.isValid()) {
+            return "Mã giảm giá đã hết hạn hoặc hết lượt sử dụng.";
+        }
+
+        cart.setAppliedVoucher(voucher);
+        cartRepository.save(cart);
+        return null; // null = thành công
+    }
+
+    /**
+     * Hủy mã giảm giá đang áp dụng.
+     */
+    @Transactional
+    public void removeVoucher(Cart cart) {
+        cart.setAppliedVoucher(null);
+        cartRepository.save(cart);
+    }
+
+    /**
+     * Bật/tắt chế độ gói quà.
+     */
+    @Transactional
+    public void toggleGiftWrap(Cart cart) {
+        cart.setGiftWrap(!Boolean.TRUE.equals(cart.getGiftWrap()));
+        cartRepository.save(cart);
+    }
+
+    // =========================================================================
+    //  DECORATOR PATTERN — Tính giá giỏ hàng
+    // =========================================================================
+
+    /**
+     * Tính giá cuối cùng của giỏ hàng sử dụng <b>Decorator Pattern</b>.
+     *
+     * <p>Quá trình lắp ghép Decorator:</p>
+     * <ol>
+     *   <li>{@link BaseCartPricer} — Tính tổng giá cơ sở</li>
+     *   <li>{@link GiftWrapDecorator} — Cộng phí gói quà (nếu bật)</li>
+     *   <li>{@link VoucherDiscountDecorator} — Trừ giảm giá voucher (nếu có)</li>
+     * </ol>
+     *
+     * @param cart Giỏ hàng cần tính giá
+     * @return Tổng tiền cuối cùng
+     */
+    public BigDecimal calculateFinalPrice(Cart cart) {
+        CartPricer pricer = buildDecoratorChain(cart);
+        return pricer.calculatePrice();
+    }
+
+    /**
+     * Tính chi tiết từng dòng giá để hiển thị trên UI (Price Breakdown).
+     *
+     * @param cart Giỏ hàng
+     * @return Map chứa: subtotal, giftWrapFee, voucherDiscount, total
+     */
+    public Map<String, BigDecimal> calculatePriceBreakdown(Cart cart) {
+        Map<String, BigDecimal> breakdown = new HashMap<>();
+
+        // 1. Base price
+        BaseCartPricer basePricer = new BaseCartPricer(cart.getItems());
+        BigDecimal subtotal = basePricer.calculatePrice();
+        breakdown.put("subtotal", subtotal);
+
+        // 2. Gift wrap fee
+        BigDecimal giftWrapFee = BigDecimal.ZERO;
+        if (Boolean.TRUE.equals(cart.getGiftWrap())) {
+            GiftWrapDecorator giftDecorator = new GiftWrapDecorator(basePricer, cart.getItems().size());
+            giftWrapFee = giftDecorator.getWrapFee();
+        }
+        breakdown.put("giftWrapFee", giftWrapFee);
+
+        // 3. Voucher discount
+        BigDecimal voucherDiscount = BigDecimal.ZERO;
+        if (cart.getAppliedVoucher() != null && cart.getAppliedVoucher().isValid()) {
+            // Voucher giảm trên subtotal (trước phí gói quà)
+            CartPricer priceBeforeVoucher = basePricer;
+            if (Boolean.TRUE.equals(cart.getGiftWrap())) {
+                priceBeforeVoucher = new GiftWrapDecorator(basePricer, cart.getItems().size());
+            }
+            VoucherDiscountDecorator voucherDecorator =
+                    new VoucherDiscountDecorator(priceBeforeVoucher, cart.getAppliedVoucher());
+            voucherDiscount = voucherDecorator.getDiscountAmount();
+        }
+        breakdown.put("voucherDiscount", voucherDiscount);
+
+        // 4. Total
+        BigDecimal total = subtotal.add(giftWrapFee).subtract(voucherDiscount);
+        breakdown.put("total", total.max(BigDecimal.ZERO));
+
+        return breakdown;
+    }
+
+    /**
+     * Xây dựng chuỗi Decorator (nội bộ).
+     */
+    private CartPricer buildDecoratorChain(Cart cart) {
+        CartPricer pricer = new BaseCartPricer(cart.getItems());
+
+        if (Boolean.TRUE.equals(cart.getGiftWrap())) {
+            pricer = new GiftWrapDecorator(pricer, cart.getItems().size());
+        }
+
+        if (cart.getAppliedVoucher() != null) {
+            pricer = new VoucherDiscountDecorator(pricer, cart.getAppliedVoucher());
+        }
+
+        return pricer;
     }
 }
