@@ -18,6 +18,22 @@ Tài liệu này dùng để tracking tiến độ dự án, ghi chú rõ ràng 
 
 *(Lưu ý: Hai bạn còn lại **không thay đổi** file `Order.java`, thư mục `service/payment` và các templates `/orders` để tránh conflict tiến độ, đã setup luồng khá chặt chẽ rồi).*
 
+### ĐÃ CẬP NHẬT THÊM (30/03/2026):
+*   **Admin CRUD - Quản lý Sách (Manage Books):** Hoàn thành toàn bộ CRUD cho sách trên Admin panel.
+    *   `AdminBookController.java` — Controller đầy đủ (List, Create, Edit, Save, Delete) với JavaDoc.
+    *   `BookService.java` — Viết lại hoàn chỉnh với `save()`, `deleteById()`, `updateStock()`, `searchByTitle()`, `isbnExists()`.
+    *   `BookRepository.java` — Thêm `existsByIsbn()`, `findByTitleContainingIgnoreCase()`, `findByCategoryId()`.
+    *   Templates: `admin/books.html` (danh sách + search), `admin/book-form.html` (form thêm/sửa 2 cột giống mockup).
+*   **Admin CRUD - Quản lý Danh mục (Manage Categories):** Hoàn thành toàn bộ CRUD cho danh mục.
+    *   `CategoryService.java` — Service CRUD + ràng buộc xóa (không cho xóa Category còn sách bên trong).
+    *   `AdminCategoryController.java` — Controller đầy đủ (List, Detail, Save, Delete) với RedirectAttributes flash messages.
+    *   Templates:
+        *   `admin/categories.html` — Danh sách danh mục + **Bootstrap 5 Modal** thêm/sửa (styled theo admin theme).
+        *   `admin/category-detail.html` — **Trang chi tiết danh mục**: hiển thị thông tin Category (editable inline) + bảng sách thuộc danh mục đó, click vào sách → chuyển sang trang Edit Book.
+*   **Sidebar Admin:** Cập nhật thêm 2 menu: "Inventory" → `/admin/books`, "Categories" → `/admin/categories`.
+*   **CSS:** Thêm ~500 dòng CSS cho toàn bộ trang Books, Categories, Book Form, Category Detail, Modal.
+*   **Sửa lỗi Checkout:** Fix lỗi `SpelParseException` trên `checkout.html` (đẩy logic tính toán `subTotal` về Java Controller thay vì dùng SpEL Lambda phức tạp trong HTML). Fix lỗi `BigDecimal * Integer` trong `CheckoutController`.
+
 ---
 
 ## 2. Thành viên 2: Người phụ trách Cart & Tính Giá (ĐÃ HOÀN THÀNH 95%)
@@ -50,16 +66,92 @@ Tài liệu này dùng để tracking tiến độ dự án, ghi chú rõ ràng 
 
 ---
 
-## 3. Thành viên 3: Người phụ trách Notification & Status Order (CẦN LÀM)
-**Nhiệm vụ:** Xử lý gửi thông báo khi đơn hàng và xử lý luồng Admin.
+## 3. Thành viên 3: Người phụ trách Notification & Stock Observer (CẦN LÀM)
+**Nhiệm vụ:** Xử lý gửi thông báo khi trạng thái đơn hàng thay đổi VÀ khi tồn kho (stock) thay đổi. Xử lý luồng Admin duyệt đơn.
 **Design Pattern chính:** Observer Pattern.
 
-**Quy hoạch scope công việc:**
-*   **Design Pattern Logic:**
-    *   Thiết kế hệ thống Observer lắng nghe thay đổi trạng thái của `Order` (ví dụ từ `PENDING` -> `CONFIRMED` -> `DELIVERED`).
-    *   **Subject/Publisher:** `OrderNotifier` hoặc nhúng trực tiếp vào service duyệt đơn.
-    *   **Observer/Subscriber:** Xây dựng interface `OrderObserver`, kèm các class implement như `EmailNotifierObserver`, `SMSNotifierObserver`, `InAppNotificationObserver`. (Chỉ cần System.out ra console hoặc log info là đủ báo cáo rồi, không cần tích hợp gửi SMS tốn tiền API thật).
-*   **Business Logic & UI/Controller:**
-    *   Nếu chưa có ai làm, bạn hãy làm **AdminOrderController** và trang UI quản lý đơn hàng (`/admin/orders.html`).
-    *   Trong chức năng "Duyệt đơn", bạn cập nhật biến `status` của Order, và gọi hàm `.notifyObservers()` của pattern. Vừa demo chuẩn pattern vừa hoàn thiện luồng nghiệp vụ.
-    *   Hoàn thiện luồng gửi thư Welcome khi đăng kí user (nếu cần).
+### Tình hình hiện tại (Chuẩn bị sẵn cho bạn):
+
+Thành viên 1 đã code sẵn **toàn bộ hệ thống Admin CRUD (Sách + Danh mục)** và đặt sẵn **các hook point (điểm chèn code)** trong Service layer để bạn chỉ cần gắn Observer vào mà **KHÔNG CẦN sửa Controller hay Template**.
+
+#### Các điểm chèn Observer đã chuẩn bị sẵn:
+
+**File: `BookService.java`**
+```java
+// Điểm chèn 1: Sau khi lưu sách (thêm/sửa) thành công
+public Book save(Book book) {
+    Book saved = bookRepository.save(book);
+    // TODO [Observer]: Gọi notifyObservers(saved) tại đây
+    return saved;
+}
+
+// Điểm chèn 2: Sau khi cập nhật số lượng tồn kho
+public void updateStock(String bookId, int newStock) {
+    book.setStockQuantity(newStock);
+    bookRepository.save(book);
+    // TODO [Observer]: Gọi notifyObservers(book) tại đây khi kết nối Observer Pattern
+}
+```
+
+#### Quy hoạch scope công việc CHI TIẾT:
+
+**A. Observer Pattern - Stock Change (Thay đổi tồn kho):**
+1. Tạo interface `StockObserver` trong package `pattern/observer/`.
+2. Tạo `StockSubject` (interface Subject) với `addObserver()`, `removeObserver()`, `notifyObservers()`.
+3. Tạo các Concrete Observers:
+   - `LowStockAlertObserver` — Log cảnh báo khi stock < 5 (VD: `System.out.println` hoặc `Logger.warn`).
+   - `OutOfStockObserver` — Log khi stock = 0.
+   - (Tùy chọn) `EmailStockAlertObserver` — Giả lập gửi email (chỉ cần print ra console).
+4. Gắn Observer vào `BookService.updateStock()` và `BookService.save()` — tại các dòng `TODO` đã đánh dấu sẵn.
+
+**B. Observer Pattern - Order Status (Trạng thái đơn hàng):**
+1. Tạo interface `OrderObserver` trong package `pattern/observer/`.
+2. Tạo `OrderStatusSubject`.
+3. Tạo các Concrete Observers:
+   - `EmailNotifierObserver` — Log thông báo khi đơn hàng chuyển trạng thái (PENDING → CONFIRMED → SHIPPED → DELIVERED).
+   - `SMSNotifierObserver` — Log SMS giả lập.
+   - `InAppNotificationObserver` — Lưu thông báo vào DB (nếu muốn nâng cao).
+4. Gắn Observer vào `OrderService` khi admin duyệt/chuyển trạng thái đơn hàng.
+
+**C. Admin Order Management (Quản lý đơn hàng Admin):**
+1. Tạo `AdminOrderController` — Controller CRUD cho đơn hàng admin (`/admin/orders`).
+2. Tạo template `admin/orders.html` — Danh sách đơn hàng.
+3. Tạo template `admin/order-detail.html` — Chi tiết đơn + nút chuyển trạng thái.
+4. **LƯU Ý:** Giao diện admin đã có sẵn layout, sidebar, CSS design system (cream/green tones, Cormorant Garamond serif font, Manrope sans-serif). Bạn chỉ cần `layout:decorate="~{admin/layout}"` và dùng các class CSS đã có (`dashboard-panel`, `inventory-table`, `btn-publish`, `flash-msg`, `panel-kicker`...). Tham khảo file `admin/books.html` hoặc `admin/categories.html` để copy cấu trúc HTML.
+
+### Danh sách file KHÔNG ĐƯỢC SỬA (tránh conflict):
+
+| File | Thuộc về |
+|------|----------|
+| `Order.java`, `OrderItem.java` | Thành viên 1 |
+| `service/payment/*` | Thành viên 1 |
+| `CheckoutController.java`, `OrderController.java` | Thành viên 1 |
+| `templates/client/checkout.html`, `order-success.html`, `orders.html`, `order-detail.html` | Thành viên 1 |
+| `pattern/decorator/*` | Thành viên 2 |
+| `CartController.java`, `CollectionController.java`, `BookDetailController.java` | Thành viên 2 |
+| `templates/client/collections.html`, `book-detail.html`, `cart.html` | Thành viên 2 |
+
+### Danh sách file BẠN CÓ THỂ SỬA:
+
+| File | Lý do |
+|------|-------|
+| `BookService.java` | Chèn `notifyObservers()` vào các dòng TODO đã đánh dấu |
+| `OrderService.java` | Thêm logic chuyển trạng thái đơn hàng + gọi Observer |
+| `admin/fragments/sidebar.html` | Thêm link "Orders" vào sidebar admin |
+| `admin.css` | Thêm CSS cho các trang admin orders |
+
+### Danh sách file BẠN TẠO MỚI:
+
+| File | Mô tả |
+|------|-------|
+| `pattern/observer/StockObserver.java` | Interface Observer cho tồn kho |
+| `pattern/observer/StockSubject.java` | Interface Subject cho tồn kho |
+| `pattern/observer/LowStockAlertObserver.java` | Concrete Observer: cảnh báo sắp hết hàng |
+| `pattern/observer/OutOfStockObserver.java` | Concrete Observer: hết hàng |
+| `pattern/observer/OrderObserver.java` | Interface Observer cho đơn hàng |
+| `pattern/observer/OrderStatusSubject.java` | Interface Subject cho đơn hàng |
+| `pattern/observer/EmailNotifierObserver.java` | Concrete Observer: thông báo email |
+| `pattern/observer/SMSNotifierObserver.java` | Concrete Observer: thông báo SMS |
+| `controller/AdminOrderController.java` | Controller quản lý đơn hàng admin |
+| `templates/admin/orders.html` | Danh sách đơn hàng admin |
+| `templates/admin/order-detail.html` | Chi tiết đơn hàng + chuyển trạng thái |

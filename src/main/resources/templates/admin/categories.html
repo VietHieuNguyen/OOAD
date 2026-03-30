@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{admin/layout}">
+<head>
+    <title>Manage Categories</title>
+    <!-- Bootstrap 5 CSS (only for Modal component) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YcnS/1p0GFr3qPd1g3cA6E5Y2E5j3E7q0Fq" crossorigin="anonymous" />
+</head>
+<body>
+<div layout:fragment="content" class="categories-shell">
+
+    <!-- Page Header -->
+    <div class="books-page-header">
+        <div>
+            <span class="panel-kicker">Catalog Configuration</span>
+            <h2 class="books-page-title">Genre &amp; Categories</h2>
+        </div>
+        <button type="button" class="btn-add-book" id="btnAddCategory" onclick="openAddModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Add New Category</span>
+        </button>
+    </div>
+
+    <!-- Flash Messages -->
+    <div th:if="${successMessage}" class="flash-msg flash-success">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        <span th:text="${successMessage}">Success</span>
+    </div>
+    <div th:if="${errorMessage}" class="flash-msg flash-error">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line>
+            <line x1="9" y1="9" x2="15" y2="15"></line>
+        </svg>
+        <span th:text="${errorMessage}">Error</span>
+    </div>
+
+    <!-- Stats Summary -->
+    <div class="cat-stats">
+        <span class="books-count" th:text="'Total: ' + ${#lists.size(categories)} + ' categories'">Total: 0 categories</span>
+    </div>
+
+    <!-- Categories Table -->
+    <section class="dashboard-panel">
+        <div class="inventory-table-wrap">
+            <table class="inventory-table" id="categoriesTable">
+                <thead>
+                <tr>
+                    <th style="width:50px">#</th>
+                    <th>Category Name</th>
+                    <th>Image</th>
+                    <th>Books Count</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="cat, iter : ${categories}" class="inventory-row">
+                    <!-- # -->
+                    <td>
+                        <span class="cat-index" th:text="${iter.count}">1</span>
+                    </td>
+
+                    <!-- Category Name (clickable -> detail page) -->
+                    <td>
+                        <a th:href="@{/admin/categories/{id}(id=${cat.id})}" class="cat-name-link">
+                            <div class="cat-name-cell">
+                                <div class="cat-color-dot"></div>
+                                <strong th:text="${cat.name}">Fiction</strong>
+                            </div>
+                        </a>
+                    </td>
+
+                    <!-- Image Preview -->
+                    <td>
+                        <img th:if="${cat.imageUrl != null and !#strings.isEmpty(cat.imageUrl)}"
+                             th:src="${cat.imageUrl}" alt="" class="cat-thumb" />
+                        <span th:unless="${cat.imageUrl != null and !#strings.isEmpty(cat.imageUrl)}"
+                              class="cat-no-image">No image</span>
+                    </td>
+
+                    <!-- Books Count -->
+                    <td>
+                        <span class="cat-book-count" th:text="${bookCounts[cat.id]} + ' titles'">0 titles</span>
+                    </td>
+
+                    <!-- Status -->
+                    <td>
+                        <span class="inventory-status"
+                              th:classappend="${bookCounts[cat.id] > 0 ? ' status-in-stock' : ' status-pre-order'}"
+                              th:text="${bookCounts[cat.id] > 0 ? 'Active' : 'Empty'}">
+                            Status
+                        </span>
+                    </td>
+
+                    <!-- Actions -->
+                    <td>
+                        <div class="inventory-actions">
+                            <!-- Edit Button (dung data-* attributes de truyen du lieu an toan) -->
+                            <button type="button" class="icon-button btn-edit-cat" title="Edit"
+                                    th:data-id="${cat.id}"
+                                    th:data-name="${cat.name}"
+                                    th:data-image="${cat.imageUrl}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                     fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                     stroke-linejoin="round">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                </svg>
+                            </button>
+                            <!-- Delete Button -->
+                            <form th:action="@{/admin/categories/delete/{id}(id=${cat.id})}"
+                                  method="post" style="display:inline;"
+                                  onsubmit="return confirm('Ban co chac chan muon xoa danh muc nay?');">
+                                <button type="submit" class="icon-button icon-button-danger" title="Delete">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                                         stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="3 6 5 6 21 6"></polyline>
+                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Empty State -->
+                <tr th:if="${#lists.isEmpty(categories)}">
+                    <td colspan="6" class="inventory-empty">
+                        No categories yet. Click "Add New Category" to create one.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- Bootstrap 5 Modal: Add / Edit Category                       -->
+    <!-- ============================================================ -->
+    <div class="modal fade" id="categoryModal" tabindex="-1" aria-labelledby="categoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content cat-modal-content">
+                <!-- Modal Header -->
+                <div class="cat-modal-header">
+                    <div>
+                        <span class="panel-kicker">Category Editor</span>
+                        <h3 class="cat-modal-title" id="categoryModalLabel">Add New Category</h3>
+                    </div>
+                    <button type="button" class="cat-modal-close" data-bs-dismiss="modal" aria-label="Close">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                             stroke-linejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Modal Body (Form) -->
+                <form th:action="@{/admin/categories/save}" method="post">
+                    <div class="cat-modal-body">
+                        <!-- Hidden ID (for Edit mode) -->
+                        <input type="hidden" name="id" id="modalCatId" value="" />
+
+                        <div class="form-group-admin">
+                            <label class="form-label-admin" for="modalCatName">CATEGORY NAME</label>
+                            <input type="text" id="modalCatName" name="name"
+                                   class="form-input-admin" placeholder="e.g. Science Fiction, Romance, History..."
+                                   required />
+                        </div>
+
+                        <div class="form-group-admin">
+                            <label class="form-label-admin" for="modalCatImage">IMAGE URL (OPTIONAL)</label>
+                            <input type="url" id="modalCatImage" name="imageUrl"
+                                   class="form-input-admin" placeholder="https://example.com/category-image.jpg" />
+                        </div>
+
+                        <!-- Image Preview -->
+                        <div class="cat-modal-preview" id="modalImagePreview" style="display:none;">
+                            <img id="modalPreviewImg" src="" alt="Preview" class="cat-modal-preview-img" />
+                        </div>
+                    </div>
+
+                    <!-- Modal Footer -->
+                    <div class="cat-modal-footer">
+                        <button type="button" class="btn-cancel" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn-publish" id="modalSubmitBtn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                 stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <span>Save Category</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Bootstrap 5 JS (Modal functionality) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+
+<!-- Category Modal Logic -->
+<script th:inline="none">
+    var categoryModal;
+
+    document.addEventListener('DOMContentLoaded', function () {
+        categoryModal = new bootstrap.Modal(document.getElementById('categoryModal'));
+
+        // Live preview for image URL
+        var imgInput = document.getElementById('modalCatImage');
+        imgInput.addEventListener('input', function () {
+            var preview = document.getElementById('modalImagePreview');
+            var img = document.getElementById('modalPreviewImg');
+            if (imgInput.value && imgInput.value.trim() !== '') {
+                img.src = imgInput.value.trim();
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+
+        // Gan su kien click cho tat ca nut Edit bang Event Delegation
+        document.querySelectorAll('.btn-edit-cat').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var id = btn.getAttribute('data-id');
+                var name = btn.getAttribute('data-name');
+                var imageUrl = btn.getAttribute('data-image') || '';
+                openEditModal(id, name, imageUrl);
+            });
+        });
+    });
+
+    /** Mo Modal o che do THEM MOI */
+    function openAddModal() {
+        document.getElementById('categoryModalLabel').textContent = 'Add New Category';
+        document.getElementById('modalCatId').value = '';
+        document.getElementById('modalCatName').value = '';
+        document.getElementById('modalCatImage').value = '';
+        document.getElementById('modalImagePreview').style.display = 'none';
+        document.querySelector('#modalSubmitBtn span').textContent = 'Save Category';
+        categoryModal.show();
+    }
+
+    /** Mo Modal o che do CHINH SUA voi du lieu cu */
+    function openEditModal(id, name, imageUrl) {
+        document.getElementById('categoryModalLabel').textContent = 'Edit Category';
+        document.getElementById('modalCatId').value = id;
+        document.getElementById('modalCatName').value = name;
+        document.getElementById('modalCatImage').value = imageUrl;
+        document.querySelector('#modalSubmitBtn span').textContent = 'Update Category';
+
+        var preview = document.getElementById('modalImagePreview');
+        var img = document.getElementById('modalPreviewImg');
+        if (imageUrl && imageUrl.trim() !== '') {
+            img.src = imageUrl;
+            preview.style.display = 'block';
+        } else {
+            preview.style.display = 'none';
+        }
+        categoryModal.show();
+    }
+</script>
+</body>
+</html>

@@ -85,7 +85,7 @@
                             <!-- Tạm tính -->
                             <div class="summary-row">
                                 <span>Tạm tính</span>
-                                <span th:text="${#numbers.formatDecimal(cart.items.![unitPrice * quantity].stream().reduce(0, (a, b) -> a + b), 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                <span th:text="${#numbers.formatDecimal(subTotal, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
                                     0 ₫
                                 </span>
                             </div>
@@ -103,7 +103,7 @@
                             <!-- Tổng cộng -->
                             <div class="summary-row summary-total">
                                 <span>Tổng cộng</span>
-                                <span th:text="${#numbers.formatDecimal(cart.items.![unitPrice * quantity].stream().reduce(0, (a, b) -> a + b) + shippingFee, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                <span th:text="${#numbers.formatDecimal(subTotal + shippingFee, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
                                     0 ₫
                                 </span>
                             </div>

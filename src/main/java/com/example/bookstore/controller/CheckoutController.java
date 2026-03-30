@@ -64,10 +64,17 @@ public class CheckoutController {
         dto.setAddress(customer.getAddress() != null ? customer.getAddress() : "");
         dto.setPaymentMethod(PaymentMethodType.COD); // Mặc định chọn COD
 
+        // Tính tạm tính an toàn bên Java (Sửa lỗi BigDecimal * Integer)
+        double subTotal = cart.getItems() != null ?
+                cart.getItems().stream()
+                        .mapToDouble(item -> item.getUnitPrice().multiply(java.math.BigDecimal.valueOf(item.getQuantity())).doubleValue())
+                        .sum() : 0.0;
+
         model.addAttribute("checkoutDTO", dto);
         model.addAttribute("cart", cart);
         model.addAttribute("customer", customer);
         model.addAttribute("paymentMethods", PaymentMethodType.values());
+        model.addAttribute("subTotal", subTotal);
         model.addAttribute("shippingFee", 30000); // Phí ship mặc định
 
         return "client/checkout";
