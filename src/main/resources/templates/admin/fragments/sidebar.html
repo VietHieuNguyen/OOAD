@@ -12,9 +12,13 @@
             <svg th:replace="~{admin/fragments/icons :: dashboard}"></svg>
             <span>Dashboard</span>
         </a>
-        <a href="#inventory-panel" class="sidebar-link" data-scroll-target="inventory-panel">
+        <a th:href="@{/admin/books}" class="sidebar-link">
             <svg th:replace="~{admin/fragments/icons :: inventory}"></svg>
             <span>Inventory</span>
+        </a>
+        <a th:href="@{/admin/categories}" class="sidebar-link">
+            <svg th:replace="~{admin/fragments/icons :: filter}"></svg>
+            <span>Categories</span>
         </a>
         <a href="#revenue-panel" class="sidebar-link" data-scroll-target="revenue-panel">
             <svg th:replace="~{admin/fragments/icons :: orders}"></svg>
@@ -39,7 +43,7 @@
     </nav>
 
     <div class="sidebar-footer">
-        <a href="#inventory-panel" class="sidebar-create" data-scroll-target="inventory-panel">
+        <a th:href="@{/admin/books/new}" class="sidebar-create">
             <svg th:replace="~{admin/fragments/icons :: plus}"></svg>
             <span>Add New Title</span>
         </a>
