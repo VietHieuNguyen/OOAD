@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/layout}">
+<head><title>Notifications</title></head>
+<body>
+<div layout:fragment="content" class="books-shell">
+
+    <!-- ── Page Header ──────────────────────────────── -->
+    <div class="books-page-header">
+        <div>
+            <span class="panel-kicker">Admin</span>
+            <h2 class="books-page-title">
+                Thông báo
+                <span th:if="${unreadCount > 0}"
+                      class="inventory-status status-low-stock"
+                      th:text="${unreadCount} + ' chưa đọc'">0 chưa đọc</span>
+            </h2>
+            <p class="orders-subtitle"
+               th:text="'Tổng cộng ' + ${totalCount} + ' thông báo'">Tổng cộng 0 thông báo</p>
+        </div>
+        <div style="display:flex;gap:.75rem;align-items:center;">
+            <!-- Mark all read -->
+            <button class="notif-mark-all-btn notif-mark-all-page" id="notifMarkAllBtnPage"
+                    th:if="${unreadCount > 0}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                Đánh dấu đã đọc tất cả
+            </button>
+            <a th:href="@{/admin/dashboard}" class="btn-add-book">
+                ← Về Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- ── Flash area (JS driven) ───────────────────── -->
+    <div id="notifPageFlash" style="display:none" class="flash-msg flash-success"></div>
+
+    <!-- ── Notification Cards ───────────────────────── -->
+    <section class="dashboard-panel">
+
+        <th:block th:each="n : ${notifications}">
+            <!-- Wrapper form for server-side read + redirect -->
+            <form th:action="@{/admin/notifications/{id}/read-and-go(id=${n.id})}"
+                  method="post"
+                  class="notif-page-form">
+                <!-- Target URL: order → trang orders chung, stock → trang books chung -->
+                <input type="hidden" name="target"
+                       th:value="${n.type.name().startsWith('ORDER')
+                                    ? '/admin/orders'
+                                    : '/admin/books'}"/>
+
+                <button type="submit"
+                        class="notif-page-card"
+                        th:classappend="${!n.read} ? ' unread' : ''">
+
+                    <!-- Icon -->
+                    <div class="notif-item-icon"
+                         th:classappend="${n.type.name().startsWith('ORDER')} ? ' notif-icon-order' : ' notif-icon-stock'">
+                        <!-- Order icon -->
+                        <svg th:if="${n.type.name().startsWith('ORDER')}"
+                             xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                            <line x1="3" y1="6" x2="21" y2="6"/>
+                            <path d="M16 10a4 4 0 0 1-8 0"/>
+                        </svg>
+                        <!-- Stock icon -->
+                        <svg th:unless="${n.type.name().startsWith('ORDER')}"
+                             xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                        </svg>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="notif-item-body" style="text-align:left;">
+                        <div class="notif-item-title" th:text="${n.title}">Title</div>
+                        <div class="notif-item-msg"   th:text="${n.message}">Message</div>
+                        <div class="notif-item-time"
+                             th:text="${#temporals.format(n.createdAt, 'dd/MM/yyyy HH:mm')}">
+                            00:00
+                        </div>
+                    </div>
+
+                    <!-- Type badge -->
+                    <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:.4rem;">
+                        <span class="inventory-status"
+                              th:classappend="${n.type.name().startsWith('ORDER')} ? ' status-pre-order' : ' status-low-stock'"
+                              th:text="${n.type.name().startsWith('ORDER')} ? 'ORDER' : 'STOCK'">TYPE</span>
+                        <span th:if="${!n.read}" class="notif-unread-dot" style="align-self:flex-end;margin:0;"></span>
+                        <span th:if="${n.read}" class="book-copy" style="font-size:.65rem;">Đã đọc</span>
+                    </div>
+
+                </button>
+            </form>
+        </th:block>
+
+        <!-- Empty state -->
+        <div th:if="${#lists.isEmpty(notifications)}" class="inventory-empty">
+            Bạn chưa có thông báo nào.
+        </div>
+
+    </section>
+
+    <!-- ── Pagination ────────────────────────────────── -->
+    <div class="order-pagination" th:unless="${totalPages <= 1}">
+        <span class="orders-footer"
+              th:text="'Trang ' + ${currentPage} + ' / ' + ${totalPages}
+                        + '  (' + ${totalCount} + ' thông báo)'">
+        </span>
+        <div class="pager">
+            <a th:if="${currentPage > 1}"
+               th:href="@{/admin/notifications(page=${currentPage - 1})}"
+               class="pager-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"/>
+                </svg>
+            </a>
+            <span th:if="${currentPage == 1}" class="pager-btn pager-disabled">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"/>
+                </svg>
+            </span>
+
+            <th:block th:each="p : ${#numbers.sequence(1, totalPages)}">
+                <a th:if="${p != currentPage}"
+                   th:href="@{/admin/notifications(page=${p})}"
+                   th:text="${p}" class="pager-btn">1</a>
+                <span th:if="${p == currentPage}" th:text="${p}"
+                      class="pager-btn pager-current">1</span>
+            </th:block>
+
+            <a th:if="${currentPage < totalPages}"
+               th:href="@{/admin/notifications(page=${currentPage + 1})}"
+               class="pager-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"/>
+                </svg>
+            </a>
+            <span th:if="${currentPage == totalPages}" class="pager-btn pager-disabled">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"/>
+                </svg>
+            </span>
+        </div>
+    </div>
+
+    <!-- Count when single page -->
+    <div class="orders-footer" th:if="${totalPages <= 1 and totalCount > 0}"
+         th:text="'Hiển thị tất cả ' + ${totalCount} + ' thông báo'">
+    </div>
+
+</div>
+
+<script th:inline="javascript">
+    // Mark-all-read từ trang full list (dùng Fetch, không reload)
+    document.addEventListener('DOMContentLoaded', function () {
+        const btn = document.getElementById('notifMarkAllBtnPage');
+        if (!btn) return;
+        btn.addEventListener('click', function () {
+            fetch('/admin/api/notifications/mark-all-read', {
+                method: 'POST',
+                headers: (function() {
+                    var t = document.querySelector('meta[name="_csrf"]');
+                    var h = document.querySelector('meta[name="_csrf_header"]');
+                    return (t && h) ? { [h.content]: t.content } : {};
+                })()
+            })
+                .then(res => res.json())
+                .then(data => {
+                    // Xóa trạng thái unread trên tất cả card
+                    document.querySelectorAll('.notif-page-card.unread').forEach(el => {
+                        el.classList.remove('unread');
+                        const dot = el.querySelector('.notif-unread-dot');
+                        if (dot) dot.remove();
+                    });
+                    btn.style.display = 'none';
+                    const flash = document.getElementById('notifPageFlash');
+                    flash.textContent = 'Đã đánh dấu ' + data.marked + ' thông báo là đã đọc.';
+                    flash.style.display = 'block';
+                    setTimeout(() => { flash.style.display = 'none'; }, 3000);
+                })
+                .catch(() => {});
+        });
+    });
+</script>
+</body>
+</html>

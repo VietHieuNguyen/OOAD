@@ -2,8 +2,11 @@ package com.example.bookstore.service;
 
 import com.example.bookstore.entity.Book;
 import com.example.bookstore.entity.Category;
+import com.example.bookstore.pattern.observer.StockObserver;
+import com.example.bookstore.pattern.observer.StockSubject;
 import com.example.bookstore.repository.BookRepository;
 import com.example.bookstore.repository.CategoryRepository;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -13,20 +16,52 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service layer cho entity Book.
- * <p>Cung cap cac nghiep vu CRUD phuc vu cho ca Client (hien thi) va Admin (quan ly).
- * Duoc thiet ke de thanh vien khac co the dap Observer Pattern vao method
- * {@link #save(Book)} hoac {@link #updateStock(String, int)} ma khong can chinh sua nhieu.</p>
+ *
+ * <p>Cung cap cac nghiep vu CRUD phuc vu cho ca Client (hien thi) va Admin (quan ly).</p>
+ *
+ * <p><b>Observer Pattern (StockSubject):</b> Class nay implements {@link StockSubject}.
+ * Spring Boot tu dong inject toan bo bean {@code @Component} co implements {@link StockObserver}
+ * vao {@code List<StockObserver>} thong qua Constructor Injection.
+ * Nguyen tac OCP duoc tuan thu: them Observer moi chi can tao file moi voi {@code @Component},
+ * khong can sua file nay.</p>
  */
 @Service
-public class BookService {
+public class BookService implements StockSubject {
 
     private final BookRepository bookRepository;
     private final CategoryRepository categoryRepository;
 
+    /**
+     * Spring tu dong gom tat ca @Component implements StockObserver vao list nay.
+     * Khong can khai bao tung Observer cu the - tuan thu Open/Closed Principle.
+     */
+    private final List<StockObserver> stockObservers;
+
     public BookService(BookRepository bookRepository,
-                       CategoryRepository categoryRepository) {
+                       CategoryRepository categoryRepository,
+                       List<StockObserver> stockObservers) {
         this.bookRepository = bookRepository;
         this.categoryRepository = categoryRepository;
+        // Wrap bằng ArrayList để đảm bảo list có thể modify (add/remove) được.
+        // Spring inject List<?> đôi khi là unmodifiableList — cần wrap để an toàn.
+        this.stockObservers = new ArrayList<>(stockObservers);
+    }
+
+    // ======================== OBSERVER PATTERN ========================
+
+    @Override
+    public void addStockObserver(StockObserver observer) {
+        stockObservers.add(observer);
+    }
+
+    @Override
+    public void removeStockObserver(StockObserver observer) {
+        stockObservers.remove(observer);
+    }
+
+    @Override
+    public void notifyStockObservers(Book book) {
+        stockObservers.forEach(observer -> observer.update(book));
     }
 
     // ======================== READ ========================
@@ -99,7 +134,9 @@ public class BookService {
      */
     @Transactional
     public Book save(Book book) {
-        return bookRepository.save(book);
+        Book saved = bookRepository.save(book);
+        notifyStockObservers(saved); // Observer Pattern Hook: kích hoạt khi lưu/cập nhật sách
+        return saved;
     }
 
     /**
@@ -117,7 +154,7 @@ public class BookService {
                 .orElseThrow(() -> new IllegalArgumentException("Khong tim thay sach voi ID: " + bookId));
         book.setStockQuantity(newStock);
         bookRepository.save(book);
-        // TODO [Observer]: Goi notifyObservers(book) tai day khi ket noi Observer Pattern
+        notifyStockObservers(book); // Observer Pattern Hook: kích hoạt khi cập nhật tồn kho
     }
 
     // ======================== DELETE ========================

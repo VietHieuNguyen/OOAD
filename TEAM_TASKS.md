@@ -139,6 +139,7 @@ public void updateStock(String bookId, int newStock) {
 | `OrderService.java` | Thêm logic chuyển trạng thái đơn hàng + gọi Observer |
 | `admin/fragments/sidebar.html` | Thêm link "Orders" vào sidebar admin |
 | `admin.css` | Thêm CSS cho các trang admin orders |
+| `UserRepository.java` | Thêm `findByRole()` phục vụ StockNotificationObserver |
 
 ### Danh sách file BẠN TẠO MỚI:
 
@@ -152,6 +153,24 @@ public void updateStock(String bookId, int newStock) {
 | `pattern/observer/OrderStatusSubject.java` | Interface Subject cho đơn hàng |
 | `pattern/observer/EmailNotifierObserver.java` | Concrete Observer: thông báo email |
 | `pattern/observer/SMSNotifierObserver.java` | Concrete Observer: thông báo SMS |
-| `controller/AdminOrderController.java` | Controller quản lý đơn hàng admin |
-| `templates/admin/orders.html` | Danh sách đơn hàng admin |
-| `templates/admin/order-detail.html` | Chi tiết đơn hàng + chuyển trạng thái |
+| `pattern/observer/OrderNotificationObserver.java` | **Concrete Observer: lưu thông báo đơn hàng vào DB (cho Customer)** |
+| `pattern/observer/StockNotificationObserver.java` | **Concrete Observer: lưu thông báo tồn kho vào DB (cho Admin)** |
+| `entity/enums/NotificationType.java` | **Enum loại thông báo (ORDER_CONFIRMED, LOW_STOCK_ALERT, ...)** |
+| `entity/Notification.java` | **Entity thông báo — lưu vào bảng `notifications`** |
+| `repository/NotificationRepository.java` | **Repository CRUD cho Notification** |
+| `controller/AdminOrderController.java` | Controller quản lý đơn hàng admin (filter, pagination, quick-action) |
+| `controller/AdminNotificationController.java` | **Controller thông báo: REST API cho popover chuông + MVC page `/admin/notifications`** |
+| `templates/admin/orders.html` | Danh sách đơn hàng admin (filter bar + phân trang + quick action buttons) |
+| `templates/admin/order-detail.html` | Chi tiết đơn hàng + nút action theo trạng thái (conditional) |
+| `templates/admin/notifications.html` | **Trang xem toàn bộ thông báo — phân trang, click điều hướng** |
+| `templates/admin/fragments/header.html` | **Cập nhật: thêm notification bell icon + popover** |
+| `static/js/admin.js` | **Cập nhật: thêm notification bell JS (fetch, render, mark-read, navigate)** |
+| `static/css/admin.css` | **Cập nhật: thêm CSS cho bell, popover, notification page** |
+
+
+#### Chi tiết kỹ thuật bổ sung (Technical Notes):
+* **Observer dùng kiểu pull**
+* **Implement Subject:** `BookService` và `OrderService` sẽ trực tiếp implement `StockSubject` và `OrderStatusSubject` (hoặc bạn có thể dùng Composition tùy thiết kế). 
+* **Đăng ký Observer:** Inject các Concrete Observers vào Service layer và gọi hàm `addObserver()` ngay trong Constructor hoặc `@PostConstruct`.
+* **Data truyền đi (Payload):** * Với Stock: `notifyObservers(Book book)`
+    * Với Order: `notifyObservers(Order order)` (Sử dụng Enum trạng thái đã có sẵn trong class `Order.java` của Thành viên 1).

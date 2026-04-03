@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/layout}">
+<head><title>Thông báo của tôi</title></head>
+<body>
+<main layout:fragment="content" class="client-notif-page">
+
+    <div class="client-notif-page-container">
+
+        <!-- ── Page Header ──────────────────────── -->
+        <div class="client-notif-page-header">
+            <div>
+                <p class="client-notif-page-kicker">Tài khoản của tôi</p>
+                <h1 class="client-notif-page-title">
+                    Thông báo
+                    <span th:if="${unreadCount > 0}" class="client-notif-page-badge"
+                          th:text="${unreadCount} + ' mới'">0 mới</span>
+                </h1>
+                <p class="client-notif-page-subtitle"
+                   th:text="${totalCount} + ' thông báo tổng cộng'">0 thông báo</p>
+            </div>
+            <div class="client-notif-page-actions">
+                <button class="client-notif-page-mark-all" id="clientNotifMarkAllPage"
+                        th:if="${unreadCount > 0}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    Đánh dấu đã đọc tất cả
+                </button>
+                <a href="/profile" class="client-notif-page-back">← Về tài khoản</a>
+            </div>
+        </div>
+
+        <!-- Flash -->
+        <div id="clientNotifFlash" class="client-notif-flash" style="display:none"></div>
+
+        <!-- ── Notification List ─────────────────── -->
+        <div class="client-notif-page-list">
+            <th:block th:each="n : ${notifications}">
+                <form th:action="@{/notifications/{id}/read-and-go(id=${n.id})}" method="post"
+                      class="client-notif-page-form">
+                    <!-- Target URL -->
+                    <input type="hidden" name="target"
+                           th:value="${n.type.name().startsWith('ORDER') and n.relatedOrderId != null and !#strings.isEmpty(n.relatedOrderId)
+                                       ? '/orders/' + n.relatedOrderId
+                                       : '/notifications'}"/>
+
+                    <button type="submit"
+                            class="client-notif-page-card"
+                            th:classappend="${!n.read} ? ' unread' : ''">
+
+                        <!-- Icon -->
+                        <div class="client-notif-page-icon"
+                             th:classappend="${n.type.name().startsWith('ORDER')} ? ' icon-order' : ' icon-stock'">
+                            <!-- Order -->
+                            <svg th:if="${n.type.name().startsWith('ORDER')}"
+                                 xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2"
+                                 stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                                <line x1="3" y1="6" x2="21" y2="6"/>
+                                <path d="M16 10a4 4 0 0 1-8 0"/>
+                            </svg>
+                            <!-- General / stock -->
+                            <svg th:unless="${n.type.name().startsWith('ORDER')}"
+                                 xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2"
+                                 stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="12" y1="8" x2="12" y2="12"/>
+                                <line x1="12" y1="16" x2="12.01" y2="16"/>
+                            </svg>
+                        </div>
+
+                        <!-- Content -->
+                        <div class="client-notif-page-content">
+                            <p class="client-notif-page-item-title" th:text="${n.title}">Title</p>
+                            <p class="client-notif-page-item-msg"   th:text="${n.message}">Message</p>
+                            <p class="client-notif-page-item-time"
+                               th:text="${#temporals.format(n.createdAt, 'HH:mm — dd/MM/yyyy')}">00:00</p>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="client-notif-page-status">
+                            <span class="client-notif-type-tag"
+                                  th:classappend="${n.type.name().startsWith('ORDER')} ? ' tag-order' : ' tag-info'"
+                                  th:text="${n.type.name().startsWith('ORDER')} ? 'Đơn hàng' : 'Thông tin'">
+                                Đơn hàng
+                            </span>
+                            <span th:if="${!n.read}" class="client-unread-dot" title="Chưa đọc"></span>
+                            <span th:if="${n.read}"  class="client-read-label">Đã đọc</span>
+                        </div>
+                    </button>
+                </form>
+            </th:block>
+
+            <!-- Empty state -->
+            <div th:if="${#lists.isEmpty(notifications)}" class="client-notif-empty">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="1.5"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                <p>Bạn chưa có thông báo nào.</p>
+                <a href="/">Tiếp tục mua sắm →</a>
+            </div>
+        </div>
+
+        <!-- ── Pagination ────────────────────────── -->
+        <div class="client-notif-pagination" th:unless="${totalPages <= 1}">
+            <a th:if="${currentPage > 1}"
+               th:href="@{/notifications(page=${currentPage - 1})}"
+               class="client-pager-btn">&#8592; Trước</a>
+            <span th:if="${currentPage == 1}" class="client-pager-btn disabled">&#8592; Trước</span>
+
+            <th:block th:each="p : ${#numbers.sequence(1, totalPages)}">
+                <a th:if="${p != currentPage}"
+                   th:href="@{/notifications(page=${p})}"
+                   th:text="${p}" class="client-pager-btn">1</a>
+                <span th:if="${p == currentPage}"
+                      th:text="${p}" class="client-pager-btn current">1</span>
+            </th:block>
+
+            <a th:if="${currentPage < totalPages}"
+               th:href="@{/notifications(page=${currentPage + 1})}"
+               class="client-pager-btn">Sau &#8594;</a>
+            <span th:if="${currentPage == totalPages}" class="client-pager-btn disabled">Sau &#8594;</span>
+        </div>
+
+        <p class="client-notif-total" th:if="${totalPages <= 1 and totalCount > 0}"
+           th:text="'Hiển thị tất cả ' + ${totalCount} + ' thông báo'"></p>
+
+    </div>
+</main>
+
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        const btn = document.getElementById('clientNotifMarkAllPage');
+        if (!btn) return;
+        btn.addEventListener('click', function () {
+            fetch('/api/notifications/mark-all-read', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    document.querySelectorAll('.client-notif-page-card.unread').forEach(el => {
+                        el.classList.remove('unread');
+                        const dot = el.querySelector('.client-unread-dot');
+                        if (dot) { dot.replaceWith(Object.assign(document.createElement('span'), { className: 'client-read-label', textContent: 'Đã đọc' })); }
+                    });
+                    btn.style.display = 'none';
+                    const flash = document.getElementById('clientNotifFlash');
+                    flash.textContent = 'Đã đánh dấu ' + data.marked + ' thông báo là đã đọc.';
+                    flash.style.display = 'block';
+                    setTimeout(() => { flash.style.display = 'none'; }, 3000);
+                })
+                .catch(() => {});
+        });
+    });
+</script>
+</body>
+</html>

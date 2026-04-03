@@ -20,7 +20,7 @@
             <svg th:replace="~{admin/fragments/icons :: filter}"></svg>
             <span>Categories</span>
         </a>
-        <a href="#revenue-panel" class="sidebar-link" data-scroll-target="revenue-panel">
+        <a th:href="@{/admin/orders}" class="sidebar-link">
             <svg th:replace="~{admin/fragments/icons :: orders}"></svg>
             <span>Orders</span>
         </a>
