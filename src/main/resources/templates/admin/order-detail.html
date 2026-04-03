@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/layout}">
+<head><title>Order Detail</title></head>
+<body>
+<div layout:fragment="content" class="books-shell">
+
+    <!-- ── Page Header ────────────────────────────── -->
+    <div class="books-page-header">
+        <div>
+            <span class="panel-kicker">Order Management</span>
+            <h2 class="books-page-title">
+                Order Detail
+                <span class="order-detail-id"
+                      th:text="'#ORD-' + ${#strings.toUpperCase(#strings.substring(order.orderId, 0, 8))}">
+                    #ORD-...
+                </span>
+                <span class="inventory-status"
+                      th:classappend="${order.status.name() == 'PENDING'   ? ' status-low-stock'  :
+                                       order.status.name() == 'CONFIRMED' ? ' status-pre-order'  :
+                                       order.status.name() == 'COMPLETED' ? ' status-in-stock'   :
+                                       ' status-out'}"
+                      th:text="${order.status.name()}">STATUS</span>
+            </h2>
+            <p class="orders-subtitle"
+               th:text="'Placed on ' + ${#temporals.format(order.orderDate, 'MMMM dd, yyyy · HH:mm')}">
+            </p>
+        </div>
+        <a th:href="@{/admin/orders}" class="btn-add-book">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+            </svg>
+            Back to Orders
+        </a>
+    </div>
+
+    <!-- ── Flash Messages ─────────────────────────── -->
+    <div th:if="${successMessage}" class="flash-msg flash-success">
+        <span th:text="${successMessage}">Success</span>
+    </div>
+    <div th:if="${errorMessage}" class="flash-msg flash-error">
+        <span th:text="${errorMessage}">Error</span>
+    </div>
+
+    <!-- ── Two-Column Grid ────────────────────────── -->
+    <div class="book-form-grid">
+
+        <!-- LEFT: Customer info + Items table -->
+        <div class="book-form-left">
+
+            <!-- Customer Info -->
+            <div class="book-form-card">
+                <h3 class="book-form-card-title">Customer Information</h3>
+                <div class="form-row-admin">
+                    <div class="form-group-admin">
+                        <label class="form-label-admin">Customer</label>
+                        <div th:text="${order.customer.fullName}">—</div>
+                    </div>
+                    <div class="form-group-admin">
+                        <label class="form-label-admin">Email</label>
+                        <div th:text="${order.customer.email}">—</div>
+                    </div>
+                </div>
+                <div class="form-row-admin">
+                    <div class="form-group-admin">
+                        <label class="form-label-admin">Shipping Address</label>
+                        <div th:text="${order.address}">—</div>
+                    </div>
+                    <div class="form-group-admin">
+                        <label class="form-label-admin">Order ID</label>
+                        <div class="isbn-text" style="font-size:0.75rem" th:text="${order.orderId}">—</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items Table -->
+            <div class="book-form-card">
+                <h3 class="book-form-card-title"
+                    th:text="'Items (' + ${#sets.size(order.items)} + ')'">Items</h3>
+                <div class="inventory-table-wrap">
+                    <table class="inventory-table">
+                        <thead>
+                        <tr>
+                            <th>Book</th>
+                            <th>Unit Price</th>
+                            <th>Qty</th>
+                            <th>Subtotal</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="item : ${order.items}" class="inventory-row">
+                            <td>
+                                <div class="book-summary">
+                                    <img th:if="${item.book.thumbnail != null and !#strings.isEmpty(item.book.thumbnail)}"
+                                         th:src="${item.book.thumbnail}" alt="" class="book-thumb"/>
+                                    <div th:unless="${item.book.thumbnail != null and !#strings.isEmpty(item.book.thumbnail)}"
+                                         class="book-thumb book-thumb-placeholder"></div>
+                                    <div class="book-copy">
+                                        <strong th:text="${item.book.title}">Title</strong>
+                                        <span th:text="${item.book.author}">Author</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td th:text="${#numbers.formatDecimal(item.priceAtPurchase,0,'COMMA',0,'POINT')} + ' VND'">0</td>
+                            <td th:text="${item.quantity}">1</td>
+                            <td><strong th:text="${#numbers.formatDecimal(item.subTotal,0,'COMMA',0,'POINT')} + ' VND'">0</strong></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Total -->
+                <div class="order-detail-total-row">
+                    <span>Total Amount</span>
+                    <strong th:text="${#numbers.formatDecimal(order.totalAmount,0,'COMMA',0,'POINT')} + ' VND'">0 VND</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Action Panel -->
+        <div class="book-form-right">
+            <div class="book-form-card">
+
+                <!-- ── PENDING: Confirm + Cancel ── -->
+                <th:block th:if="${order.status.name() == 'PENDING'}">
+                    <h3 class="book-form-card-title">Actions</h3>
+                    <p class="panel-footnote" style="text-align:left;margin-top:0;margin-bottom:1.25rem;">
+                        This order is awaiting processing. You can confirm or cancel it.
+                    </p>
+                    <form th:action="@{/admin/orders/{id}/update-status(id=${order.orderId})}"
+                          method="post" style="margin-bottom:.75rem;">
+                        <input type="hidden" name="newStatus" value="CONFIRMED"/>
+                        <button type="submit" class="btn-publish" style="width:100%;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            Xác nhận đơn hàng
+                        </button>
+                    </form>
+                    <form th:action="@{/admin/orders/{id}/update-status(id=${order.orderId})}"
+                          method="post"
+                          onsubmit="return confirm('Bạn chắc chắn muốn hủy đơn này?');">
+                        <input type="hidden" name="newStatus" value="CANCELLED"/>
+                        <button type="submit" class="order-btn-danger-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                            Hủy đơn hàng
+                        </button>
+                    </form>
+
+                    <!-- Status flow -->
+                    <div class="order-flow-guide">
+                        <span class="inventory-status status-low-stock">PENDING</span>
+                        <span class="order-flow-arrow">→</span>
+                        <span class="inventory-status status-pre-order">CONFIRMED</span>
+                        <span class="order-flow-arrow">→</span>
+                        <span class="inventory-status status-in-stock">COMPLETED</span>
+                    </div>
+                </th:block>
+
+                <!-- ── CONFIRMED: Complete + Cancel ── -->
+                <th:block th:if="${order.status.name() == 'CONFIRMED'}">
+                    <h3 class="book-form-card-title">Actions</h3>
+                    <p class="panel-footnote" style="text-align:left;margin-top:0;margin-bottom:1.25rem;">
+                        Order has been confirmed. Mark as completed or cancel if needed.
+                    </p>
+                    <form th:action="@{/admin/orders/{id}/update-status(id=${order.orderId})}"
+                          method="post" style="margin-bottom:.75rem;">
+                        <input type="hidden" name="newStatus" value="COMPLETED"/>
+                        <button type="submit" class="btn-publish" style="width:100%;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                            Hoàn thành đơn hàng
+                        </button>
+                    </form>
+                    <form th:action="@{/admin/orders/{id}/update-status(id=${order.orderId})}"
+                          method="post"
+                          onsubmit="return confirm('Bạn chắc chắn muốn hủy đơn này?');">
+                        <input type="hidden" name="newStatus" value="CANCELLED"/>
+                        <button type="submit" class="order-btn-danger-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                            Hủy đơn hàng
+                        </button>
+                    </form>
+
+                    <!-- Status flow -->
+                    <div class="order-flow-guide">
+                        <span class="inventory-status status-low-stock">PENDING</span>
+                        <span class="order-flow-arrow">→</span>
+                        <span class="inventory-status status-pre-order" style="font-weight:700;">CONFIRMED ✓</span>
+                        <span class="order-flow-arrow">→</span>
+                        <span class="inventory-status status-in-stock">COMPLETED</span>
+                    </div>
+                </th:block>
+
+                <!-- ── COMPLETED / CANCELLED: Final state ── -->
+                <th:block th:if="${order.status.name() == 'COMPLETED' or order.status.name() == 'CANCELLED'}">
+                    <h3 class="book-form-card-title">Order Closed</h3>
+                    <div class="order-final-info">
+                        <div class="order-final-icon"
+                             th:classappend="${order.status.name() == 'COMPLETED' ? ' order-final-success' : ' order-final-danger'}">
+                            <!-- Completed checkmark -->
+                            <svg th:if="${order.status.name() == 'COMPLETED'}"
+                                 xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                            <!-- Cancelled X -->
+                            <svg th:if="${order.status.name() == 'CANCELLED'}"
+                                 xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+                            </svg>
+                        </div>
+                        <p class="order-final-text"
+                           th:text="${order.status.name() == 'COMPLETED'
+                                      ? 'This order has been successfully completed. No further actions available.'
+                                      : 'This order has been cancelled. No further actions available.'}">
+                        </p>
+                    </div>
+                    <a th:href="@{/admin/orders}" class="btn-publish" style="width:100%;text-decoration:none;text-align:center;">
+                        ← Back to Orders
+                    </a>
+                </th:block>
+
+            </div><!-- /book-form-card -->
+        </div><!-- /book-form-right -->
+    </div><!-- /book-form-grid -->
+
+</div>
+</body>
+</html>

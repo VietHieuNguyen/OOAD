@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/layout}">
+<head><title>Manage Orders</title></head>
+<body>
+<div layout:fragment="content" class="books-shell">
+
+    <!-- ── Page Header ────────────────────────────── -->
+    <div class="books-page-header">
+        <div>
+            <span class="panel-kicker">Order Management</span>
+            <h2 class="books-page-title">All Orders</h2>
+            <p class="orders-subtitle" th:text="'Review and orchestrate the fulfillment of curated collections.'"></p>
+        </div>
+        <span class="books-count"
+              th:text="'Total: ' + ${totalOrders} + ' order' + (${totalOrders} != 1 ? 's' : '')">
+            Total: 0 orders
+        </span>
+    </div>
+
+    <!-- ── Flash Messages ─────────────────────────── -->
+    <div th:if="${successMessage}" class="flash-msg flash-success">
+        <span th:text="${successMessage}">Success</span>
+    </div>
+    <div th:if="${errorMessage}" class="flash-msg flash-error">
+        <span th:text="${errorMessage}">Error</span>
+    </div>
+
+    <!-- ── Filter Bar ─────────────────────────────── -->
+    <form th:action="@{/admin/orders}" method="get" class="order-filter-bar">
+        <!-- Search -->
+        <div class="order-filter-group order-filter-search">
+            <label class="order-filter-label">SEARCH ORDER, CUSTOMER OR PRODUCT</label>
+            <label class="inventory-search">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="search" name="keyword" th:value="${keyword}"
+                       placeholder="e.g. #ORD-7721 or Customer Name"/>
+            </label>
+        </div>
+        <!-- Status filter -->
+        <div class="order-filter-group">
+            <label class="order-filter-label">ORDER STATUS</label>
+            <select name="status" class="form-input-admin">
+                <option value="" th:selected="${status == ''}">All Statuses</option>
+                <option th:each="s : ${allStatuses}"
+                        th:value="${s.name()}"
+                        th:text="${s.name()}"
+                        th:selected="${status == s.name()}">STATUS</option>
+            </select>
+        </div>
+        <!-- Sort -->
+        <div class="order-filter-group">
+            <label class="order-filter-label">DATE RANGE</label>
+            <select name="sort" class="form-input-admin">
+                <option value="newest" th:selected="${sort == 'newest'}">Newest First</option>
+                <option value="oldest" th:selected="${sort == 'oldest'}">Oldest First</option>
+            </select>
+        </div>
+        <div class="order-filter-actions">
+            <button type="submit" class="inventory-filter">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+                </svg>
+                Apply Filters
+            </button>
+            <a th:href="@{/admin/orders}" class="btn-clear-search"
+               th:if="${keyword != '' or status != '' or sort != 'newest'}">Reset</a>
+        </div>
+    </form>
+
+    <!-- ── Order List ─────────────────────────────── -->
+    <section class="dashboard-panel">
+
+        <!-- Each order card -->
+        <div th:each="order : ${orders}" class="order-card">
+
+            <!-- Thumbnail -->
+            <div class="order-card-thumbs">
+                <th:block th:each="item, iStat : ${order.items}">
+                    <img th:if="${iStat.index < 2 and item.book.thumbnail != null and !#strings.isEmpty(item.book.thumbnail)}"
+                         th:src="${item.book.thumbnail}" alt="" class="book-thumb"/>
+                    <div th:if="${iStat.index < 2 and (item.book.thumbnail == null or #strings.isEmpty(item.book.thumbnail))}"
+                         class="book-thumb book-thumb-placeholder"></div>
+                </th:block>
+            </div>
+
+            <!-- Info -->
+            <div class="order-card-info">
+                <div class="order-card-top">
+                    <span class="order-card-id"
+                          th:text="'#ORD-' + ${#strings.toUpperCase(#strings.substring(order.orderId,0,8))}">
+                        #ORD-...
+                    </span>
+                    <span class="inventory-status"
+                          th:classappend="${order.status.name() == 'PENDING'   ? ' status-low-stock'  :
+                                           order.status.name() == 'CONFIRMED' ? ' status-pre-order'  :
+                                           order.status.name() == 'COMPLETED' ? ' status-in-stock'   :
+                                           ' status-out'}"
+                          th:text="${order.status.name()}">STATUS</span>
+                </div>
+                <div class="book-copy">
+                    <span>Customer: <strong th:text="${order.customer.fullName}">Name</strong></span>
+                    <span th:text="'Placed on ' + ${#temporals.format(order.orderDate,'MMM dd, yyyy')}
+                                   + ' · ' + ${#sets.size(order.items)} + ' item'
+                                   + (${#sets.size(order.items)} > 1 ? 's' : '')
+                                   + ' · ' + ${#numbers.formatDecimal(order.totalAmount,0,'COMMA',0,'POINT')} + ' VND'">
+                        Info
+                    </span>
+                </div>
+            </div>
+
+            <!-- Quick Actions by Status -->
+            <div class="order-card-actions">
+
+                <!-- PENDING → Confirm + Cancel -->
+                <th:block th:if="${order.status.name() == 'PENDING'}">
+                    <form th:action="@{/admin/orders/{id}/update-status(id=${order.orderId})}"
+                          method="post" style="display:inline">
+                        <input type="hidden" name="newStatus"    value="CONFIRMED"/>
+                        <input type="hidden" name="redirectTo"   value="list"/>
+                        <button type="submit" class="order-btn order-btn-confirm" title="Confirm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                            Confirm
+                        </button>
+                    </form>
+                    <form th:action="@{/admin/orders/{id}/update-status(id=${order.orderId})}"
+                          method="post" style="display:inline"
+                          onsubmit="return confirm('Cancel this order?');">
+                        <input type="hidden" name="newStatus"    value="CANCELLED"/>
+                        <input type="hidden" name="redirectTo"   value="list"/>
+                        <button type="submit" class="order-btn order-btn-cancel" title="Cancel">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                            Cancel
+                        </button>
+                    </form>
+                </th:block>
+
+                <!-- CONFIRMED → Complete + Cancel -->
+                <th:block th:if="${order.status.name() == 'CONFIRMED'}">
+                    <form th:action="@{/admin/orders/{id}/update-status(id=${order.orderId})}"
+                          method="post" style="display:inline">
+                        <input type="hidden" name="newStatus"    value="COMPLETED"/>
+                        <input type="hidden" name="redirectTo"   value="list"/>
+                        <button type="submit" class="order-btn order-btn-confirm" title="Complete">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                            Complete
+                        </button>
+                    </form>
+                    <form th:action="@{/admin/orders/{id}/update-status(id=${order.orderId})}"
+                          method="post" style="display:inline"
+                          onsubmit="return confirm('Cancel this order?');">
+                        <input type="hidden" name="newStatus"    value="CANCELLED"/>
+                        <input type="hidden" name="redirectTo"   value="list"/>
+                        <button type="submit" class="order-btn order-btn-cancel" title="Cancel">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                            Cancel
+                        </button>
+                    </form>
+                </th:block>
+
+                <!-- COMPLETED / CANCELLED → view only -->
+                <span th:if="${order.status.name() == 'COMPLETED' or order.status.name() == 'CANCELLED'}"
+                      class="order-final-label">Final State</span>
+
+                <!-- View Details (always) -->
+                <a th:href="@{/admin/orders/{id}(id=${order.orderId})}"
+                   class="icon-button" title="View Details">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+
+        <!-- Empty state -->
+        <div th:if="${#lists.isEmpty(orders)}" class="inventory-empty">
+            No orders found matching your filters.
+        </div>
+    </section>
+
+    <!-- ── Pagination ─────────────────────────────── -->
+    <div class="order-pagination" th:unless="${totalPages <= 1}">
+        <span class="orders-footer"
+              th:text="'Showing ' + ${(currentPage-1)*10 + 1} + '–'
+                        + ${currentPage*10 < totalOrders ? currentPage*10 : totalOrders}
+                        + ' of ' + ${totalOrders} + ' total orders'">
+            Showing ...
+        </span>
+        <div class="pager">
+            <!-- Prev -->
+            <a th:if="${currentPage > 1}"
+               th:href="@{/admin/orders(keyword=${keyword},status=${status},sort=${sort},page=${currentPage-1})}"
+               class="pager-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"/>
+                </svg>
+            </a>
+            <span th:if="${currentPage == 1}" class="pager-btn pager-disabled">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"/>
+                </svg>
+            </span>
+
+            <!-- Page numbers -->
+            <th:block th:each="p : ${#numbers.sequence(1, totalPages)}">
+                <a th:if="${p != currentPage}"
+                   th:href="@{/admin/orders(keyword=${keyword},status=${status},sort=${sort},page=${p})}"
+                   th:text="${p}" class="pager-btn">1</a>
+                <span th:if="${p == currentPage}" th:text="${p}"
+                      class="pager-btn pager-current">1</span>
+            </th:block>
+
+            <!-- Next -->
+            <a th:if="${currentPage < totalPages}"
+               th:href="@{/admin/orders(keyword=${keyword},status=${status},sort=${sort},page=${currentPage+1})}"
+               class="pager-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"/>
+                </svg>
+            </a>
+            <span th:if="${currentPage == totalPages}" class="pager-btn pager-disabled">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"/>
+                </svg>
+            </span>
+        </div>
+    </div>
+
+    <!-- Count when 1 page -->
+    <div class="orders-footer" th:if="${totalPages <= 1 and totalOrders > 0}"
+         th:text="'Showing all ' + ${totalOrders} + ' order' + (${totalOrders} != 1 ? 's' : '')">
+    </div>
+
+</div>
+</body>
+</html>

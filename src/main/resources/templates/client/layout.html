@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- CSRF meta tags — dùng cho fetch POST trong JS -->
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title layout:title-pattern="$CONTENT_TITLE — X-Books">X-Books</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link th:href="@{/css/client.css}" rel="stylesheet">
@@ -22,6 +25,152 @@
         const input = document.getElementById(id);
         input.type = input.type === 'password' ? 'text' : 'password';
     }
+</script>
+
+<script>
+/* ── Client Notification Bell ───────────────── */
+(function () {
+    /* CSRF helper */
+    function getCsrfHeaders() {
+        var token  = document.querySelector('meta[name="_csrf"]');
+        var header = document.querySelector('meta[name="_csrf_header"]');
+        if (token && header) return { [header.content]: token.content };
+        return {};
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const btn     = document.getElementById('clientNotifBtn');
+        const popover = document.getElementById('clientNotifPopover');
+        const badge   = document.getElementById('clientNotifBadge');
+        const markAll = document.getElementById('clientNotifMarkAll');
+        const list    = document.getElementById('clientNotifList');
+        if (!btn) return; // không login → không có bell
+
+        // ── Toggle ────────────────────────────
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const open = popover.classList.contains('open');
+            if (!open) { openPopover(); } else { closePopover(); }
+        });
+        document.addEventListener('click', function (e) {
+            if (!popover.contains(e.target) && e.target !== btn) closePopover();
+        });
+
+        function openPopover() {
+            popover.classList.add('open');
+            btn.classList.add('open');
+            popover.setAttribute('aria-hidden', 'false');
+            fetchNotifs();
+        }
+        function closePopover() {
+            popover.classList.remove('open');
+            btn.classList.remove('open');
+            popover.setAttribute('aria-hidden', 'true');
+        }
+
+        // ── Fetch ─────────────────────────────
+        function fetchNotifs() {
+            list.innerHTML = '<div class="client-notif-loading">Đang tải...</div>';
+            fetch('/api/notifications')
+                .then(r => r.json())
+                .then(d => { renderList(d.notifications || []); updateBadge(d.unreadCount || 0); })
+                .catch(() => { list.innerHTML = '<div class="client-notif-empty-msg">Không thể tải thông báo.</div>'; });
+        }
+
+        // Badge on page load
+        fetch('/api/notifications')
+            .then(r => r.json())
+            .then(d => updateBadge(d.unreadCount || 0))
+            .catch(() => {});
+
+        function updateBadge(n) {
+            if (n > 0) { badge.textContent = n > 99 ? '99+' : n; badge.style.display = 'flex'; }
+            else { badge.style.display = 'none'; }
+        }
+
+        // ── Render ────────────────────────────
+        function renderList(items) {
+            if (!items.length) {
+                list.innerHTML = '<div class="client-notif-empty-msg">Không có thông báo nào.</div>';
+                return;
+            }
+            list.innerHTML = '';
+            items.forEach(function (n) {
+                const isOrder = n.type.startsWith('ORDER');
+                // Customer: tất cả thông báo order → trang /orders chung
+                const href = isOrder ? '/orders' : '/notifications';
+
+                const el = document.createElement('a');
+                el.className = 'client-notif-item' + (!n.isRead ? ' unread' : '');
+                el.href = '#';
+                el.dataset.id   = n.id;
+                el.dataset.href = href;
+                el.innerHTML = [
+                    '<div class="client-notif-icon ' + (isOrder ? 'icon-order' : 'icon-info') + '">' + (isOrder ? orderSvg() : infoSvg()) + '</div>',
+                    '<div class="client-notif-item-body">',
+                    '  <div class="client-notif-item-title">' + esc(n.title) + '</div>',
+                    '  <div class="client-notif-item-msg">'   + esc(n.message) + '</div>',
+                    '  <div class="client-notif-item-time">'  + relTime(n.createdAt) + '</div>',
+                    '</div>',
+                    !n.isRead ? '<div class="client-notif-unread-dot"></div>' : ''
+                ].join('');
+
+                el.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    var id = this.dataset.id, go = this.dataset.href;
+                    fetch('/api/notifications/' + id + '/read', {
+                        method: 'POST',
+                        headers: getCsrfHeaders()
+                    }).finally(function () { if (go && go !== '#') window.location.href = go; });
+                });
+                list.appendChild(el);
+            });
+        }
+
+        // ── Mark all ──────────────────────────
+        if (markAll) {
+            markAll.addEventListener('click', function () {
+                fetch('/api/notifications/mark-all-read', {
+                    method: 'POST',
+                    headers: getCsrfHeaders()
+                })
+                    .then(r => r.json())
+                    .then(function () {
+                        document.querySelectorAll('.client-notif-item.unread').forEach(function (el) {
+                            el.classList.remove('unread');
+                            var dot = el.querySelector('.client-notif-unread-dot');
+                            if (dot) dot.remove();
+                        });
+                        updateBadge(0);
+                    });
+            });
+        }
+
+        // ── Helpers ───────────────────────────
+        function esc(s) {
+            const d = document.createElement('div');
+            d.appendChild(document.createTextNode(s || ''));
+            return d.innerHTML;
+        }
+        function relTime(iso) {
+            if (!iso) return '';
+            const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+            if (diff < 1)  return 'Vừa xong';
+            if (diff < 60) return diff + ' phút trước';
+            const h = Math.floor(diff / 60);
+            if (h < 24)    return h + ' giờ trước';
+            const d = Math.floor(h / 24);
+            if (d < 7)     return d + ' ngày trước';
+            return new Date(iso).toLocaleDateString('vi-VN');
+        }
+        function orderSvg() {
+            return '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>';
+        }
+        function infoSvg() {
+            return '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+        }
+    });
+})();
 </script>
 
 </body>
