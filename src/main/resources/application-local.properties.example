@@ -14,3 +14,6 @@ spring.datasource.password=<db-password>
 spring.jpa.hibernate.ddl-auto=none
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.format_sql=true
+
+spring.mail.username=<mail-username>
+spring.mail.password=<mail-password>
