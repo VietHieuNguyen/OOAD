@@ -108,4 +108,20 @@ public class CategoryService {
         });
         return books;
     }
+
+    /**
+     * Lấy danh sách danh mục gốc (không có parent).
+     */
+    @Transactional(readOnly = true)
+    public List<Category> findRootCategories() {
+        return categoryRepository.findByParentCategoryIsNull();
+    }
+
+    /**
+     * Lấy danh sách danh mục con của một danh mục cha.
+     */
+    @Transactional(readOnly = true)
+    public List<Category> findChildCategories(String parentId) {
+        return categoryRepository.findByParentCategoryId(parentId);
+    }
 }

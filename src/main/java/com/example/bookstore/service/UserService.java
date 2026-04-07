@@ -1,9 +1,13 @@
 package com.example.bookstore.service;
 
 import com.example.bookstore.entity.Customer;
+import com.example.bookstore.entity.User;
 import com.example.bookstore.entity.enums.AuthProvider;
+import com.example.bookstore.repository.CustomerRepository;
 import com.example.bookstore.repository.UserRepository;
+import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,12 +18,47 @@ public class UserService {
     private static final int MIN_PASSWORD_LENGTH = 6;
 
     private final UserRepository userRepository;
+    private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository,
+                       CustomerRepository customerRepository,
+                       PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.customerRepository = customerRepository;
         this.passwordEncoder = passwordEncoder;
     }
+
+    // ======================== ADMIN: CUSTOMER MANAGEMENT ========================
+
+    /**
+     * Lấy danh sách tất cả Customer để Admin quản lý.
+     */
+    @Transactional(readOnly = true)
+    public List<Customer> findAllCustomers() {
+        return customerRepository.findAll();
+    }
+
+    /**
+     * Tìm User theo ID.
+     */
+    @Transactional(readOnly = true)
+    public Optional<User> findUserById(String id) {
+        return userRepository.findById(id);
+    }
+
+    /**
+     * Bật/tắt trạng thái active của user.
+     */
+    @Transactional
+    public void toggleActive(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy user với ID: " + userId));
+        user.setIsActive(!Boolean.TRUE.equals(user.getIsActive()));
+        userRepository.save(user);
+    }
+
+    // ======================== REGISTRATION ========================
 
     @Transactional
     public Customer registerCustomer(String username, String email, String rawPassword,

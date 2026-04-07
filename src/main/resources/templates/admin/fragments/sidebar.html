@@ -24,21 +24,17 @@
             <svg th:replace="~{admin/fragments/icons :: orders}"></svg>
             <span>Orders</span>
         </a>
-        <a href="#activity-panel" class="sidebar-link" data-scroll-target="activity-panel">
+        <a th:href="@{/admin/users}" class="sidebar-link">
             <svg th:replace="~{admin/fragments/icons :: customers}"></svg>
             <span>Customers</span>
         </a>
-        <a href="#revenue-panel" class="sidebar-link" data-scroll-target="revenue-panel">
+        <a th:href="@{/admin/vouchers}" class="sidebar-link">
             <svg th:replace="~{admin/fragments/icons :: reports}"></svg>
-            <span>Reports</span>
+            <span>Vouchers</span>
         </a>
-        <a href="#activity-panel" class="sidebar-link" data-scroll-target="activity-panel">
+        <a th:href="@{/admin/settings}" class="sidebar-link">
             <svg th:replace="~{admin/fragments/icons :: settings}"></svg>
             <span>Settings</span>
-        </a>
-        <a href="#activity-panel" class="sidebar-link" data-scroll-target="activity-panel">
-            <svg th:replace="~{admin/fragments/icons :: help}"></svg>
-            <span>Help Center</span>
         </a>
     </nav>
 

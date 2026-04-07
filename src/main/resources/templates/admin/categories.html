@@ -54,6 +54,7 @@
                 <tr>
                     <th style="width:50px">#</th>
                     <th>Category Name</th>
+                    <th>Parent</th>
                     <th>Image</th>
                     <th>Books Count</th>
                     <th>Status</th>
@@ -75,6 +76,12 @@
                                 <strong th:text="${cat.name}">Fiction</strong>
                             </div>
                         </a>
+                    </td>
+
+                    <!-- Parent Category -->
+                    <td>
+                        <span th:if="${cat.parentCategory != null}" th:text="${cat.parentCategory.name}" class="cat-parent-label">Parent</span>
+                        <span th:unless="${cat.parentCategory != null}" class="cat-no-image">—</span>
                     </td>
 
                     <!-- Image Preview -->
@@ -106,7 +113,8 @@
                             <button type="button" class="icon-button btn-edit-cat" title="Edit"
                                     th:data-id="${cat.id}"
                                     th:data-name="${cat.name}"
-                                    th:data-image="${cat.imageUrl}">
+                                    th:data-image="${cat.imageUrl}"
+                                    th:data-parent="${cat.parentCategory != null ? cat.parentCategory.id : ''}">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
                                      fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
                                      stroke-linejoin="round">
@@ -133,7 +141,7 @@
 
                 <!-- Empty State -->
                 <tr th:if="${#lists.isEmpty(categories)}">
-                    <td colspan="6" class="inventory-empty">
+                    <td colspan="7" class="inventory-empty">
                         No categories yet. Click "Add New Category" to create one.
                     </td>
                 </tr>
@@ -164,7 +172,7 @@
                 </div>
 
                 <!-- Modal Body (Form) -->
-                <form th:action="@{/admin/categories/save}" method="post">
+                <form th:action="@{/admin/categories/save}" method="post" enctype="multipart/form-data">
                     <div class="cat-modal-body">
                         <!-- Hidden ID (for Edit mode) -->
                         <input type="hidden" name="id" id="modalCatId" value="" />
@@ -180,6 +188,20 @@
                             <label class="form-label-admin" for="modalCatImage">IMAGE URL (OPTIONAL)</label>
                             <input type="url" id="modalCatImage" name="imageUrl"
                                    class="form-input-admin" placeholder="https://example.com/category-image.jpg" />
+                        </div>
+
+                        <div class="form-group-admin">
+                            <label class="form-label-admin" for="modalCatFile">HOẶC UPLOAD TỪ MÁY</label>
+                            <input type="file" id="modalCatFile" name="imageFile" accept="image/*"
+                                   class="form-input-admin form-file-input" />
+                        </div>
+
+                        <div class="form-group-admin">
+                            <label class="form-label-admin" for="modalCatParent">DANH MỤC CHA (TÙY CHỌN)</label>
+                            <select id="modalCatParent" name="parentId" class="form-input-admin">
+                                <option value="">— Không có (danh mục gốc) —</option>
+                                <option th:each="pc : ${allCategories}" th:value="${pc.id}" th:text="${pc.name}">Cat</option>
+                            </select>
                         </div>
 
                         <!-- Image Preview -->
@@ -238,7 +260,8 @@
                 var id = btn.getAttribute('data-id');
                 var name = btn.getAttribute('data-name');
                 var imageUrl = btn.getAttribute('data-image') || '';
-                openEditModal(id, name, imageUrl);
+                var parentId = btn.getAttribute('data-parent') || '';
+                openEditModal(id, name, imageUrl, parentId);
             });
         });
     });
@@ -250,16 +273,18 @@
         document.getElementById('modalCatName').value = '';
         document.getElementById('modalCatImage').value = '';
         document.getElementById('modalImagePreview').style.display = 'none';
+        document.getElementById('modalCatParent').value = '';
         document.querySelector('#modalSubmitBtn span').textContent = 'Save Category';
         categoryModal.show();
     }
 
     /** Mo Modal o che do CHINH SUA voi du lieu cu */
-    function openEditModal(id, name, imageUrl) {
+    function openEditModal(id, name, imageUrl, parentId) {
         document.getElementById('categoryModalLabel').textContent = 'Edit Category';
         document.getElementById('modalCatId').value = id;
         document.getElementById('modalCatName').value = name;
         document.getElementById('modalCatImage').value = imageUrl;
+        document.getElementById('modalCatParent').value = parentId || '';
         document.querySelector('#modalSubmitBtn span').textContent = 'Update Category';
 
         var preview = document.getElementById('modalImagePreview');

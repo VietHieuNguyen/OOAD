@@ -15,7 +15,10 @@
             </div>
         </div>
         <div class="hero-image">
-            <div class="hero-image-placeholder"></div>
+            <div th:if="${heroImageUrl}" class="hero-image-placeholder">
+                <img th:src="${heroImageUrl}" alt="Hero Banner" style="width:100%;height:100%;object-fit:cover;border-radius:4px;" />
+            </div>
+            <div th:unless="${heroImageUrl}" class="hero-image-placeholder"></div>
         </div>
     </section>
 
@@ -26,27 +29,42 @@
             <a href="#" class="section-link">EXPLORE ALL →</a>
         </div>
         <div class="dept-grid">
-            <div class="dept-card" th:each="cat : ${categories}">
-                <div class="dept-card-image"></div>
+            <a th:each="cat : ${categories}" th:href="@{/collections(category=${cat.id})}" class="dept-card">
+                <div class="dept-card-image">
+                    <img th:if="${cat.imageUrl}" th:src="${cat.imageUrl}" th:alt="${cat.name}" />
+                </div>
                 <span class="dept-card-title" th:text="${cat.name}">Category</span>
-            </div>
+            </a>
             <div class="dept-card" th:if="${#lists.isEmpty(categories)}">
                 <div class="dept-card-image"></div>
-                <span class="dept-card-title">Classic Fiction</span>
-            </div>
-            <div class="dept-card" th:if="${#lists.isEmpty(categories)}">
-                <div class="dept-card-image"></div>
-                <span class="dept-card-title">Memorials</span>
-            </div>
-            <div class="dept-card" th:if="${#lists.isEmpty(categories)}">
-                <div class="dept-card-image"></div>
-                <span class="dept-card-title">Folklore</span>
-            </div>
-            <div class="dept-card" th:if="${#lists.isEmpty(categories)}">
-                <div class="dept-card-image"></div>
-                <span class="dept-card-title">Curated Prose</span>
+                <span class="dept-card-title">Chưa có danh mục</span>
             </div>
         </div>
+    </section>
+
+    <!-- Staff Picks -->
+    <section class="section">
+        <div class="section-header">
+            <h2 class="section-title"><em>Staff Picks</em></h2>
+            <a th:href="@{/staff-picks}" class="section-link">VIEW ALL →</a>
+        </div>
+        <div class="staff-picks-grid" th:if="${staffPicks != null and !#lists.isEmpty(staffPicks)}">
+            <a th:each="pick : ${staffPicks}" th:href="@{/books/{id}(id=${pick.id})}" class="staff-pick-card">
+                <div class="staff-pick-badge">STAFF PICK</div>
+                <div class="staff-pick-image">
+                    <img th:if="${pick.thumbnail}" th:src="${pick.thumbnail}" th:alt="${pick.title}" />
+                </div>
+                <div class="staff-pick-info">
+                    <span class="book-category" th:if="${pick.category != null}" th:text="${pick.category.name}">Category</span>
+                    <h3 class="book-title" th:text="${pick.title}">Book Title</h3>
+                    <span class="book-author" th:text="${pick.author}">Author</span>
+                    <span class="book-price" th:text="${#numbers.formatDecimal(pick.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                </div>
+            </a>
+        </div>
+        <p th:if="${staffPicks == null or #lists.isEmpty(staffPicks)}" class="empty-picks-msg">
+            Chưa có sách nào được gắn Staff Pick. Admin có thể đánh dấu từ trang quản lý sách.
+        </p>
     </section>
 
     <!-- Latest Acquisitions -->

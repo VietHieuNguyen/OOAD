@@ -27,10 +27,22 @@ public class CloudinaryService {
         ));
     }
 
-    public String uploadAvatar(MultipartFile file) throws IOException {
+    /**
+     * Upload ảnh lên Cloudinary vào folder chỉ định.
+     *
+     * @param file   File ảnh từ form upload
+     * @param folder Thư mục trên Cloudinary (vd: "bookstore/books", "bookstore/categories")
+     * @return URL an toàn (HTTPS) của ảnh đã upload
+     */
+    public String uploadImage(MultipartFile file, String folder) throws IOException {
         Map uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
-                "folder", "bookstore/avatars"
+                "folder", folder
         ));
         return uploadResult.get("secure_url").toString();
     }
+
+    public String uploadAvatar(MultipartFile file) throws IOException {
+        return uploadImage(file, "bookstore/avatars");
+    }
 }
+

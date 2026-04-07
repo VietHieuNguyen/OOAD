@@ -85,8 +85,24 @@
                             <!-- Tạm tính -->
                             <div class="summary-row">
                                 <span>Tạm tính</span>
-                                <span th:text="${#numbers.formatDecimal(subTotal, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                <span th:text="${#numbers.formatDecimal(priceBreakdown['subtotal'], 0, 'COMMA', 0, 'POINT')} + ' ₫'">
                                     0 ₫
+                                </span>
+                            </div>
+
+                            <!-- Phí gói quà (Decorator: GiftWrapDecorator) -->
+                            <div class="summary-row" th:if="${cart.giftWrap}">
+                                <span>🎁 Phí gói quà</span>
+                                <span class="fee-positive" th:text="'+' + ${#numbers.formatDecimal(priceBreakdown['giftWrapFee'], 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                    +0 ₫
+                                </span>
+                            </div>
+
+                            <!-- Mã giảm giá (Decorator: VoucherDiscountDecorator) -->
+                            <div class="summary-row discount" th:if="${cart.appliedVoucher != null and priceBreakdown['voucherDiscount'].compareTo(T(java.math.BigDecimal).ZERO) > 0}">
+                                <span th:text="'Mã giảm giá (' + ${cart.appliedVoucher.code} + ')'">Mã giảm giá</span>
+                                <span class="fee-negative" th:text="'-' + ${#numbers.formatDecimal(priceBreakdown['voucherDiscount'], 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                    -0 ₫
                                 </span>
                             </div>
 
@@ -100,10 +116,10 @@
 
                             <div class="summary-divider"></div>
 
-                            <!-- Tổng cộng -->
+                            <!-- Tổng cộng = total (từ Decorator) + shipping -->
                             <div class="summary-row summary-total">
                                 <span>Tổng cộng</span>
-                                <span th:text="${#numbers.formatDecimal(subTotal + shippingFee, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                <span th:text="${#numbers.formatDecimal(priceBreakdown['total'].doubleValue() + shippingFee, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
                                     0 ₫
                                 </span>
                             </div>

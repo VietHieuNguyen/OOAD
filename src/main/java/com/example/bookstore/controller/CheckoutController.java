@@ -62,20 +62,18 @@ public class CheckoutController {
         // Pre-fill địa chỉ từ Customer.address
         CheckoutDTO dto = new CheckoutDTO();
         dto.setAddress(customer.getAddress() != null ? customer.getAddress() : "");
-        dto.setPaymentMethod(PaymentMethodType.COD); // Mặc định chọn COD
+        dto.setPaymentMethod(PaymentMethodType.COD);
 
-        // Tính tạm tính an toàn bên Java (Sửa lỗi BigDecimal * Integer)
-        double subTotal = cart.getItems() != null ?
-                cart.getItems().stream()
-                        .mapToDouble(item -> item.getUnitPrice().multiply(java.math.BigDecimal.valueOf(item.getQuantity())).doubleValue())
-                        .sum() : 0.0;
+        // Sử dụng Decorator Pattern để tính chi tiết giá (thread-safe: tính 1 lần, snapshot kết quả)
+        java.util.Map<String, java.math.BigDecimal> priceBreakdown = cartService.calculatePriceBreakdown(cart);
+        double shippingFee = 30000;
 
         model.addAttribute("checkoutDTO", dto);
         model.addAttribute("cart", cart);
         model.addAttribute("customer", customer);
         model.addAttribute("paymentMethods", PaymentMethodType.values());
-        model.addAttribute("subTotal", subTotal);
-        model.addAttribute("shippingFee", 30000); // Phí ship mặc định
+        model.addAttribute("priceBreakdown", priceBreakdown);
+        model.addAttribute("shippingFee", shippingFee);
 
         return "client/checkout";
     }

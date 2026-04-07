@@ -2,6 +2,7 @@ package com.example.bookstore.controller;
 
 import com.example.bookstore.entity.Category;
 import com.example.bookstore.service.CategoryService;
+import com.example.bookstore.service.CloudinaryService;
 import java.util.List;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -10,54 +11,38 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * Controller quan ly danh muc (Category CRUD) danh cho Admin.
- * <p>
- * Luong hoat dong chinh (MVC):
- * <ol>
- *   <li>Admin truy cap <code>/admin/categories</code> → hien thi danh sach danh muc</li>
- *   <li>Bam "Add New Category" → mo Modal Bootstrap 5, nhap ten + ảnh URL</li>
- *   <li>Bam "Edit" → mo Modal voi du lieu cu de sua</li>
- *   <li>Submit Modal → POST <code>/admin/categories/save</code>, luu va redirect</li>
- *   <li>Bam "Delete" → POST <code>/admin/categories/delete/{id}</code>,
- *       kiem tra rang buoc (con sach hay khong) roi xoa hoac tra loi</li>
- * </ol>
- * </p>
  */
 @Controller
 @RequestMapping("/admin/categories")
 public class AdminCategoryController {
 
     private final CategoryService categoryService;
+    private final CloudinaryService cloudinaryService;
 
-    public AdminCategoryController(CategoryService categoryService) {
+    public AdminCategoryController(CategoryService categoryService,
+                                   CloudinaryService cloudinaryService) {
         this.categoryService = categoryService;
+        this.cloudinaryService = cloudinaryService;
     }
 
     // ======================== LIST (READ) ========================
 
-    /**
-     * Hien thi danh sach tat ca danh muc trong he thong.
-     * <p>Luong: GET /admin/categories → query DB → tra ve view "admin/categories"
-     * kem theo doi tuong Category rong cho Modal "Add New".</p>
-     *
-     * @param model Spring Model de truyen du lieu xuong Thymeleaf
-     * @return ten view "admin/categories"
-     */
     @GetMapping
     public String listCategories(Model model) {
         List<Category> categories = categoryService.findAll();
 
-        // Tinh so sach cho moi danh muc va truyen xuong view
-        // (Tránh goi lazy collection trong Thymeleaf)
         java.util.Map<String, Long> bookCounts = new java.util.LinkedHashMap<>();
         for (Category cat : categories) {
             bookCounts.put(cat.getId(), categoryService.countBooksInCategory(cat.getId()));
         }
 
         model.addAttribute("categories", categories);
+        model.addAttribute("allCategories", categories); // for parent dropdown in modal
         model.addAttribute("bookCounts", bookCounts);
         model.addAttribute("pageTitle", "Manage Categories");
         return "admin/categories";
@@ -65,22 +50,6 @@ public class AdminCategoryController {
 
     // ======================== DETAIL VIEW ========================
 
-    /**
-     * Hien thi trang chi tiet danh muc: thong tin Category + danh sach sach ben trong.
-     * <p>Luong: GET /admin/categories/{id}
-     * → tim Category theo ID → lay danh sach Book thuoc Category do
-     * → tra ve view "admin/category-detail".</p>
-     *
-     * <p>Tren trang nay, Admin co the:
-     * <ul>
-     *   <li>Chinh sua thong tin Category (ten, anh) qua form inline</li>
-     *   <li>Xem danh sach sach thuoc danh muc</li>
-     *   <li>Bam vao 1 cuon sach → chuyen den trang Edit Book</li>
-     *   <li>Xoa sach khoi danh muc nay</li>
-     * </ul></p>
-     *
-     * @param id ID cua danh muc can xem
-     */
     @GetMapping("/{id}")
     public String viewCategory(@PathVariable("id") String id,
                                Model model,
@@ -103,20 +72,15 @@ public class AdminCategoryController {
     // ======================== SAVE (CREATE or UPDATE) ========================
 
     /**
-     * Xu ly luu danh muc (POST) – dung chung cho ca Tao moi va Cap nhat.
-     * <p>Luong: POST /admin/categories/save → nhan du lieu tu Modal form
-     * (id, name, imageUrl) → goi CategoryService.save() → redirect ve danh sach
-     * hoac trang chi tiet (tuy thuoc tham so 'returnTo').</p>
-     *
-     * @param id        ID cua danh muc (rong neu tao moi)
-     * @param name      Ten danh muc
-     * @param imageUrl  URL anh minh hoa (co the rong)
-     * @param returnTo  "detail" neu muon quay lai trang chi tiet, mac dinh ve list
+     * Xu ly luu danh muc (POST).
+     * Hỗ trợ upload ảnh từ file (Cloudinary) hoặc nhập URL trực tiếp.
      */
     @PostMapping("/save")
     public String saveCategory(@RequestParam(value = "id", required = false) String id,
                                @RequestParam("name") String name,
                                @RequestParam(value = "imageUrl", required = false) String imageUrl,
+                               @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
+                               @RequestParam(value = "parentId", required = false) String parentId,
                                @RequestParam(value = "returnTo", required = false) String returnTo,
                                RedirectAttributes redirectAttributes) {
         Category category;
@@ -129,14 +93,33 @@ public class AdminCategoryController {
         }
 
         category.setName(name.trim());
-        category.setImageUrl(imageUrl != null && !imageUrl.isBlank() ? imageUrl.trim() : null);
+
+        // Set parent category
+        if (parentId != null && !parentId.isBlank()) {
+            categoryService.findById(parentId).ifPresent(category::setParentCategory);
+        } else {
+            category.setParentCategory(null);
+        }
+
+        // Upload ảnh từ file nếu có (ưu tiên hơn URL)
+        if (imageFile != null && !imageFile.isEmpty()) {
+            try {
+                String uploadedUrl = cloudinaryService.uploadImage(imageFile, "bookstore/categories");
+                category.setImageUrl(uploadedUrl);
+            } catch (Exception e) {
+                redirectAttributes.addFlashAttribute("errorMessage",
+                        "Loi upload anh: " + e.getMessage());
+                return "redirect:/admin/categories";
+            }
+        } else {
+            category.setImageUrl(imageUrl != null && !imageUrl.isBlank() ? imageUrl.trim() : null);
+        }
 
         Category saved = categoryService.save(category);
 
         redirectAttributes.addFlashAttribute("successMessage",
                 "Da luu danh muc \"" + name.trim() + "\" thanh cong!");
 
-        // Redirect ve trang chi tiet neu duoc yeu cau
         if ("detail".equals(returnTo) && saved.getId() != null) {
             return "redirect:/admin/categories/" + saved.getId();
         }

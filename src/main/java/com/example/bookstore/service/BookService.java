@@ -115,6 +115,30 @@ public class BookService implements StockSubject {
     }
 
     /**
+     * Lấy danh sách sách được đánh dấu "Staff Pick" để hiển thị trên trang chủ.
+     */
+    @Transactional(readOnly = true)
+    public List<Book> findStaffPicks() {
+        List<Book> picks = bookRepository.findByIsPickedTrue();
+        picks.forEach(b -> {
+            if (b.getCategory() != null) b.getCategory().getName();
+        });
+        return picks;
+    }
+
+    /**
+     * Tìm sách theo slug (URL thân thiện).
+     */
+    @Transactional(readOnly = true)
+    public Optional<Book> findBySlug(String slug) {
+        Optional<Book> bookOpt = bookRepository.findBySlug(slug);
+        bookOpt.ifPresent(b -> {
+            if (b.getCategory() != null) b.getCategory().getName();
+        });
+        return bookOpt;
+    }
+
+    /**
      * Lay tat ca danh muc de hien thi trong dropdown <select> cua form.
      */
     @Transactional(readOnly = true)

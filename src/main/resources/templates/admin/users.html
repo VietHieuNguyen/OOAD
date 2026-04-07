@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{admin/layout}">
+<head><title th:text="${pageTitle}">Manage Customers</title></head>
+<body>
+<div layout:fragment="content" class="users-shell">
+
+    <div class="page-header-row">
+        <div>
+            <h2 class="page-main-title"><em>Customer Management</em></h2>
+            <p class="page-subtitle" th:text="'Managing ' + ${#lists.size(customers)} + ' registered customers'">Managing customers</p>
+        </div>
+    </div>
+
+    <!-- Flash Messages -->
+    <div th:if="${successMessage}" class="flash-msg flash-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="flash-msg flash-error" th:text="${errorMessage}"></div>
+
+    <!-- Customers Table -->
+    <div class="admin-table-card">
+        <table class="admin-table">
+            <thead>
+            <tr>
+                <th>Customer</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Provider</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="cust : ${customers}">
+                <td>
+                    <div class="user-cell">
+                        <div class="user-avatar-sm" th:text="${#strings.substring(cust.fullName, 0, 1)}">A</div>
+                        <div>
+                            <span class="user-cell-name" th:text="${cust.fullName}">Name</span>
+                            <span class="user-cell-username" th:text="'@' + ${cust.username}">@user</span>
+                        </div>
+                    </div>
+                </td>
+                <td th:text="${cust.email}">email@test.com</td>
+                <td th:text="${cust.phoneNumber != null ? cust.phoneNumber : '—'}">—</td>
+                <td>
+                    <span class="provider-badge" th:text="${cust.authProvider}">LOCAL</span>
+                </td>
+                <td>
+                    <span th:class="${cust.isActive ? 'status-badge status-active' : 'status-badge status-inactive'}"
+                          th:text="${cust.isActive ? 'Active' : 'Inactive'}">Active</span>
+                </td>
+                <td>
+                    <form th:action="@{/admin/users/toggle-active/{id}(id=${cust.id})}" method="post" style="display:inline;">
+                        <button type="submit"
+                                th:class="${cust.isActive ? 'btn-action btn-deactivate' : 'btn-action btn-activate'}"
+                                th:text="${cust.isActive ? 'Deactivate' : 'Activate'}">Toggle</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(customers)}">
+                <td colspan="6" class="empty-state">Chưa có khách hàng nào đăng ký.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

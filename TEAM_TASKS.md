@@ -64,6 +64,14 @@ Tài liệu này dùng để tracking tiến độ dự án, ghi chú rõ ràng 
 
 *(Lưu ý: Bạn **không thay đổi** file `Order.java`, thư mục `service/payment`, và templates `/orders`, `/checkout` để tránh conflict. Các entity mới đã set `ddl-auto=update` để tự tạo bảng.)*
 
+### ĐÃ CẬP NHẬT THÊM (08/04/2026) - Hoàn thiện các luồng tính năng phụ:
+*   **Media & Asset Management:** Tích hợp `CloudinaryService`. Thêm logic upload ảnh thay cho placeholder (Cover Sách, Ảnh Danh mục, Hero Banner trang chủ).
+*   **Mở rộng Cấu trúc Danh mục (Category):** Thêm quan hệ Cha - Con (Parent-Child Subcategory/Branch) với nested view.
+*   **Global Layout Settings:** Viết tính năng Settings Admin. Cấu hình Site Name và Hero Image được Inject globally thông qua `GlobalControllerAdvice` vào mọi template.
+*   **Customer & Voucher Management:** MVC cho Quản lý User/Customer (kích hoạt/hủy kích hoạt tài khoản) và tính năng Quản lý Voucher từ Admin panel (thêm/sửa/xóa, count down usage).
+*   **Curated Content (Staff Picks):** Khai báo field `isPicked` cho `Book`. Thêm chức năng Staff Picks hoạt động đồng bộ từ Checkbox Form Admin cho tới Section trang chủ và trang tĩnh `staff-picks.html`.
+*   **Tối ưu UI Admin & Client:** Sửa các lỗi Layout CSS (Compress padding, vertical hero-preview), hiển thị thông minh thông báo khi các list/state bị rỗng.
+
 ---
 
 ## 3. Thành viên 3: Người phụ trách Notification & Stock Observer (CẦN LÀM)

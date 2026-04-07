@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{admin/layout}">
+<head><title th:text="${pageTitle}">Voucher Form</title></head>
+<body>
+<div layout:fragment="content" class="voucher-form-shell">
+
+    <!-- Back link -->
+    <a th:href="@{/admin/vouchers}" class="book-form-back">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Back to Vouchers
+    </a>
+
+    <h2 class="book-form-title" th:text="${isEdit ? 'Edit Voucher' : 'Create New Voucher'}">New Voucher</h2>
+
+    <!-- Flash Messages -->
+    <div th:if="${errorMessage}" class="flash-msg flash-error" th:text="${errorMessage}"></div>
+
+    <form th:action="@{/admin/vouchers/save}" method="post" th:object="${voucher}" class="book-form-layout">
+
+        <!-- Hidden ID (for Edit mode) -->
+        <input type="hidden" th:field="*{id}" />
+
+        <div class="book-form-grid">
+
+            <!-- LEFT: Form Fields -->
+            <div class="book-form-left">
+                <div class="book-form-card">
+                    <h3 class="book-form-card-title"><em>Voucher Details</em></h3>
+
+                    <div class="form-row-admin">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin" for="code">MÃ VOUCHER</label>
+                            <input type="text" id="code" th:field="*{code}"
+                                   class="form-input-admin" placeholder="e.g. GIAM20, SALE50" required
+                                   style="text-transform: uppercase;" />
+                            <small class="form-hint">Mã sẽ được tự động chuyển thành chữ IN HOA.</small>
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin" for="discountPercentage">SỐ PHẦN TRĂM GIẢM (%)</label>
+                            <input type="number" id="discountPercentage" th:field="*{discountPercentage}"
+                                   class="form-input-admin" placeholder="e.g. 10" min="1" max="100" step="0.5" required />
+                        </div>
+                    </div>
+
+                    <div class="form-row-admin">
+                        <div class="form-group-admin">
+                            <label class="form-label-admin" for="maxDiscountAmount">GIẢM TỐI ĐA (VNĐ)</label>
+                            <input type="number" id="maxDiscountAmount" th:field="*{maxDiscountAmount}"
+                                   class="form-input-admin" placeholder="e.g. 50000" min="0" step="1000" />
+                            <small class="form-hint">Để trống nếu không giới hạn số tiền giảm.</small>
+                        </div>
+                        <div class="form-group-admin">
+                            <label class="form-label-admin" for="usageLimit">SỐ LƯỢNG SỬ DỤNG TỐI ĐA</label>
+                            <input type="number" id="usageLimit" th:field="*{usageLimit}"
+                                   class="form-input-admin" placeholder="e.g. 100" min="1" required />
+                        </div>
+                    </div>
+
+                    <div class="form-group-admin">
+                        <label class="form-label-admin" for="expirationDate">THỜI GIAN HẾT HẠN</label>
+                        <input type="datetime-local" id="expirationDate" th:field="*{expirationDate}"
+                               class="form-input-admin" />
+                        <small class="form-hint">Để trống nếu voucher không có hạn sử dụng.</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: Tips -->
+            <div class="book-form-right">
+                <div class="book-form-card tip-card">
+                    <h4 class="tip-card-title">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                        Voucher Guidelines
+                    </h4>
+                    <p class="tip-card-text">
+                        Mã voucher nên ngắn gọn, dễ nhớ (6-12 ký tự). Ví dụ: GIAM10, SALE50, WELCOME.
+                        Nên đặt giới hạn giảm tối đa để tránh lỗ trên đơn hàng lớn.
+                    </p>
+                </div>
+
+                <!-- Status Card (Edit mode) -->
+                <div class="book-form-card" th:if="${isEdit}">
+                    <h4 class="tip-card-title">Current Status</h4>
+                    <div class="voucher-status-info">
+                        <div class="status-row">
+                            <span>Used</span>
+                            <strong th:text="${voucher.usedCount} + ' / ' + ${voucher.usageLimit}">0 / 100</strong>
+                        </div>
+                        <div class="status-row">
+                            <span>Active</span>
+                            <strong th:text="${voucher.isActive ? 'Yes' : 'No'}">Yes</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="book-form-actions">
+            <a th:href="@{/admin/vouchers}" class="btn-cancel">Cancel</a>
+            <button type="submit" class="btn-publish">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span th:text="${isEdit ? 'Update Voucher' : 'Create Voucher'}">Create</span>
+            </button>
+        </div>
+    </form>
+</div>
+</body>
+</html>

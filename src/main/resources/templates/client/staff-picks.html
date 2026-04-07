@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{client/layout}">
+<head><title>Staff Picks — X-Books</title></head>
+<body>
+<main layout:fragment="content">
+
+    <!-- Staff Picks Hero -->
+    <section class="staff-picks-hero">
+        <span class="hero-label">CURATED BY OUR EDITORS</span>
+        <h1 class="staff-picks-hero-title"><em>Staff Picks</em></h1>
+        <p class="staff-picks-hero-desc">Những cuốn sách được đội ngũ biên tập viên yêu thích và khuyên đọc — mỗi cuốn đều được chọn lọc kỹ lưỡng.</p>
+    </section>
+
+    <!-- Staff Picks Grid -->
+    <section class="section">
+        <div class="staff-picks-grid" th:if="${staffPicks != null and !#lists.isEmpty(staffPicks)}">
+            <a th:each="pick : ${staffPicks}" th:href="@{/books/{id}(id=${pick.id})}" class="staff-pick-card">
+                <div class="staff-pick-badge">STAFF PICK</div>
+                <div class="staff-pick-image">
+                    <img th:if="${pick.thumbnail}" th:src="${pick.thumbnail}" th:alt="${pick.title}" />
+                </div>
+                <div class="staff-pick-info">
+                    <span class="book-category" th:if="${pick.category != null}" th:text="${pick.category.name}">Category</span>
+                    <h3 class="book-title" th:text="${pick.title}">Book Title</h3>
+                    <span class="book-author" th:text="${pick.author}">Author</span>
+                    <span class="book-price" th:text="${#numbers.formatDecimal(pick.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                </div>
+            </a>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${staffPicks == null or #lists.isEmpty(staffPicks)}" class="staff-picks-empty">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+            <h3>Chưa có Staff Pick nào</h3>
+            <p>Đội ngũ biên tập viên đang lựa chọn những cuốn sách hay nhất cho bạn. Hãy quay lại sớm nhé!</p>
+            <a th:href="@{/collections}" class="btn btn-outline">Xem tất cả sách →</a>
+        </div>
+    </section>
+
+</main>
+</body>
+</html>
