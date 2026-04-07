@@ -46,4 +46,11 @@ public class CollectionController {
 
         return "client/collections";
     }
+
+    @GetMapping("/staff-picks")
+    public String staffPicksPage(Model model) {
+        model.addAttribute("staffPicks", bookService.findStaffPicks());
+        model.addAttribute("categories", bookService.findAllCategories());
+        return "client/staff-picks";
+    }
 }

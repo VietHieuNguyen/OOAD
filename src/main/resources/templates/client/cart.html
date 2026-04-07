@@ -37,6 +37,7 @@
                                     <div>
                                         <h3 class="cart-item-title" th:text="${item.book.title}">Book</h3>
                                         <span class="cart-item-author" th:text="${item.book.author}">Author</span>
+                                        <span th:if="${cart.giftWrap}" class="cart-gift-badge">🎁 Gói quà</span>
                                     </div>
                                     <form th:action="@{/cart/remove/{id}(id=${item.cartItemId})}" method="post" style="display:inline;">
                                         <button type="submit" class="cart-remove-btn" title="Xóa">✕</button>

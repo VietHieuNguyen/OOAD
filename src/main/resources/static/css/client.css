@@ -2997,3 +2997,141 @@ input:checked + .slider:before {
     font-size: 0.75rem;
     color: var(--text-muted);
 }
+
+/* ======================================================
+   Staff Picks Section (Home Page)
+   ====================================================== */
+.staff-picks-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+}
+.staff-pick-card {
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.25s;
+    text-decoration: none;
+    color: inherit;
+}
+.staff-pick-card:hover { transform: translateY(-4px); }
+.staff-pick-badge {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    background: var(--green-dark);
+    color: var(--cream);
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    padding: 0.25rem 0.6rem;
+    border-radius: 3px;
+    z-index: 2;
+    text-transform: uppercase;
+}
+.staff-pick-image {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    background: linear-gradient(160deg, #d8ddd8 0%, #bfc7bf 50%, #a8b3a8 100%);
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+}
+.staff-pick-image img { width: 100%; height: 100%; object-fit: cover; }
+.staff-pick-info { display: flex; flex-direction: column; gap: 0.15rem; }
+.staff-pick-info .book-category { margin-top: 0.25rem; }
+.staff-pick-info .book-title { font-size: 1rem; margin: 0.2rem 0; }
+.staff-pick-info .book-author { font-size: 0.78rem; color: var(--text-secondary); }
+.staff-pick-info .book-price { font-size: 0.82rem; margin-top: 0.25rem; }
+
+@media (max-width: 768px) {
+    .staff-picks-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+    .staff-picks-grid { grid-template-columns: 1fr; }
+}
+
+/* ======================================================
+   Category Card Images (Home Page)
+   ====================================================== */
+.dept-card { text-decoration: none; color: inherit; display: block; }
+.dept-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+}
+.dept-card-image {
+    overflow: hidden;
+}
+
+/* ======================================================
+   Gift Wrap Badge (Cart Page)
+   ====================================================== */
+.cart-gift-badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    background: #fff3e0;
+    color: #e65100;
+    font-size: 0.7rem;
+    font-weight: 600;
+    border-radius: 4px;
+    margin-top: 0.25rem;
+}
+
+/* ======================================================
+   Checkout Fee Colors
+   ====================================================== */
+.fee-positive { color: #e65100; }
+.fee-negative { color: #2e7d32; }
+.summary-row.discount { color: #2e7d32; }
+
+/* ======================================================
+   Staff Picks Page
+   ====================================================== */
+.staff-picks-hero {
+    text-align: center;
+    padding: 4rem 4rem 2rem;
+}
+.staff-picks-hero-title {
+    font-family: var(--font-serif);
+    font-size: 3rem;
+    font-weight: 400;
+    margin: 0.75rem 0 1rem;
+}
+.staff-picks-hero-desc {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    max-width: 500px;
+    margin: 0 auto;
+    line-height: 1.7;
+}
+
+.staff-picks-empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-secondary);
+}
+.staff-picks-empty svg {
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+}
+.staff-picks-empty h3 {
+    font-family: var(--font-serif);
+    font-size: 1.4rem;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+.staff-picks-empty p {
+    font-size: 0.88rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+/* Empty picks message on home page */
+.empty-picks-msg {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-style: italic;
+}

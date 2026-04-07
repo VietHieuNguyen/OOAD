@@ -120,7 +120,13 @@ public class OrderService implements OrderStatusSubject {
         logger.info("Bắt đầu tạo đơn hàng cho khách: {} | Phương thức: {}",
                 customer.getFullName(), paymentMethod);
 
-        // 2. Sử dụng BUILDER PATTERN để xây dựng Order hoàn chỉnh
+        // 2. THREAD-SAFE: Tính giá 1 lần bằng Decorator Pattern, snapshot kết quả
+        //    Tránh vấn đề đa luồng — không gọi Decorator chain nhiều lần
+        java.util.Map<String, java.math.BigDecimal> priceBreakdown =
+                cartService.calculatePriceBreakdown(cart);
+        java.math.BigDecimal decoratorTotal = priceBreakdown.get("total"); // subtotal + giftWrap - voucher
+
+        // 3. Sử dụng BUILDER PATTERN để xây dựng Order hoàn chỉnh
         Order.Builder builder = Order.builder()
                 .customer(customer)
                 .address(address)
@@ -130,15 +136,25 @@ public class OrderService implements OrderStatusSubject {
 
         Order order = builder.build();
 
-        // 3. Lưu Order vào database (cascade lưu OrderItem + Shipping)
+        // 4. Ghi đè totalAmount bằng giá từ Decorator (bao gồm gift wrap + voucher discount)
+        //    thay vì chỉ subtotal + shipping từ Builder
+        order.setTotalAmount(decoratorTotal.add(DEFAULT_SHIPPING_FEE));
+
+        // 5. Lưu Order vào database (cascade lưu OrderItem + Shipping)
         order = orderRepository.save(order);
         logger.info("Đơn hàng đã được tạo: {} | Tổng tiền: {}",
                 order.getOrderId(), order.getTotalAmount());
 
-        // 4. Sử dụng STRATEGY PATTERN để xử lý thanh toán
+        // 6. Sử dụng STRATEGY PATTERN để xử lý thanh toán
         paymentService.processPayment(order, paymentMethod);
 
-        // 5. Xóa sạch giỏ hàng sau khi đặt hàng thành công
+        // 7. Tăng usedCount của Voucher (nếu có) — thread-safe vì trong @Transactional
+        if (cart.getAppliedVoucher() != null && cart.getAppliedVoucher().isValid()) {
+            cart.getAppliedVoucher().setUsedCount(
+                    cart.getAppliedVoucher().getUsedCount() + 1);
+        }
+
+        // 8. Xóa sạch giỏ hàng sau khi đặt hàng thành công
         cartService.clearCart(cart);
         logger.info("Đã xóa giỏ hàng của khách: {}", customer.getFullName());
 

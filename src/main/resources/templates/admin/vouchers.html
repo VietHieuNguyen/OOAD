@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{admin/layout}">
+<head><title th:text="${pageTitle}">Manage Vouchers</title></head>
+<body>
+<div layout:fragment="content" class="vouchers-shell">
+
+    <div class="page-header-row">
+        <div>
+            <h2 class="page-main-title"><em>Voucher Management</em></h2>
+            <p class="page-subtitle" th:text="'Managing ' + ${#lists.size(vouchers)} + ' vouchers'">Managing vouchers</p>
+        </div>
+        <a th:href="@{/admin/vouchers/new}" class="btn-publish">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            Create Voucher
+        </a>
+    </div>
+
+    <!-- Flash Messages -->
+    <div th:if="${successMessage}" class="flash-msg flash-success" th:text="${successMessage}"></div>
+    <div th:if="${errorMessage}" class="flash-msg flash-error" th:text="${errorMessage}"></div>
+
+    <!-- Vouchers Table -->
+    <div class="admin-table-card">
+        <table class="admin-table">
+            <thead>
+            <tr>
+                <th>Code</th>
+                <th>Discount</th>
+                <th>Max Discount</th>
+                <th>Expiration</th>
+                <th>Usage</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="v : ${vouchers}">
+                <td>
+                    <span class="voucher-code-cell" th:text="${v.code}">CODE</span>
+                </td>
+                <td th:text="${v.discountPercentage} + '%'">10%</td>
+                <td th:text="${v.maxDiscountAmount != null ? #numbers.formatDecimal(v.maxDiscountAmount, 0, 'COMMA', 0, 'POINT') + ' ₫' : 'Không giới hạn'}">—</td>
+                <td th:text="${v.expirationDate != null ? #temporals.format(v.expirationDate, 'dd/MM/yyyy HH:mm') : 'Không hết hạn'}">—</td>
+                <td>
+                    <span class="usage-display" th:text="${v.usedCount} + ' / ' + ${v.usageLimit}">0 / 100</span>
+                </td>
+                <td>
+                    <span th:class="${v.isActive and v.valid ? 'status-badge status-active' : 'status-badge status-inactive'}"
+                          th:text="${!v.isActive ? 'Inactive' : (!v.valid ? 'Expired' : 'Active')}">Active</span>
+                </td>
+                <td class="action-cell">
+                    <a th:href="@{/admin/vouchers/edit/{id}(id=${v.id})}" class="btn-action btn-edit-sm">Edit</a>
+                    <form th:action="@{/admin/vouchers/toggle/{id}(id=${v.id})}" method="post" style="display:inline;">
+                        <button type="submit" class="btn-action btn-toggle-sm"
+                                th:text="${v.isActive ? 'Disable' : 'Enable'}">Toggle</button>
+                    </form>
+                    <form th:action="@{/admin/vouchers/delete/{id}(id=${v.id})}" method="post" style="display:inline;"
+                          onsubmit="return confirm('Bạn có chắc muốn xóa voucher này?');">
+                        <button type="submit" class="btn-action btn-delete-sm">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(vouchers)}">
+                <td colspan="7" class="empty-state">Chưa có voucher nào. Bấm "Create Voucher" để tạo mới.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

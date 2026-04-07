@@ -21,4 +21,10 @@ public interface BookRepository extends JpaRepository<Book, String> {
 
     /** Loc sach theo danh muc. */
     List<Book> findByCategoryId(String categoryId);
+
+    /** Tìm sách theo slug (URL thân thiện). */
+    Optional<Book> findBySlug(String slug);
+
+    /** Lấy danh sách sách được đánh dấu Staff Pick. */
+    List<Book> findByIsPickedTrue();
 }

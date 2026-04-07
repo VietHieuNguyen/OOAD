@@ -4,7 +4,10 @@ import com.example.bookstore.util.IdGenerator;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
@@ -25,11 +28,22 @@ public class Category {
     @Column(name = "category_id", length = 36, nullable = false, updatable = false)
     private String id;
 
-    @Column(nullable = false, unique = true, length = 120)
+    @Column(nullable = false, length = 120)
     private String name;
 
     @Column(name = "image_url", length = 500)
     private String imageUrl;
+
+    // ===== Parent-Child Hierarchy =====
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private Category parentCategory;
+
+    @OneToMany(mappedBy = "parentCategory", cascade = CascadeType.ALL)
+    private Set<Category> children = new LinkedHashSet<>();
+
+    // ===================================
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = false)
     private Set<Book> books = new LinkedHashSet<>();
@@ -39,5 +53,15 @@ public class Category {
         if (id == null || id.isBlank()) {
             id = IdGenerator.newId();
         }
+    }
+
+    /**
+     * Trả về tên đầy đủ bao gồm parent: "Parent > Child"
+     */
+    public String getFullName() {
+        if (parentCategory != null) {
+            return parentCategory.getName() + " > " + name;
+        }
+        return name;
     }
 }

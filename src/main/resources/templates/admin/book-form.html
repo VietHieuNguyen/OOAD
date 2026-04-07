@@ -19,7 +19,7 @@
     </div>
 
     <!-- Main Form -->
-    <form th:action="@{/admin/books/save}" method="post" th:object="${book}" class="book-form-layout">
+    <form th:action="@{/admin/books/save}" method="post" th:object="${book}" class="book-form-layout" enctype="multipart/form-data">
 
         <!-- Hidden ID (for Edit mode) -->
         <input type="hidden" th:field="*{id}" />
@@ -62,6 +62,9 @@
                             <label class="form-label-admin" for="thumbnail">THUMBNAIL URL</label>
                             <input type="url" id="thumbnail" th:field="*{thumbnail}"
                                    class="form-input-admin" placeholder="https://..." />
+                            <label class="form-label-admin" for="thumbnailFile" style="margin-top: 0.5rem;">HOẶC UPLOAD TỪ MÁY</label>
+                            <input type="file" id="thumbnailFile" name="thumbnailFile" accept="image/*"
+                                   class="form-input-admin form-file-input" />
                         </div>
                     </div>
                 </div>
@@ -98,6 +101,16 @@
                         <textarea id="description" th:field="*{description}" rows="5"
                                   class="form-input-admin form-textarea-admin"
                                   placeholder="Enter the editorial overview and narrative highlights..."></textarea>
+                    </div>
+
+                    <!-- Staff Pick Toggle -->
+                    <div class="form-group-admin staff-pick-group">
+                        <label class="form-label-admin">STAFF PICK</label>
+                        <label class="toggle-switch">
+                            <input type="checkbox" th:field="*{isPicked}" />
+                            <span class="toggle-slider"></span>
+                            <span class="toggle-label-text">Hiển thị trong mục "Staff Pick" trên trang chủ</span>
+                        </label>
                     </div>
                 </div>
             </div>
