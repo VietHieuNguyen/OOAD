@@ -68,7 +68,7 @@
 
                             <!-- Danh sách sản phẩm -->
                             <div class="summary-items">
-                                <div class="summary-item" th:each="item : ${cart.items}">
+                                <div class="summary-item" th:each="item : ${selectedItems}">
                                     <div class="summary-item-info">
                                         <span class="summary-item-name" th:text="${item.book.title}">Tên sách</span>
                                         <span class="summary-item-qty" th:text="'x' + ${item.quantity}">x1</span>
@@ -91,7 +91,7 @@
                             </div>
 
                             <!-- Phí gói quà (Decorator: GiftWrapDecorator) -->
-                            <div class="summary-row" th:if="${cart.giftWrap}">
+                            <div class="summary-row" th:if="${priceBreakdown['giftWrapFee'] != null and priceBreakdown['giftWrapFee'].compareTo(T(java.math.BigDecimal).ZERO) > 0}">
                                 <span>🎁 Phí gói quà</span>
                                 <span class="fee-positive" th:text="'+' + ${#numbers.formatDecimal(priceBreakdown['giftWrapFee'], 0, 'COMMA', 0, 'POINT')} + ' ₫'">
                                     +0 ₫

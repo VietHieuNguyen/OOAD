@@ -39,6 +39,12 @@ public class CartItem {
     @Column(name = "unit_price", nullable = false, precision = 12, scale = 2)
     private BigDecimal unitPrice;
 
+    @Column(name = "is_selected", nullable = false)
+    private Boolean isSelected = true;
+
+    @Column(name = "is_gift_wrapped", nullable = false)
+    private Boolean isGiftWrapped = false;
+
     @PrePersist
     protected void prePersist() {
         if (cartItemId == null || cartItemId.isBlank()) {

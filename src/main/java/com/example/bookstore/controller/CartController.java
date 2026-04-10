@@ -154,18 +154,20 @@ public class CartController {
     }
 
     /**
-     * Bật/tắt gói quà. Kích hoạt/hủy GiftWrapDecorator.
+     * Bật/tắt gói quà cho 1 sản phẩm.
      */
-    @PostMapping("/toggle-gift-wrap")
-    public String toggleGiftWrap(@ModelAttribute("currentUser") User currentUser) {
-        if (currentUser == null) return "redirect:/login";
+    @PostMapping("/toggle-item-gift-wrap/{itemId}")
+    public String toggleItemGiftWrap(@PathVariable String itemId) {
+        cartService.toggleItemGiftWrap(itemId);
+        return "redirect:/cart";
+    }
 
-        Customer customer = findCustomer(currentUser);
-        if (customer == null) return "redirect:/";
-
-        Cart cart = cartService.getOrCreateCart(customer);
-        cartService.toggleGiftWrap(cart);
-
+    /**
+     * Bật/tắt trạng thái chọn mua cho 1 sản phẩm.
+     */
+    @PostMapping("/toggle-item-selection/{itemId}")
+    public String toggleItemSelection(@PathVariable String itemId) {
+        cartService.toggleItemSelection(itemId);
         return "redirect:/cart";
     }
 

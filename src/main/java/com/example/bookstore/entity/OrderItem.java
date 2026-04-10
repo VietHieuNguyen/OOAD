@@ -39,6 +39,9 @@ public class OrderItem {
     @Column(name = "price_at_purchase", nullable = false, precision = 12, scale = 2)
     private BigDecimal priceAtPurchase;
 
+    @Column(name = "is_gift_wrapped", nullable = false)
+    private Boolean isGiftWrapped = false;
+
     @PrePersist
     protected void prePersist() {
         if (orderItemId == null || orderItemId.isBlank()) {

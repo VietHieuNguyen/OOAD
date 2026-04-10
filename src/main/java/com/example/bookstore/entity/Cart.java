@@ -37,9 +37,6 @@ public class Cart {
     @JoinColumn(name = "voucher_id")
     private Voucher appliedVoucher;
 
-    @Column(name = "gift_wrap", nullable = false)
-    private Boolean giftWrap = false;
-
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<CartItem> items = new LinkedHashSet<>();
 

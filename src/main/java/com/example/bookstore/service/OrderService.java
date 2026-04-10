@@ -127,11 +127,20 @@ public class OrderService implements OrderStatusSubject {
         java.math.BigDecimal decoratorTotal = priceBreakdown.get("total"); // subtotal + giftWrap - voucher
 
         // 3. Sử dụng BUILDER PATTERN để xây dựng Order hoàn chỉnh
+        java.util.Set<com.example.bookstore.entity.CartItem> selectedItems = cart.getItems().stream()
+                .filter(com.example.bookstore.entity.CartItem::getIsSelected)
+                .collect(java.util.stream.Collectors.toCollection(java.util.LinkedHashSet::new));
+
+        if (selectedItems.isEmpty()) {
+            throw new IllegalStateException("Bạn chưa chọn sản phẩm nào để thanh toán.");
+        }
+
         Order.Builder builder = Order.builder()
                 .customer(customer)
                 .address(address)
-                .cartItems(cart.getItems())
+                .cartItems(selectedItems)
                 .shippingFee(DEFAULT_SHIPPING_FEE)
+                .appliedVoucher(cart.getAppliedVoucher())
                 .paymentMethod(paymentMethod);
 
         Order order = builder.build();
@@ -224,7 +233,22 @@ public class OrderService implements OrderStatusSubject {
             return order;
         }
 
-        order.setStatus(newStatus);
+        // ===================================
+        // SỬ DỤNG STATE PATTERN THAY VÌ GÁN ĐÈ
+        // ===================================
+        if (newStatus == OrderStatus.CANCELLED) {
+            order.cancelOrder();
+        } else {
+            // Cố gắng chuyển sang trạng thái kế tiếp trong luồng
+            order.nextState();
+            
+            // Validate: Nếu trạng thái sau khi next không khớp với newStatus (admin truyền vào sai tuần tự)
+            if (order.getStatus() != newStatus) {
+                throw new IllegalArgumentException(
+                        "Chuyển trạng thái không hợp lệ. Không thể chuyển từ " + oldStatus + " trực tiếp sang " + newStatus);
+            }
+        }
+
         order = orderRepository.save(order);
         logger.info("Admin cập nhật đơn #{}: {} → {}", orderId, oldStatus, newStatus);
 

@@ -3,6 +3,8 @@ package com.example.bookstore.service.payment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import com.example.bookstore.entity.enums.PaymentMethodType;
+
 
 /**
  * <b>Strategy Pattern — Concrete Strategy A: Thanh toán khi nhận hàng (COD)</b>
@@ -41,5 +43,14 @@ public class CODStrategy implements PaymentStrategy {
             logger.error("[COD] ✗ Lỗi khi xử lý đơn COD", e);
             return false;
         }
+    }
+
+    /**
+     * Khai báo định danh của Strategy này là {@link PaymentMethodType#COD}.
+     * Spring sẽ dùng giá trị này để tự động đăng ký vào Map trong Context.
+     */
+    @Override
+    public PaymentMethodType getSupportedMethod() {
+        return PaymentMethodType.COD;
     }
 }
