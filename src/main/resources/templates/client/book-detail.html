@@ -42,7 +42,10 @@
                         </div>
                     </div>
 
-                    <p class="book-detail-desc" th:if="${book.description}" th:text="${book.description}">Description</p>
+                    <!-- Staff Pick Badge -->
+                    <div th:if="${book.isPicked}" class="staff-pick-inline-badge">
+                        <span>★ STAFF PICK</span>
+                    </div>
 
                     <!-- Add to Cart Form -->
                     <form th:action="@{/cart/add}" method="post" class="book-detail-cart-form">
@@ -57,16 +60,29 @@
                             ADD TO CART
                         </button>
                     </form>
+
                     <!-- Wishlist Toggle -->
                     <form th:action="@{/wishlist/toggle}" method="post" class="wishlist-toggle-form">
                         <input type="hidden" name="bookId" th:value="${book.id}">
                         <input type="hidden" name="redirectUrl" th:value="'/books/' + ${book.id}">
-                        <button type="submit" class="btn btn-outline btn-full wishlist-toggle-btn">
-                            <svg th:replace="~{client/fragments/icons :: heart}"></svg>
-                            <span>ADD TO WISHLIST</span>
+                        <button type="submit"
+                                th:class="${isWishlisted} ? 'btn btn-primary btn-full wishlist-toggle-btn wishlisted' : 'btn btn-outline btn-full wishlist-toggle-btn'">
+                            <svg th:if="${!isWishlisted}" th:replace="~{client/fragments/icons :: heart}"></svg>
+                            <svg th:if="${isWishlisted}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                            <span th:text="${isWishlisted} ? 'REMOVE FROM WISHLIST' : 'ADD TO WISHLIST'">ADD TO WISHLIST</span>
                         </button>
                     </form>
+
+                    <!-- Flash messages -->
+                    <div th:if="${success}" class="alert alert-success" th:text="${success}" style="margin-top: 0.75rem;"></div>
+                    <div th:if="${info}" class="alert" style="background:#fff3e0; color:#e65100; border: 1px solid #ffb74d; padding:0.75rem 1rem; border-radius:8px; margin-top:0.75rem;" th:text="${info}"></div>
                 </div>
+            </div>
+
+            <!-- Description — moved BELOW the action grid, rendered as HTML from TinyMCE -->
+            <div th:if="${book.description != null and !#strings.isEmpty(book.description)}" class="book-detail-description-section">
+                <h2 class="book-detail-desc-title">About This Book</h2>
+                <div class="book-detail-desc-body" th:utext="${book.description}">Description</div>
             </div>
         </div>
     </section>

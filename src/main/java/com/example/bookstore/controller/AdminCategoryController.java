@@ -3,14 +3,19 @@ package com.example.bookstore.controller;
 import com.example.bookstore.entity.Category;
 import com.example.bookstore.service.CategoryService;
 import com.example.bookstore.service.CloudinaryService;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -150,5 +155,38 @@ public class AdminCategoryController {
         }
         return "redirect:/admin/categories";
     }
+
+    // ======================== QUICK-ADD (AJAX from book form modal) ========================
+
+    /**
+     * AJAX endpoint: quickly create a category from the book-form modal.
+     * Returns JSON: {id, name} on success or {error} on failure.
+     */
+    @PostMapping("/quick-add")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> quickAdd(@RequestBody Map<String, String> body) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        try {
+            String name = body.get("name");
+            if (name == null || name.isBlank()) {
+                result.put("error", "Name is required.");
+                return ResponseEntity.badRequest().body(result);
+            }
+            Category cat = new Category();
+            cat.setName(name.trim());
+            String imageUrl = body.get("imageUrl");
+            if (imageUrl != null && !imageUrl.isBlank()) {
+                cat.setImageUrl(imageUrl.trim());
+            }
+            Category saved = categoryService.save(cat);
+            result.put("id", saved.getId());
+            result.put("name", saved.getName());
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            result.put("error", e.getMessage());
+            return ResponseEntity.internalServerError().body(result);
+        }
+    }
 }
+
 

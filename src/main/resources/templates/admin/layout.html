@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- CSRF meta tags — dùng cho fetch POST trong JS -->
+    <!-- CSRF meta tags -->
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title layout:title-pattern="$CONTENT_TITLE - Archive Admin">Archive Admin</title>
@@ -21,5 +21,7 @@
         </div>
     </div>
     <script th:src="@{/js/admin.js}"></script>
+    <!-- Page-specific scripts slot -->
+    <th:block layout:fragment="scripts"></th:block>
 </body>
-</html>
+</html>

@@ -1,220 +1,261 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{client/layout}">
-<head><title>Profile — X-Books</title></head>
+<head><title>My Profile</title></head>
 <body>
 <main layout:fragment="content">
-    <div class="profile-container">
-        
-        <!-- Profile Header -->
-        <header class="profile-header">
-            <div class="profile-header-text">
-                <span class="profile-kicker">WELCOME BACK, READER</span>
-                <h1 class="profile-name" th:text="${user.fullName}">Reader Name</h1>
-                <p class="profile-bio">A bibliophile's journey through modern classics and rare editions. Member since 2024.</p>
-            </div>
-            <div class="profile-avatar-wrapper">
-                <!-- Avatar display -->
-                <div class="profile-avatar" style="overflow: hidden;">
-                   <img th:if="${user.avatar != null}" th:src="${user.avatar}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:4px;"/>
-                   <span th:unless="${user.avatar != null}" th:text="${#strings.isEmpty(user.fullName) ? 'R' : #strings.substring(user.fullName,0,1)}">R</span>
-                </div>
-                
-                <!-- Hidden form for uploading -->
-                <form th:action="@{/profile/avatar}" method="post" enctype="multipart/form-data" id="avatarForm" style="display:none;">
-                    <input type="file" name="avatarFile" id="avatarInput" accept="image/*" onchange="document.getElementById('avatarForm').submit();"/>
-                </form>
-                
-                <button type="button" class="profile-avatar-edit" title="Edit Avatar" onclick="document.getElementById('avatarInput').click();">
-                    <svg th:replace="~{client/fragments/icons :: edit}"></svg>
-                </button>
-            </div>
-        </header>
+<div class="profile-container">
 
-        <!-- Main Grid -->
-        <div class="profile-grid">
-            
-            <!-- Left Column -->
-            <div class="profile-col profile-col-main">
-                
-                <section class="profile-section">
-                    <div class="profile-section-header">
-                        <h2>Recent Acquisitions</h2>
-                        <a href="#" class="profile-link">VIEW ALL</a>
-                    </div>
-                    
-                    <div class="order-list">
-                        <!-- Empty placeholder for now -->
-                        <div class="empty-state">
-                            <p>You haven't made any purchases yet.</p>
-                            <a href="/" class="btn btn-outline" style="margin-top:1rem;">Explore Catalog</a>
-                        </div>
-                        
-                        <!-- Example Order Item (Hidden for now until real data) -->
-                        <!--
-                        <article class="order-item">
-                            <div class="order-thumb placeholder-thumb"></div>
-                            <div class="order-info">
-                                <span class="order-meta">ORDER #OC-88420 • OCT 12</span>
-                                <h4>The Architecture of Silence</h4>
-                                <p>Arriving Oct 18</p>
-                            </div>
-                            <div class="order-status">
-                                <strong>$42.00</strong>
-                                <span class="status-badge status-transit">IN TRANSIT</span>
-                            </div>
-                        </article>
-                        -->
-                    </div>
-                </section>
-
-                <section class="profile-section">
-                    <div class="profile-section-header">
-                        <h2>Wishlist</h2>
-                        <span class="profile-link" th:if="${wishlist != null and !wishlist.isEmpty()}" th:text="${#lists.size(wishlist)} + ' items'">0 items</span>
-                    </div>
-                    
-                    <div class="wishlist-list">
-                        <!-- Empty state -->
-                        <div th:if="${wishlist == null or wishlist.isEmpty()}" class="empty-state">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted); margin-bottom: 0.75rem;">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                            <p>Your wishlist is currently empty.</p>
-                            <a href="/collections" class="btn btn-outline" style="margin-top:0.75rem; font-size: 0.7rem;">EXPLORE COLLECTIONS</a>
-                        </div>
-
-                        <!-- Wishlist items from DB -->
-                        <div th:each="item : ${wishlist}" class="wishlist-item">
-                            <a th:href="@{/books/{id}(id=${item.book.id})}" class="wishlist-item-image">
-                                <img th:if="${item.book.thumbnail}" th:src="${item.book.thumbnail}" th:alt="${item.book.title}">
-                                <div th:unless="${item.book.thumbnail}" class="wishlist-item-placeholder"></div>
-                            </a>
-                            <div class="wishlist-item-info">
-                                <a th:href="@{/books/{id}(id=${item.book.id})}" class="wishlist-item-title" th:text="${item.book.title}">Book Title</a>
-                                <span class="wishlist-item-author" th:text="${item.book.author}">Author</span>
-                                <span class="wishlist-item-price" th:text="${#numbers.formatDecimal(item.book.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
-                            </div>
-                            <div class="wishlist-item-actions">
-                                <form th:action="@{/cart/add}" method="post" style="display:inline;">
-                                    <input type="hidden" name="bookId" th:value="${item.book.id}">
-                                    <input type="hidden" name="quantity" value="1">
-                                    <button type="submit" class="wishlist-action-btn" title="Add to Cart">
-                                        <svg th:replace="~{client/fragments/icons :: cart}"></svg>
-                                    </button>
-                                </form>
-                                <form th:action="@{/wishlist/remove/{id}(id=${item.id})}" method="post" style="display:inline;">
-                                    <button type="submit" class="wishlist-action-btn wishlist-remove-btn" title="Remove">
-                                        <svg th:replace="~{client/fragments/icons :: trash}"></svg>
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                
-            </div>
-
-            <!-- Right Column -->
-            <div class="profile-col profile-col-side">
-                
-                <section class="profile-card info-card">
-                    <h2>Profile</h2>
-                    
-                    <div class="info-group">
-                        <label>LEGAL NAME</label>
-                        <p th:text="${user.fullName}">Reader Name</p>
-                    </div>
-                    
-                    <div class="info-group">
-                        <label>EMAIL ADDRESS</label>
-                        <p th:text="${user.email}">user@example.com</p>
-                    </div>
-                    
-                    <div class="info-group">
-                        <label>PHONE NUMBER</label>
-                        <p th:text="${user.phoneNumber != null ? user.phoneNumber : 'Not provided'}">Not provided</p>
-                    </div>
-
-                    <div class="info-group">
-                        <label>ADDRESS</label>
-                        <p th:text="${user.address != null ? user.address : 'Not provided'}">Not provided</p>
-                    </div>
-                    
-                    <button class="btn btn-primary btn-full mt-4">UPDATE DETAILS</button>
-                </section>
-
-                <section class="profile-card vault-card">
-                    <h2>Vault Addresses</h2>
-                    
-                    <div class="address-box primary-address">
-                        <div class="address-header">
-                            <span>PRIMARY RESIDENCE</span>
-                            <svg th:replace="~{client/fragments/icons :: check}"></svg>
-                        </div>
-                        <p th:text="${user.fullName}">Reader Name</p>
-                        <p th:text="${user.address != null and !user.address.isEmpty() ? user.address : 'No address saved.'}">No address saved.</p>
-                        <div class="address-actions mt-3">
-                            <a href="#">EDIT</a>
-                            <a href="#">REMOVE</a>
-                        </div>
-                    </div>
-                    
-                    <div class="address-box add-address">
-                        <svg th:replace="~{client/fragments/icons :: plus}"></svg>
-                        <span>ADD NEW ADDRESS</span>
-                    </div>
-                </section>
-            </div>
-            
+    <!-- ── Profile Header ── -->
+    <header class="profile-header">
+        <div class="profile-header-text">
+            <span class="profile-kicker">WELCOME BACK, READER</span>
+            <h1 class="profile-name" th:text="${user.fullName}">Reader Name</h1>
+            <p class="profile-bio">A bibliophile's journey through modern classics and rare editions.</p>
         </div>
-        
-        <!-- Preferences Section -->
-        <section class="profile-preferences">
-            <div class="pref-header">
-                <h2>Preferences</h2>
-                <p>Manage your digital presence and literary notifications.</p>
+        <div class="profile-avatar-wrapper">
+            <div class="profile-avatar" style="overflow:hidden;">
+                <img th:if="${user.avatar != null}" th:src="${user.avatar}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:4px;"/>
+                <span th:unless="${user.avatar != null}" th:text="${#strings.isEmpty(user.fullName) ? 'R' : #strings.substring(user.fullName,0,1)}">R</span>
             </div>
-            
-            <div class="pref-list">
-                <div class="pref-item">
-                    <div class="pref-info">
-                        <svg th:replace="~{client/fragments/icons :: mail}"></svg>
-                        <span>Monthly Curator's Journal</span>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" checked>
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                
-                <div class="pref-item">
-                    <div class="pref-info">
-                        <svg th:replace="~{client/fragments/icons :: globe}"></svg>
-                        <span>Order Status Updates</span>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" checked>
-                        <span class="slider"></span>
-                    </label>
-                </div>
-
-                <div class="pref-item pref-disabled">
-                    <div class="pref-info">
-                        <svg th:replace="~{client/fragments/icons :: lock}"></svg>
-                        <span>Two-Factor Authentication</span>
-                    </div>
-                    <span class="pref-status">DISABLED</span>
-                </div>
-            </div>
-        </section>
-        
-        <div style="text-align: center; margin-top: 3rem;">
-            <form th:action="@{/logout}" method="post">
-                <button type="submit" class="btn btn-outline" style="color: #c62828; border-color: #c62828;">Sign Out</button>
+            <form th:action="@{/profile/avatar}" method="post" enctype="multipart/form-data" id="avatarForm" style="display:none;">
+                <input type="file" name="avatarFile" id="avatarInput" accept="image/*" onchange="document.getElementById('avatarForm').submit();"/>
             </form>
+            <button type="button" class="profile-avatar-edit" title="Edit Avatar" onclick="document.getElementById('avatarInput').click();">
+                <svg th:replace="~{client/fragments/icons :: edit}"></svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- ── Flash messages ── -->
+    <div th:if="${addressSuccess}" class="alert alert-success" th:text="${addressSuccess}" style="max-width:900px;margin:0 auto 1rem;"></div>
+    <div th:if="${addressError}"   class="alert alert-error"   th:text="${addressError}"   style="max-width:900px;margin:0 auto 1rem;"></div>
+
+    <!-- ── Main Grid ── -->
+    <div class="profile-grid">
+
+        <!-- LEFT: Orders + Wishlist -->
+        <div class="profile-col profile-col-main">
+
+            <section class="profile-section">
+                <div class="profile-section-header">
+                    <h2>Recent Orders</h2>
+                    <a href="/orders" class="profile-link">VIEW ALL →</a>
+                </div>
+                <div class="order-list">
+                    <div class="empty-state">
+                        <p>You haven't made any purchases yet.</p>
+                        <a href="/collections" class="btn btn-outline" style="margin-top:1rem;">Explore Catalog</a>
+                    </div>
+                </div>
+            </section>
+
+            <section class="profile-section">
+                <div class="profile-section-header">
+                    <h2>Wishlist</h2>
+                    <span class="profile-link" th:if="${wishlist != null and !wishlist.isEmpty()}"
+                          th:text="${#lists.size(wishlist)} + ' items'">0 items</span>
+                </div>
+                <div class="wishlist-list">
+                    <div th:if="${wishlist == null or wishlist.isEmpty()}" class="empty-state">
+                        <p>Your wishlist is currently empty.</p>
+                        <a href="/collections" class="btn btn-outline" style="margin-top:0.75rem;font-size:0.7rem;">EXPLORE COLLECTIONS</a>
+                    </div>
+                    <div th:each="item : ${wishlist}" class="wishlist-item">
+                        <a th:href="@{/books/{id}(id=${item.book.id})}" class="wishlist-item-image">
+                            <img th:if="${item.book.thumbnail}" th:src="${item.book.thumbnail}" th:alt="${item.book.title}">
+                            <div th:unless="${item.book.thumbnail}" class="wishlist-item-placeholder"></div>
+                        </a>
+                        <div class="wishlist-item-info">
+                            <a th:href="@{/books/{id}(id=${item.book.id})}" class="wishlist-item-title" th:text="${item.book.title}">Book Title</a>
+                            <span class="wishlist-item-author" th:text="${item.book.author}">Author</span>
+                            <span class="wishlist-item-price" th:text="${#numbers.formatDecimal(item.book.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                        </div>
+                        <div class="wishlist-item-actions">
+                            <form th:action="@{/cart/add}" method="post" style="display:inline;">
+                                <input type="hidden" name="bookId" th:value="${item.book.id}">
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit" class="wishlist-action-btn" title="Add to Cart">
+                                    <svg th:replace="~{client/fragments/icons :: cart}"></svg>
+                                </button>
+                            </form>
+                            <form th:action="@{/wishlist/remove/{id}(id=${item.id})}" method="post" style="display:inline;">
+                                <button type="submit" class="wishlist-action-btn wishlist-remove-btn" title="Remove">
+                                    <svg th:replace="~{client/fragments/icons :: trash}"></svg>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
         </div>
 
+        <!-- RIGHT: Orders link + Address Book -->
+        <div class="profile-col profile-col-side">
+
+            <!-- My Orders Card -->
+            <section class="profile-card" style="margin-bottom:1.25rem;">
+                <h2 style="margin-bottom:0.5rem;">My Orders</h2>
+                <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:1rem;">Track and review all your past purchases.</p>
+                <a href="/orders" class="btn btn-outline btn-full" style="font-size:0.75rem;">VIEW ORDER HISTORY →</a>
+            </section>
+
+            <!-- ══ ADDRESS BOOK ══ -->
+            <section class="profile-card vault-card" id="address-book">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                    <div>
+                        <h2 style="margin-bottom:0.2rem;">Address Book</h2>
+                        <p style="font-size:0.78rem;color:var(--text-muted);margin:0;">Manage your shipping addresses.</p>
+                    </div>
+                    <button type="button" id="toggleAddAddrForm"
+                            style="padding:0.45rem 0.85rem;background:var(--green-dark,#1a2e1a);color:#faf8f5;border:none;border-radius:6px;font-size:0.72rem;font-weight:600;letter-spacing:1px;cursor:pointer;">
+                        + ADD
+                    </button>
+                </div>
+
+                <!-- Add New Address Form (hidden by default) -->
+                <div id="addAddrForm" style="display:none;background:#f5f2ed;border-radius:8px;padding:1.25rem;margin-bottom:1.25rem;">
+                    <h4 style="font-size:0.82rem;letter-spacing:2px;text-transform:uppercase;color:#6b7c6b;margin-bottom:1rem;">New Address</h4>
+                    <form th:action="@{/profile/address/add}" method="post">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
+                            <div>
+                                <label class="addr-label">RECIPIENT NAME *</label>
+                                <input type="text" name="recipientName" class="addr-input" required
+                                       th:value="${user.fullName}" placeholder="Full name" />
+                            </div>
+                            <div>
+                                <label class="addr-label">PHONE</label>
+                                <input type="tel" name="phone" class="addr-input"
+                                       th:value="${customer != null ? customer.phoneNumber : ''}" placeholder="0912 345 678" />
+                            </div>
+                        </div>
+                        <div style="margin-bottom:0.75rem;">
+                            <label class="addr-label">STREET ADDRESS *</label>
+                            <input type="text" name="address" class="addr-input" required placeholder="Street, Ward, District" />
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
+                            <div>
+                                <label class="addr-label">CITY / PROVINCE</label>
+                                <input type="text" name="city" class="addr-input" placeholder="Ho Chi Minh City" />
+                            </div>
+                            <div>
+                                <label class="addr-label">LABEL</label>
+                                <select name="label" class="addr-input">
+                                    <option value="Home">Home</option>
+                                    <option value="Work">Work</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;">
+                            <input type="checkbox" name="makeDefault" value="true" id="makeDefaultChk"
+                                   th:checked="${#lists.isEmpty(addresses)}" />
+                            <label for="makeDefaultChk" style="font-size:0.8rem;color:var(--text-secondary);cursor:pointer;">Set as default address</label>
+                        </div>
+                        <div style="display:flex;gap:0.75rem;">
+                            <button type="button" id="cancelAddAddr"
+                                    style="flex:1;padding:0.6rem;border:1.5px solid #e5e1dc;border-radius:6px;background:none;font-size:0.78rem;font-weight:600;cursor:pointer;letter-spacing:1px;">CANCEL</button>
+                            <button type="submit"
+                                    style="flex:2;padding:0.6rem;background:#1a2e1a;color:#faf8f5;border:none;border-radius:6px;font-size:0.78rem;font-weight:600;cursor:pointer;letter-spacing:1px;">SAVE ADDRESS</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Address List -->
+                <div th:if="${addresses == null or addresses.isEmpty()}" style="text-align:center;padding:1.5rem 0;color:var(--text-muted);font-style:italic;font-size:0.85rem;">
+                    No addresses saved yet. Add one above.
+                </div>
+
+                <div th:each="addr : ${addresses}" class="addr-card"
+                     th:classappend="${addr.isDefault} ? ' addr-card-default'">
+                    <!-- Badge -->
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;">
+                        <div style="display:flex;align-items:center;gap:0.5rem;">
+                            <span class="addr-label-badge" th:text="${addr.label ?: 'Home'}">Home</span>
+                            <span th:if="${addr.isDefault}" class="addr-default-badge">DEFAULT</span>
+                        </div>
+                        <div style="display:flex;gap:0.4rem;">
+                            <!-- Set as default -->
+                            <form th:if="${!addr.isDefault}" th:action="@{/profile/address/{id}/default(id=${addr.id})}" method="post" style="display:inline;">
+                                <button type="submit" title="Set as default"
+                                        style="background:none;border:1px solid #d5d0c8;border-radius:4px;padding:0.25rem 0.5rem;font-size:0.68rem;cursor:pointer;color:var(--text-secondary);">
+                                    SET DEFAULT
+                                </button>
+                            </form>
+                            <!-- Delete -->
+                            <form th:action="@{/profile/address/{id}/delete(id=${addr.id})}" method="post" style="display:inline;"
+                                  onsubmit="return confirm('Delete this address?');">
+                                <button type="submit" title="Delete"
+                                        style="background:none;border:1px solid #fca5a5;border-radius:4px;padding:0.25rem 0.5rem;font-size:0.68rem;cursor:pointer;color:#dc2626;">
+                                    ✕
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <p style="font-weight:600;font-size:0.88rem;margin-bottom:0.2rem;" th:text="${addr.recipientName}">Name</p>
+                    <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:0.15rem;" th:if="${addr.phone}" th:text="${addr.phone}">Phone</p>
+                    <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:0;" th:text="${addr.address + (addr.city != null ? ', ' + addr.city : '')}">Address</p>
+                </div>
+
+            </section><!-- end address-book -->
+
+        </div><!-- end profile-col-side -->
+
+    </div><!-- end profile-grid -->
+
+    <!-- Preferences -->
+    <section class="profile-preferences">
+        <div class="pref-header">
+            <h2>Preferences</h2>
+            <p>Manage your digital presence and literary notifications.</p>
+        </div>
+        <div class="pref-list">
+            <div class="pref-item">
+                <div class="pref-info">
+                    <svg th:replace="~{client/fragments/icons :: mail}"></svg>
+                    <span>Monthly Curator's Journal</span>
+                </div>
+                <label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label>
+            </div>
+            <div class="pref-item">
+                <div class="pref-info">
+                    <svg th:replace="~{client/fragments/icons :: globe}"></svg>
+                    <span>Order Status Updates</span>
+                </div>
+                <label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label>
+            </div>
+            <div class="pref-item pref-disabled">
+                <div class="pref-info">
+                    <svg th:replace="~{client/fragments/icons :: lock}"></svg>
+                    <span>Two-Factor Authentication</span>
+                </div>
+                <span class="pref-status">DISABLED</span>
+            </div>
+        </div>
+    </section>
+
+    <div style="text-align:center;margin-top:3rem;">
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="btn btn-outline" style="color:#c62828;border-color:#c62828;">Sign Out</button>
+        </form>
     </div>
+
+</div><!-- end profile-container -->
+
+<script>
+(function() {
+    var toggleBtn  = document.getElementById('toggleAddAddrForm');
+    var formDiv    = document.getElementById('addAddrForm');
+    var cancelBtn  = document.getElementById('cancelAddAddr');
+    if (toggleBtn) toggleBtn.addEventListener('click', function() {
+        formDiv.style.display = formDiv.style.display === 'none' ? 'block' : 'none';
+        toggleBtn.textContent = formDiv.style.display === 'none' ? '+ ADD' : '− CLOSE';
+    });
+    if (cancelBtn) cancelBtn.addEventListener('click', function() {
+        formDiv.style.display = 'none';
+        toggleBtn.textContent = '+ ADD';
+    });
+})();
+</script>
 </main>
 </body>
 </html>

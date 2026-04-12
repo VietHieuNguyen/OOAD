@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error — X-Books</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #faf8f5;
+            color: #1a2e1a;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .error-card {
+            text-align: center;
+            max-width: 520px;
+            width: 100%;
+        }
+        .error-code {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 7rem;
+            font-weight: 600;
+            color: #e5e1dc;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+        .error-label {
+            font-size: 0.6rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #9ca39c;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+        .error-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.8rem;
+            font-weight: 400;
+            font-style: italic;
+            margin-bottom: 1rem;
+        }
+        .error-desc {
+            font-size: 0.9rem;
+            color: #6b7c6b;
+            line-height: 1.7;
+            margin-bottom: 2rem;
+        }
+        .error-detail {
+            font-size: 0.78rem;
+            color: #9ca39c;
+            background: #f0ece6;
+            border: 1px solid #e5e1dc;
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 2rem;
+            text-align: left;
+            word-break: break-word;
+        }
+        .btn-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.75rem;
+            background: #1a2e1a;
+            color: #faf8f5;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .btn-home:hover { background: #2d4a2d; }
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.75rem;
+            background: transparent;
+            color: #1a2e1a;
+            border: 1.5px solid #e5e1dc;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            text-decoration: none;
+            margin-right: 1rem;
+            transition: border-color 0.2s;
+        }
+        .btn-back:hover { border-color: #1a2e1a; }
+    </style>
+</head>
+<body>
+    <div class="error-card">
+        <div class="error-code" th:text="${status != null ? status : '500'}">500</div>
+        <p class="error-label">X-BOOKS · AN ERROR OCCURRED</p>
+        <h1 class="error-title" th:text="${status == 404 ? 'Page Not Found' : (status == 403 ? 'Access Denied' : 'Something Went Wrong')}">Something Went Wrong</h1>
+        <p class="error-desc" th:text="${status == 404 ? 'The page you are looking for does not exist or has been moved.' : (status == 403 ? 'You do not have permission to access this page.' : 'An unexpected error occurred. Please try again or return to the homepage.')}">
+            An unexpected error occurred.
+        </p>
+        <!-- Show error message in dev (optional) -->
+        <div class="error-detail" th:if="${message != null and !#strings.isEmpty(message)}" th:text="${message}"></div>
+        <div>
+            <a href="javascript:history.back()" class="btn-back">← Go Back</a>
+            <a href="/" class="btn-home">Return Home</a>
+        </div>
+    </div>
+</body>
+</html>

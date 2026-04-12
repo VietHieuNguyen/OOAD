@@ -2,34 +2,31 @@
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{admin/layout}">
 <head><title th:text="${pageTitle}">Book Form</title></head>
 <body>
+
+<!-- ═══════════════════ MAIN CONTENT ═══════════════════ -->
 <div layout:fragment="content" class="book-form-shell">
 
-    <!-- Back link -->
     <a th:href="@{/admin/books}" class="book-form-back">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
         Back to Inventory
     </a>
 
-    <!-- Page Title -->
     <h2 class="book-form-title" th:text="${isEdit ? 'Edit Book Details' : 'Curate New Acquisition'}">New Book</h2>
 
-    <!-- Flash Messages -->
     <div th:if="${errorMessage}" class="flash-msg flash-error">
         <span th:text="${errorMessage}">Error</span>
     </div>
 
-    <!-- Main Form -->
     <form th:action="@{/admin/books/save}" method="post" th:object="${book}" class="book-form-layout" enctype="multipart/form-data">
 
-        <!-- Hidden ID (for Edit mode) -->
         <input type="hidden" th:field="*{id}" />
 
         <div class="book-form-grid">
 
-            <!-- LEFT COLUMN: Form Fields -->
+            <!-- LEFT COLUMN -->
             <div class="book-form-left">
 
-                <!-- Section 1: Essential Metadata -->
+                <!-- Essential Metadata -->
                 <div class="book-form-card">
                     <h3 class="book-form-card-title"><em>Essential Metadata</em></h3>
 
@@ -62,32 +59,36 @@
                             <label class="form-label-admin" for="thumbnail">THUMBNAIL URL</label>
                             <input type="url" id="thumbnail" th:field="*{thumbnail}"
                                    class="form-input-admin" placeholder="https://..." />
-                            <label class="form-label-admin" for="thumbnailFile" style="margin-top: 0.5rem;">HOẶC UPLOAD TỪ MÁY</label>
+                            <label class="form-label-admin" for="thumbnailFile" style="margin-top: 0.5rem;">OR UPLOAD FILE</label>
                             <input type="file" id="thumbnailFile" name="thumbnailFile" accept="image/*"
                                    class="form-input-admin form-file-input" />
                         </div>
                     </div>
                 </div>
 
-                <!-- Section 2: Classification & Stock -->
+                <!-- Classification & Stock -->
                 <div class="book-form-card">
                     <h3 class="book-form-card-title"><em>Classification &amp; Stock</em></h3>
 
                     <div class="form-row-admin">
                         <div class="form-group-admin">
                             <label class="form-label-admin" for="categoryId">GENRE / CATEGORY</label>
-                            <select id="categoryId" name="categoryId" class="form-input-admin" required>
-                                <option value="">-- Select Genre --</option>
-                                <option th:each="cat : ${categories}"
-                                        th:value="${cat.id}"
-                                        th:text="${cat.name}"
-                                        th:selected="${book.category != null and book.category.id == cat.id}">
-                                    Category Name
-                                </option>
-                            </select>
-                            <a th:href="@{/admin/categories}" class="cat-manage-link">
-                                Don't see your genre? Manage Categories &rarr;
-                            </a>
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <select id="categoryId" name="categoryId" class="form-input-admin" required style="flex: 1;">
+                                    <option value="">-- Select Genre --</option>
+                                    <option th:each="cat : ${categories}"
+                                            th:value="${cat.id}"
+                                            th:text="${cat.name}"
+                                            th:selected="${book.category != null and book.category.id == cat.id}">
+                                        Category Name
+                                    </option>
+                                </select>
+                                <!-- ADD CATEGORY BUTTON -->
+                                <button type="button" class="btn-add-cat" id="openCatModal" title="Add new category"
+                                        style="flex-shrink: 0; padding: 0.55rem 0.9rem; background: var(--green-dark); color: var(--cream); border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; letter-spacing: 1px; white-space: nowrap;">
+                                    + NEW
+                                </button>
+                            </div>
                         </div>
                         <div class="form-group-admin">
                             <label class="form-label-admin" for="stockQuantity">STOCK QUANTITY</label>
@@ -96,29 +97,38 @@
                         </div>
                     </div>
 
+                    <!-- TinyMCE Description -->
                     <div class="form-group-admin">
                         <label class="form-label-admin" for="description">DESCRIPTION / SYNOPSIS</label>
-                        <textarea id="description" th:field="*{description}" rows="5"
+                        <textarea id="description" name="description" th:field="*{description}" rows="10"
                                   class="form-input-admin form-textarea-admin"
                                   placeholder="Enter the editorial overview and narrative highlights..."></textarea>
                     </div>
 
-                    <!-- Staff Pick Toggle -->
+                    <!-- ══ Staff Pick Toggle — FIX: manual checkbox, not th:field ══ -->
                     <div class="form-group-admin staff-pick-group">
                         <label class="form-label-admin">STAFF PICK</label>
-                        <label class="toggle-switch">
-                            <input type="checkbox" th:field="*{isPicked}" />
-                            <span class="toggle-slider"></span>
-                            <span class="toggle-label-text">Hiển thị trong mục "Staff Pick" trên trang chủ</span>
+                        <label class="toggle-switch" style="cursor: pointer; display: inline-flex; align-items: center; gap: 0.75rem;">
+                            <!--
+                              isPicked is Boolean wrapper → Lombok generates isPicked() getter.
+                              Spring MVC binds checkbox via request param named 'isPicked'.
+                              We use a hidden field =false as fallback (unchecked = not submitted).
+                            -->
+                            <input type="hidden" name="isPicked" value="false" />
+                            <input type="checkbox" name="isPicked" value="true"
+                                   id="isPickedToggle"
+                                   th:checked="${book.isPicked != null and book.isPicked}"
+                                   style="width: 42px; height: 22px; cursor: pointer; accent-color: var(--green-dark);" />
+                            <span class="toggle-label-text" style="font-size: 0.82rem; color: var(--text-secondary);">
+                                Show in "Staff Picks" section on homepage
+                            </span>
                         </label>
                     </div>
                 </div>
             </div>
 
-            <!-- RIGHT COLUMN: Cover Artwork Preview + Tips -->
+            <!-- RIGHT COLUMN -->
             <div class="book-form-right">
-
-                <!-- Cover Artwork Preview -->
                 <div class="book-form-card cover-card">
                     <h4 class="cover-card-title">COVER ARTWORK</h4>
                     <div class="cover-preview" id="coverPreview">
@@ -133,7 +143,6 @@
                     </div>
                 </div>
 
-                <!-- Editorial Tip -->
                 <div class="book-form-card tip-card">
                     <h4 class="tip-card-title">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
@@ -147,7 +156,7 @@
             </div>
         </div>
 
-        <!-- Submit Buttons -->
+        <!-- Submit -->
         <div class="book-form-actions">
             <a th:href="@{/admin/books}" class="btn-cancel">Cancel</a>
             <button type="submit" class="btn-publish">
@@ -157,6 +166,149 @@
         </div>
     </form>
 
-</div>
+    <!-- ══════════════════════════════════════
+         ADD CATEGORY MODAL
+    ══════════════════════════════════════ -->
+    <div id="catModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:1000; align-items:center; justify-content:center;">
+        <div style="background:#fff; border-radius:12px; padding:2rem; width:420px; max-width:90vw; box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                <h3 style="font-family:'Cormorant Garamond',serif; font-size:1.4rem; color:#1a2e1a; margin:0;"><em>Add New Genre</em></h3>
+                <button id="closeCatModal" type="button" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:#9ca39c; line-height:1;">&times;</button>
+            </div>
+
+            <div id="catModalMsg" style="display:none; margin-bottom:1rem;"></div>
+
+            <form id="quickCatForm">
+                <div style="margin-bottom:1rem;">
+                    <label style="font-size:0.62rem; letter-spacing:2px; text-transform:uppercase; color:#6b7c6b; font-weight:600; display:block; margin-bottom:0.4rem;">GENRE NAME</label>
+                    <input type="text" id="newCatName" placeholder="e.g. Literary Fiction"
+                           style="width:100%; padding:0.65rem 0.9rem; border:1px solid #e5e1dc; border-radius:6px; font-family:inherit; font-size:0.9rem; outline:none; background:#faf8f5;" required />
+                </div>
+                <div style="margin-bottom:1.5rem;">
+                    <label style="font-size:0.62rem; letter-spacing:2px; text-transform:uppercase; color:#6b7c6b; font-weight:600; display:block; margin-bottom:0.4rem;">IMAGE URL (OPTIONAL)</label>
+                    <input type="url" id="newCatImage" placeholder="https://..."
+                           style="width:100%; padding:0.65rem 0.9rem; border:1px solid #e5e1dc; border-radius:6px; font-family:inherit; font-size:0.9rem; outline:none; background:#faf8f5;" />
+                </div>
+                <div style="display:flex; gap:0.75rem; justify-content:flex-end;">
+                    <button type="button" id="cancelCatModal"
+                            style="padding:0.6rem 1.2rem; border:1.5px solid #e5e1dc; border-radius:6px; background:none; font-size:0.8rem; font-weight:600; cursor:pointer; letter-spacing:1px;">
+                        CANCEL
+                    </button>
+                    <button type="submit"
+                            style="padding:0.6rem 1.4rem; background:#1a2e1a; color:#faf8f5; border:none; border-radius:6px; font-size:0.8rem; font-weight:600; cursor:pointer; letter-spacing:1px;">
+                        CREATE GENRE
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div><!-- end layout:fragment="content" -->
+
+
+<!-- ═══════════════════ PAGE SCRIPTS ═══════════════════ -->
+<th:block layout:fragment="scripts">
+
+<!-- TinyMCE -->
+<script src="https://cdn.tiny.cloud/1/cduhz73g0qtq9ufwh0mqc8u2hf1ksrwomn9e1bd0tij45fp5/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+tinymce.init({
+    selector: '#description',
+    plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
+    toolbar: 'undo redo | blocks fontsize | bold italic underline strikethrough | link image media table | align | numlist bullist indent outdent | removeformat',
+    height: 380,
+    menubar: false,
+    promotion: false,
+    branding: false,
+    skin: 'oxide',
+    content_css: 'default',
+    automatic_uploads: true,
+    file_picker_types: 'image',
+    images_upload_handler: function (blobInfo) {
+        return new Promise(function (resolve, reject) {
+            var formData = new FormData();
+            formData.append('file', blobInfo.blob(), blobInfo.filename());
+            var csrfToken  = document.querySelector('meta[name="_csrf"]');
+            var csrfHeader = document.querySelector('meta[name="_csrf_header"]');
+            var headers = {};
+            if (csrfToken && csrfHeader) headers[csrfHeader.content] = csrfToken.content;
+            fetch('/admin/upload-image', { method: 'POST', headers: headers, body: formData })
+                .then(function(r) { return r.json(); })
+                .then(function(d) { resolve(d.url); })
+                .catch(function(e) { reject('Upload failed: ' + e); });
+        });
+    },
+    setup: function(editor) {
+        editor.on('change', function() { editor.save(); });
+    }
+});
+</script>
+
+<!-- Category Modal Logic -->
+<script>
+(function() {
+    var modal    = document.getElementById('catModal');
+    var openBtn  = document.getElementById('openCatModal');
+    var closeBtn = document.getElementById('closeCatModal');
+    var cancelBtn= document.getElementById('cancelCatModal');
+    var form     = document.getElementById('quickCatForm');
+    var msg      = document.getElementById('catModalMsg');
+    var select   = document.getElementById('categoryId');
+
+    function openModal()  { modal.style.display = 'flex'; document.getElementById('newCatName').focus(); }
+    function closeModal() { modal.style.display = 'none'; form.reset(); msg.style.display = 'none'; }
+
+    if (openBtn)   openBtn.addEventListener('click', openModal);
+    if (closeBtn)  closeBtn.addEventListener('click', closeModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+
+    // Close on backdrop click
+    modal.addEventListener('click', function(e) { if (e.target === modal) closeModal(); });
+
+    // Submit via AJAX
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        var name  = document.getElementById('newCatName').value.trim();
+        var image = document.getElementById('newCatImage').value.trim();
+        if (!name) return;
+
+        var csrfToken  = document.querySelector('meta[name="_csrf"]');
+        var csrfHeader = document.querySelector('meta[name="_csrf_header"]');
+        var headers = { 'Content-Type': 'application/json' };
+        if (csrfToken && csrfHeader) headers[csrfHeader.content] = csrfToken.content;
+
+        fetch('/admin/categories/quick-add', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify({ name: name, imageUrl: image || null })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (d.id) {
+                // Add new option to select + auto-select it
+                var opt = document.createElement('option');
+                opt.value = d.id;
+                opt.text  = d.name;
+                opt.selected = true;
+                select.appendChild(opt);
+                msg.style.display = 'block';
+                msg.style.cssText = 'background:#e8f5e9; border:1px solid #a5d6a7; border-radius:6px; padding:0.6rem 0.9rem; font-size:0.85rem; color:#2e7d32; margin-bottom:1rem;';
+                msg.textContent = 'Genre "' + d.name + '" created and selected!';
+                setTimeout(closeModal, 1200);
+            } else {
+                msg.style.display = 'block';
+                msg.style.cssText = 'background:#ffebee; border:1px solid #ef9a9a; border-radius:6px; padding:0.6rem 0.9rem; font-size:0.85rem; color:#c62828; margin-bottom:1rem;';
+                msg.textContent = d.error || 'Failed to create genre.';
+            }
+        })
+        .catch(function() {
+            msg.style.display = 'block';
+            msg.textContent = 'Network error. Please try again.';
+        });
+    });
+})();
+</script>
+</th:block>
+
 </body>
 </html>

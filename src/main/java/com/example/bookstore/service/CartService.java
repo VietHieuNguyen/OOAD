@@ -6,6 +6,7 @@ import com.example.bookstore.entity.CartItem;
 import com.example.bookstore.entity.Customer;
 import com.example.bookstore.entity.Voucher;
 import com.example.bookstore.pattern.decorator.BaseCartPricer;
+import com.example.bookstore.pattern.decorator.BookCoverDecorator;
 import com.example.bookstore.pattern.decorator.CartPricer;
 import com.example.bookstore.pattern.decorator.GiftWrapDecorator;
 import com.example.bookstore.pattern.decorator.VoucherDiscountDecorator;
@@ -25,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p>Tích hợp <b>Decorator Pattern</b> để tính giá giỏ hàng linh hoạt.
  * Phương thức {@link #calculatePriceBreakdown(Cart)} sử dụng chuỗi Decorator
- * lồng nhau: BaseCartPricer → GiftWrapDecorator → VoucherDiscountDecorator.</p>
+ * lồng nhau: BaseCartPricer → GiftWrapDecorator → BookCoverDecorator → VoucherDiscountDecorator.</p>
  */
 @Service
 public class CartService {
@@ -184,6 +185,18 @@ public class CartService {
     }
 
     /**
+     * Bật/tắt chế độ bọc bìa sách riêng lẻ cho 1 sản phẩm.
+     * Kích hoạt {@link BookCoverDecorator} khi render lại trang giỏ hàng.
+     */
+    @Transactional
+    public void toggleItemBookCover(String cartItemId) {
+        CartItem item = cartItemRepository.findById(cartItemId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sản phẩm trong giỏ."));
+        item.setIsBookCovered(!Boolean.TRUE.equals(item.getIsBookCovered()));
+        cartItemRepository.save(item);
+    }
+
+    /**
      * Bật/tắt chế độ chọn mua của 1 sản phẩm.
      */
     @Transactional
@@ -247,13 +260,28 @@ public class CartService {
         }
         breakdown.put("giftWrapFee", giftWrapFee);
 
-        // 3. Voucher discount
+        // 3. Book cover fee (BookCoverDecorator)
+        BigDecimal bookCoverFee = BigDecimal.ZERO;
+        long coveredBookCount = selectedItems.stream()
+                .filter(CartItem::getIsBookCovered)
+                .count();
+
+        if (coveredBookCount > 0) {
+            BookCoverDecorator coverDecorator = new BookCoverDecorator(basePricer, (int) coveredBookCount);
+            bookCoverFee = coverDecorator.getCoverFee();
+        }
+        breakdown.put("bookCoverFee", bookCoverFee);
+
+        // 4. Voucher discount
         BigDecimal voucherDiscount = BigDecimal.ZERO;
         if (cart.getAppliedVoucher() != null && cart.getAppliedVoucher().isValid()) {
-            // Voucher giảm trên subtotal (trước phí gói quà)
+            // Voucher giảm trên (subtotal + giftWrap + bookCover)
             CartPricer priceBeforeVoucher = basePricer;
             if (giftWrappedCount > 0) {
-                priceBeforeVoucher = new GiftWrapDecorator(basePricer, (int) giftWrappedCount);
+                priceBeforeVoucher = new GiftWrapDecorator(priceBeforeVoucher, (int) giftWrappedCount);
+            }
+            if (coveredBookCount > 0) {
+                priceBeforeVoucher = new BookCoverDecorator(priceBeforeVoucher, (int) coveredBookCount);
             }
             VoucherDiscountDecorator voucherDecorator =
                     new VoucherDiscountDecorator(priceBeforeVoucher, cart.getAppliedVoucher());
@@ -261,8 +289,8 @@ public class CartService {
         }
         breakdown.put("voucherDiscount", voucherDiscount);
 
-        // 4. Total
-        BigDecimal total = subtotal.add(giftWrapFee).subtract(voucherDiscount);
+        // 5. Total
+        BigDecimal total = subtotal.add(giftWrapFee).add(bookCoverFee).subtract(voucherDiscount);
         breakdown.put("total", total.max(BigDecimal.ZERO));
 
         return breakdown;
@@ -284,6 +312,14 @@ public class CartService {
 
         if (giftWrappedCount > 0) {
             pricer = new GiftWrapDecorator(pricer, (int) giftWrappedCount);
+        }
+
+        long coveredBookCount = selectedItems.stream()
+                .filter(CartItem::getIsBookCovered)
+                .count();
+
+        if (coveredBookCount > 0) {
+            pricer = new BookCoverDecorator(pricer, (int) coveredBookCount);
         }
 
         if (cart.getAppliedVoucher() != null) {
