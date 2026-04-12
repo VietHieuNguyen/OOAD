@@ -3,6 +3,9 @@ package com.example.bookstore.entity;
 import com.example.bookstore.entity.enums.OrderStatus;
 import com.example.bookstore.entity.enums.PaymentMethodType;
 import com.example.bookstore.entity.enums.ShippingStatus;
+import com.example.bookstore.pattern.state.OrderState;
+import com.example.bookstore.pattern.state.PendingState;
+import com.example.bookstore.pattern.state.StateFactory;
 import com.example.bookstore.util.IdGenerator;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -14,8 +17,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PostLoad;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
@@ -55,6 +60,9 @@ public class Order {
     @Column(nullable = false, length = 20)
     private OrderStatus status;
 
+    @Transient
+    private OrderState state;
+
     @Column(nullable = false, length = 255)
     private String address;
 
@@ -66,6 +74,10 @@ public class Order {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Shipping> shippings = new LinkedHashSet<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "voucher_id")
+    private Voucher appliedVoucher;
 
     @PrePersist
     protected void prePersist() {
@@ -81,6 +93,38 @@ public class Order {
         if (totalAmount == null) {
             totalAmount = BigDecimal.ZERO;
         }
+    }
+
+    @PostLoad
+    protected void postLoad() {
+        this.state = StateFactory.getState(this.status);
+        if (this.state != null) {
+            this.state.setContext(this);
+        }
+    }
+
+    // =========================================================================
+    //  STATE PATTERN — Context Methods
+    // =========================================================================
+
+    public void changeState(OrderState state) {
+        this.state = state;
+        this.state.setContext(this);
+        this.status = state.getStatusName();
+    }
+
+    public void nextState() {
+        if (this.state == null) {
+            this.postLoad(); // Khởi tạo nếu chưa load (tránh NullPointerException)
+        }
+        this.state.nextState();
+    }
+
+    public void cancelOrder() {
+        if (this.state == null) {
+            this.postLoad();
+        }
+        this.state.cancelOrder();
     }
 
     /**
@@ -144,6 +188,7 @@ public class Order {
         private Set<CartItem> cartItems = new LinkedHashSet<>();
         private BigDecimal shippingFee = BigDecimal.ZERO;
         private PaymentMethodType paymentMethod;
+        private Voucher appliedVoucher;
 
         /** Thiết lập khách hàng đặt đơn. */
         public Builder customer(Customer customer) {
@@ -172,6 +217,12 @@ public class Order {
         /** Thiết lập phương thức thanh toán. */
         public Builder paymentMethod(PaymentMethodType paymentMethod) {
             this.paymentMethod = paymentMethod;
+            return this;
+        }
+
+        /** Thiết lập mã giảm giá đã sử dụng. */
+        public Builder appliedVoucher(Voucher voucher) {
+            this.appliedVoucher = voucher;
             return this;
         }
 
@@ -213,7 +264,9 @@ public class Order {
             order.setCustomer(customer);
             order.setAddress(address);
             order.setOrderDate(LocalDateTime.now());
-            order.setStatus(OrderStatus.PENDING);
+            // Áp dụng State ban đầu
+            order.changeState(new PendingState());
+            order.setAppliedVoucher(appliedVoucher);
 
             // --- Chuyển đổi CartItem → OrderItem (Snapshot giá) ---
             for (CartItem cartItem : cartItems) {
@@ -223,6 +276,7 @@ public class Order {
                 orderItem.setQuantity(cartItem.getQuantity());
                 // Snapshot: lưu giá tại thời điểm mua, không tham chiếu giá hiện tại
                 orderItem.setPriceAtPurchase(cartItem.getUnitPrice());
+                orderItem.setIsGiftWrapped(cartItem.getIsGiftWrapped());
                 order.getItems().add(orderItem);
             }
 

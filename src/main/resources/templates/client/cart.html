@@ -34,24 +34,38 @@
                             </div>
                             <div class="cart-item-details">
                                 <div class="cart-item-top">
-                                    <div>
-                                        <h3 class="cart-item-title" th:text="${item.book.title}">Book</h3>
-                                        <span class="cart-item-author" th:text="${item.book.author}">Author</span>
-                                        <span th:if="${cart.giftWrap}" class="cart-gift-badge">🎁 Gói quà</span>
+                                    <div style="display: flex; gap: 1rem; align-items: start;">
+                                        <!-- Checkbox Chọn mua -->
+                                        <form th:action="@{/cart/toggle-item-selection/{id}(id=${item.cartItemId})}" method="post">
+                                            <input type="checkbox" onchange="this.form.submit()" th:checked="${item.isSelected}" style="cursor: pointer; width: 18px; height: 18px; margin-top: 4px;">
+                                        </form>
+                                        <div>
+                                            <h3 class="cart-item-title" th:text="${item.book.title}">Book</h3>
+                                            <span class="cart-item-author" th:text="${item.book.author}">Author</span>
+                                        </div>
                                     </div>
                                     <form th:action="@{/cart/remove/{id}(id=${item.cartItemId})}" method="post" style="display:inline;">
                                         <button type="submit" class="cart-remove-btn" title="Xóa">✕</button>
                                     </form>
                                 </div>
-                                <div class="cart-item-bottom">
-                                    <form th:action="@{/cart/update}" method="post" class="cart-qty-form">
-                                        <input type="hidden" name="cartItemId" th:value="${item.cartItemId}">
-                                        <div class="qty-selector qty-sm">
-                                            <button type="submit" name="quantity" th:value="${item.quantity - 1}" class="qty-btn">−</button>
-                                            <span class="qty-display" th:text="${item.quantity}">1</span>
-                                            <button type="submit" name="quantity" th:value="${item.quantity + 1}" class="qty-btn">+</button>
-                                        </div>
-                                    </form>
+                                <div class="cart-item-bottom" style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
+                                    <div style="display: flex; gap: 1.5rem; align-items: center;">
+                                        <form th:action="@{/cart/update}" method="post" class="cart-qty-form">
+                                            <input type="hidden" name="cartItemId" th:value="${item.cartItemId}">
+                                            <div class="qty-selector qty-sm">
+                                                <button type="submit" name="quantity" th:value="${item.quantity - 1}" class="qty-btn">−</button>
+                                                <span class="qty-display" th:text="${item.quantity}">1</span>
+                                                <button type="submit" name="quantity" th:value="${item.quantity + 1}" class="qty-btn">+</button>
+                                            </div>
+                                        </form>
+                                        <!-- Checkbox Gói quà -->
+                                        <form th:action="@{/cart/toggle-item-gift-wrap/{id}(id=${item.cartItemId})}" method="post" style="display: flex; align-items: center; gap: 0.5rem; background: var(--surface-2); padding: 0.25rem 0.5rem; border-radius: 4px;">
+                                            <input type="checkbox" id="gift-${item.cartItemId}" onchange="this.form.submit()" th:checked="${item.isGiftWrapped}" style="cursor: pointer;">
+                                            <label for="gift-${item.cartItemId}" style="font-size: 0.85rem; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                                                <span>🎁</span> Gói quà (+20k)
+                                            </label>
+                                        </form>
+                                    </div>
                                     <span class="cart-item-price"
                                           th:text="${#numbers.formatDecimal(item.unitPrice * item.quantity, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
                                 </div>
@@ -59,25 +73,7 @@
                         </div>
                     </div>
 
-                    <!-- Gift Wrap Toggle -->
-                    <div class="cart-gift-wrap">
-                        <form th:action="@{/cart/toggle-gift-wrap}" method="post" class="gift-wrap-form">
-                            <label class="gift-wrap-label">
-                                <div class="gift-wrap-info">
-                                    <span class="gift-wrap-icon"><svg th:replace="~{client/fragments/icons :: gift}"></svg></span>
-                                    <div>
-                                        <strong>Gói quà tặng</strong>
-                                        <span class="gift-wrap-desc">Thêm 20,000 ₫ / mỗi sản phẩm</span>
-                                    </div>
-                                </div>
-                                <button type="submit"
-                                        th:class="${cart.giftWrap} ? 'gift-toggle active' : 'gift-toggle'"
-                                        th:text="${cart.giftWrap} ? 'Đã bật' : 'Bật'">
-                                    Bật
-                                </button>
-                            </label>
-                        </form>
-                    </div>
+                    <!-- Gift Wrap Toggle Removed (moved to per item) -->
                 </div>
 
                 <!-- Right: Summary -->
@@ -114,7 +110,7 @@
                                 <span>Tạm tính</span>
                                 <span th:text="${#numbers.formatDecimal(priceBreakdown['subtotal'], 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
                             </div>
-                            <div class="breakdown-row" th:if="${cart.giftWrap}">
+                            <div class="breakdown-row" th:if="${priceBreakdown['giftWrapFee'] != null and priceBreakdown['giftWrapFee'].compareTo(T(java.math.BigDecimal).ZERO) > 0}">
                                 <span>Phí gói quà</span>
                                 <span class="fee-positive" th:text="'+' + ${#numbers.formatDecimal(priceBreakdown['giftWrapFee'], 0, 'COMMA', 0, 'POINT')} + ' ₫'">+0 ₫</span>
                             </div>

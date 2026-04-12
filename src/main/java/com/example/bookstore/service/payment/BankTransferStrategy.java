@@ -3,6 +3,8 @@ package com.example.bookstore.service.payment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import com.example.bookstore.entity.enums.PaymentMethodType;
+
 
 /**
  * <b>Strategy Pattern — Concrete Strategy B: Chuyển khoản ngân hàng</b>
@@ -43,5 +45,14 @@ public class BankTransferStrategy implements PaymentStrategy {
             logger.error("[BANK] ✗ Lỗi khi kết nối cổng thanh toán ngân hàng", e);
             return false;
         }
+    }
+
+    /**
+     * Khai báo định danh của Strategy này là {@link PaymentMethodType#BANK_TRANSFER}.
+     * Spring sẽ dùng giá trị này để tự động đăng ký vào Map trong Context.
+     */
+    @Override
+    public PaymentMethodType getSupportedMethod() {
+        return PaymentMethodType.BANK_TRANSFER;
     }
 }

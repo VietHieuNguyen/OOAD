@@ -5,15 +5,15 @@ import com.example.bookstore.entity.Payment;
 import com.example.bookstore.entity.enums.PaymentMethodType;
 import com.example.bookstore.entity.enums.PaymentStatus;
 import com.example.bookstore.repository.PaymentRepository;
-import com.example.bookstore.service.payment.BankTransferStrategy;
-import com.example.bookstore.service.payment.CODStrategy;
 import com.example.bookstore.service.payment.PaymentStrategy;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 /**
  * <b>Strategy Pattern — Context</b>
@@ -34,9 +34,9 @@ import org.springframework.transaction.annotation.Transactional;
  *       → tuân thủ nguyên lý <b>Dependency Inversion</b>.</li>
  * </ol>
  *
- * @see PaymentStrategy
- * @see CODStrategy
- * @see BankTransferStrategy
+ //* @see PaymentStrategy
+ //* @see CODStrategy
+ //* @see BankTransferStrategy
  */
 @Service
 public class PaymentService {
@@ -52,19 +52,20 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
 
     /**
-     * Constructor — nạp thủ công các Concrete Strategy vào Map.
-     * <p>Việc nạp thủ công (không dùng auto-resolve của framework) giúp thể hiện
-     * rõ cấu trúc Strategy Pattern trong code, dễ dàng giải thích khi báo cáo.</p>
+     * Constructor — Spring tự động tiêm toàn bộ bean implement {@link PaymentStrategy}.
+     * <p>Sử dụng Ín tượng <b>Auto-Discovery</b>: khi thêm Strategy mới, chỉ cần
+     * đánh dấu nó với {@code @Component} — Context không cần sửa.</p>
+     * <p>Tuân thủ  100% <b>Open/Closed Principle</b>: mở để mở rộng, đóng để sửa đổi.</p>
      */
-    public PaymentService(CODStrategy codStrategy,
-                          BankTransferStrategy bankTransferStrategy,
+    public PaymentService(List<PaymentStrategy> strategies,
                           PaymentRepository paymentRepository) {
         this.paymentRepository = paymentRepository;
 
-        // Khởi tạo Map Strategy — mỗi PaymentMethodType ánh xạ đến 1 Concrete Strategy
+        // Auto-Discovery: nạp từng Strategy vào EnumMap bằng vòng lặp for
         this.strategyMap = new EnumMap<>(PaymentMethodType.class);
-        this.strategyMap.put(PaymentMethodType.COD, codStrategy);
-        this.strategyMap.put(PaymentMethodType.BANK_TRANSFER, bankTransferStrategy);
+        for (PaymentStrategy strategy : strategies) {
+            this.strategyMap.put(strategy.getSupportedMethod(), strategy);
+        }
     }
 
     /**

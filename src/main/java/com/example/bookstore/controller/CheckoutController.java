@@ -54,9 +54,13 @@ public class CheckoutController {
         }
 
         Cart cart = cartService.getOrCreateCart(customer);
-        if (cart.getItems() == null || cart.getItems().isEmpty()) {
-            redirectAttributes.addFlashAttribute("error", "Giỏ hàng của bạn đang trống.");
-            return "redirect:/";
+        java.util.List<com.example.bookstore.entity.CartItem> selectedItems = cart.getItems().stream()
+                .filter(com.example.bookstore.entity.CartItem::getIsSelected)
+                .toList();
+
+        if (selectedItems.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Bạn chưa chọn sản phẩm nào để thanh toán.");
+            return "redirect:/cart";
         }
 
         // Pre-fill địa chỉ từ Customer.address
@@ -70,6 +74,7 @@ public class CheckoutController {
 
         model.addAttribute("checkoutDTO", dto);
         model.addAttribute("cart", cart);
+        model.addAttribute("selectedItems", selectedItems);
         model.addAttribute("customer", customer);
         model.addAttribute("paymentMethods", PaymentMethodType.values());
         model.addAttribute("priceBreakdown", priceBreakdown);

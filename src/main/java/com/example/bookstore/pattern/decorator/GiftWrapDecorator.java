@@ -27,17 +27,17 @@ public class GiftWrapDecorator extends CartPricerDecorator {
     /** Phí gói quà cho mỗi sản phẩm (20.000 VNĐ). */
     private static final BigDecimal FEE_PER_ITEM = new BigDecimal("20000");
 
-    private final int itemCount;
+    private final int giftWrappedItemCount;
 
     /**
      * Khởi tạo GiftWrapDecorator.
      *
      * @param wrappee   Đối tượng CartPricer bên trong
-     * @param itemCount Số lượng sản phẩm cần gói quà
+     * @param giftWrappedItemCount Số lượng sản phẩm có cờ được gói quà và đã được chọn vào giỏ mua
      */
-    public GiftWrapDecorator(CartPricer wrappee, int itemCount) {
+    public GiftWrapDecorator(CartPricer wrappee, int giftWrappedItemCount) {
         super(wrappee);
-        this.itemCount = Math.max(itemCount, 0); // Không cho âm
+        this.giftWrappedItemCount = Math.max(giftWrappedItemCount, 0); // Không cho âm
     }
 
     /**
@@ -46,7 +46,7 @@ public class GiftWrapDecorator extends CartPricerDecorator {
     @Override
     public BigDecimal calculatePrice() {
         BigDecimal basePrice = wrappee.calculatePrice();
-        BigDecimal wrapFee = FEE_PER_ITEM.multiply(BigDecimal.valueOf(itemCount));
+        BigDecimal wrapFee = FEE_PER_ITEM.multiply(BigDecimal.valueOf(giftWrappedItemCount));
         return basePrice.add(wrapFee);
     }
 
@@ -59,6 +59,6 @@ public class GiftWrapDecorator extends CartPricerDecorator {
      * Lấy tổng phí gói quà (để hiển thị trên UI).
      */
     public BigDecimal getWrapFee() {
-        return FEE_PER_ITEM.multiply(BigDecimal.valueOf(itemCount));
+        return FEE_PER_ITEM.multiply(BigDecimal.valueOf(giftWrappedItemCount));
     }
 }

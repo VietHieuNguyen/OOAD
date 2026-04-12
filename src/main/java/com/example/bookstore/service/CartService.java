@@ -70,13 +70,12 @@ public class CartService {
     }
 
     /**
-     * Xóa toàn bộ sản phẩm trong giỏ hàng sau khi đặt hàng thành công.
+     * Xóa các sản phẩm TRONG giỏ hàng ĐÃ ĐƯỢC CHỌN sau khi đặt hàng thành công.
      */
     @Transactional
     public void clearCart(Cart cart) {
-        cart.getItems().clear();
+        cart.getItems().removeIf(CartItem::getIsSelected);
         cart.setAppliedVoucher(null);
-        cart.setGiftWrap(false);
         cartRepository.save(cart);
     }
 
@@ -174,12 +173,25 @@ public class CartService {
     }
 
     /**
-     * Bật/tắt chế độ gói quà.
+     * Bật/tắt chế độ gói quà riêng lẻ cho 1 sản phẩm.
      */
     @Transactional
-    public void toggleGiftWrap(Cart cart) {
-        cart.setGiftWrap(!Boolean.TRUE.equals(cart.getGiftWrap()));
-        cartRepository.save(cart);
+    public void toggleItemGiftWrap(String cartItemId) {
+        CartItem item = cartItemRepository.findById(cartItemId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sản phẩm trong giỏ."));
+        item.setIsGiftWrapped(!Boolean.TRUE.equals(item.getIsGiftWrapped()));
+        cartItemRepository.save(item);
+    }
+
+    /**
+     * Bật/tắt chế độ chọn mua của 1 sản phẩm.
+     */
+    @Transactional
+    public void toggleItemSelection(String cartItemId) {
+        CartItem item = cartItemRepository.findById(cartItemId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sản phẩm trong giỏ."));
+        item.setIsSelected(!Boolean.TRUE.equals(item.getIsSelected()));
+        cartItemRepository.save(item);
     }
 
     // =========================================================================
@@ -213,15 +225,24 @@ public class CartService {
     public Map<String, BigDecimal> calculatePriceBreakdown(Cart cart) {
         Map<String, BigDecimal> breakdown = new HashMap<>();
 
+        // CHỈ TÍNH TOÁN CÁC SẢN PHẨM ĐƯỢC CHỌN (isSelected = true)
+        java.util.List<CartItem> selectedItems = cart.getItems().stream()
+                .filter(CartItem::getIsSelected)
+                .toList();
+
         // 1. Base price
-        BaseCartPricer basePricer = new BaseCartPricer(cart.getItems());
+        BaseCartPricer basePricer = new BaseCartPricer(selectedItems);
         BigDecimal subtotal = basePricer.calculatePrice();
         breakdown.put("subtotal", subtotal);
 
         // 2. Gift wrap fee
         BigDecimal giftWrapFee = BigDecimal.ZERO;
-        if (Boolean.TRUE.equals(cart.getGiftWrap())) {
-            GiftWrapDecorator giftDecorator = new GiftWrapDecorator(basePricer, cart.getItems().size());
+        long giftWrappedCount = selectedItems.stream()
+                .filter(CartItem::getIsGiftWrapped)
+                .count();
+
+        if (giftWrappedCount > 0) {
+            GiftWrapDecorator giftDecorator = new GiftWrapDecorator(basePricer, (int) giftWrappedCount);
             giftWrapFee = giftDecorator.getWrapFee();
         }
         breakdown.put("giftWrapFee", giftWrapFee);
@@ -231,8 +252,8 @@ public class CartService {
         if (cart.getAppliedVoucher() != null && cart.getAppliedVoucher().isValid()) {
             // Voucher giảm trên subtotal (trước phí gói quà)
             CartPricer priceBeforeVoucher = basePricer;
-            if (Boolean.TRUE.equals(cart.getGiftWrap())) {
-                priceBeforeVoucher = new GiftWrapDecorator(basePricer, cart.getItems().size());
+            if (giftWrappedCount > 0) {
+                priceBeforeVoucher = new GiftWrapDecorator(basePricer, (int) giftWrappedCount);
             }
             VoucherDiscountDecorator voucherDecorator =
                     new VoucherDiscountDecorator(priceBeforeVoucher, cart.getAppliedVoucher());
@@ -251,10 +272,18 @@ public class CartService {
      * Xây dựng chuỗi Decorator (nội bộ).
      */
     private CartPricer buildDecoratorChain(Cart cart) {
-        CartPricer pricer = new BaseCartPricer(cart.getItems());
+        java.util.List<CartItem> selectedItems = cart.getItems().stream()
+                .filter(CartItem::getIsSelected)
+                .toList();
 
-        if (Boolean.TRUE.equals(cart.getGiftWrap())) {
-            pricer = new GiftWrapDecorator(pricer, cart.getItems().size());
+        CartPricer pricer = new BaseCartPricer(selectedItems);
+
+        long giftWrappedCount = selectedItems.stream()
+                .filter(CartItem::getIsGiftWrapped)
+                .count();
+
+        if (giftWrappedCount > 0) {
+            pricer = new GiftWrapDecorator(pricer, (int) giftWrappedCount);
         }
 
         if (cart.getAppliedVoucher() != null) {

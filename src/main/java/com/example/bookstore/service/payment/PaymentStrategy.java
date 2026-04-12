@@ -1,5 +1,7 @@
 package com.example.bookstore.service.payment;
 
+import com.example.bookstore.entity.enums.PaymentMethodType;
+
 /**
  * <b>Strategy Pattern — Interface (Strategy)</b>
  *
@@ -30,4 +32,12 @@ public interface PaymentStrategy {
      * @return {@code true} nếu thanh toán thành công, {@code false} nếu thất bại
      */
     boolean processPayment(double amount);
+
+    /**
+     * Trả về {@link PaymentMethodType} mà Strategy này xử lý.
+     * <p>Dùng để Context tự động đăng ký Strategy vào Map mà không cần hardcode.</p>
+     *
+     * @return Enum định danh phương thức thanh toán
+     */
+    PaymentMethodType getSupportedMethod();
 }

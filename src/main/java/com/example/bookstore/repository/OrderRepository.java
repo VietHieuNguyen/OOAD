@@ -17,7 +17,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
     @Query("SELECT DISTINCT o FROM Order o LEFT JOIN FETCH o.items i LEFT JOIN FETCH i.book LEFT JOIN FETCH o.customer ORDER BY o.orderDate DESC")
     List<Order> findAllWithItemsOrderByOrderDateDesc();
 
-    /** Lấy chi tiết 1 đơn kèm items + customer + payments. */
-    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.items i LEFT JOIN FETCH i.book LEFT JOIN FETCH o.customer LEFT JOIN FETCH o.payments WHERE o.orderId = :id")
+    /** Lấy chi tiết 1 đơn kèm items + customer + payments + shippings. */
+    @Query("SELECT o FROM Order o LEFT JOIN FETCH o.items i LEFT JOIN FETCH i.book LEFT JOIN FETCH o.customer LEFT JOIN FETCH o.payments LEFT JOIN FETCH o.shippings WHERE o.orderId = :id")
     Optional<Order> findByIdWithItems(@Param("id") String id);
 }
