@@ -14,34 +14,55 @@
     <!-- Collections Content -->
     <section class="collections-section">
         <div class="collections-container">
-            <!-- Sidebar -->
-            <aside class="filter-sidebar">
-                <div class="filter-group">
-                    <h3 class="filter-title">Genre</h3>
-                    <div class="filter-options">
-                        <label class="filter-checkbox" th:each="cat : ${categories}">
-                            <input type="checkbox" th:value="${cat.id}" name="category">
-                            <span th:text="${cat.name}">Category</span>
-                        </label>
-                        <div th:if="${#lists.isEmpty(categories)}" class="filter-empty">
-                            Chưa có danh mục nào.
+            <!-- Sidebar Filter (form-based GET) -->
+            <form id="filterForm" th:action="@{/collections}" method="get" class="filter-sidebar-form">
+                <aside class="filter-sidebar">
+                    <!-- Search -->
+                    <div class="filter-group">
+                        <h3 class="filter-title">Search</h3>
+                        <div class="filter-search-box">
+                            <input type="text" name="q" th:value="${q}" placeholder="Title or keyword..." class="filter-search-input" />
                         </div>
                     </div>
-                </div>
 
-                <div class="filter-group">
-                    <h3 class="filter-title">Price Range</h3>
-                    <div class="price-range-display">
-                        <input type="range" min="0" max="500000" value="500000" class="price-slider" id="priceRange">
-                        <div class="price-range-labels">
-                            <span>₫0</span>
-                            <span id="priceRangeValue">₫500,000+</span>
+                    <!-- Genre / Category -->
+                    <div class="filter-group">
+                        <h3 class="filter-title">Genre</h3>
+                        <div class="filter-options">
+                            <label class="filter-radio" th:each="cat : ${categories}">
+                                <input type="radio" name="category" th:value="${cat.id}"
+                                       th:checked="${cat.id == category}" />
+                                <span th:text="${cat.name}">Category</span>
+                            </label>
+                            <div th:if="${#lists.isEmpty(categories)}" class="filter-empty">No genres found.</div>
                         </div>
                     </div>
-                </div>
 
-                <button class="btn btn-outline btn-full" style="font-size: 0.7rem;" onclick="window.location.href='/collections'">CLEAR ALL FILTERS</button>
-            </aside>
+                    <!-- Sort -->
+                    <div class="filter-group">
+                        <h3 class="filter-title">Sort By</h3>
+                        <select name="sort" class="filter-select-inline">
+                            <option value="title" th:selected="${sort == 'title'}">Title</option>
+                            <option value="price" th:selected="${sort == 'price'}">Price</option>
+                        </select>
+                        <select name="dir" class="filter-select-inline" style="margin-top: 0.5rem;">
+                            <option value="asc" th:selected="${dir == 'asc'}">Ascending</option>
+                            <option value="desc" th:selected="${dir == 'desc'}">Descending</option>
+                        </select>
+                    </div>
+
+                    <!-- Hidden page reset -->
+                    <input type="hidden" name="page" value="0" />
+
+                    <!-- Apply -->
+                    <button type="submit" class="btn btn-primary btn-full" style="font-size: 0.75rem; letter-spacing: 1.5px;">
+                        APPLY FILTERS
+                    </button>
+                    <a th:href="@{/collections}" class="btn btn-outline btn-full" style="font-size: 0.7rem; margin-top: 0.5rem;">
+                        CLEAR ALL
+                    </a>
+                </aside>
+            </form>
 
             <!-- Books Grid -->
             <div class="collections-main">
@@ -50,14 +71,16 @@
                           th:text="'Showing ' + ${#lists.size(books)} + ' of ' + ${totalItems} + ' titles'">
                         Showing 0 titles
                     </span>
-                    <div class="collections-sort">
-                        <span class="sort-label">SORT BY:</span>
-                        <select class="sort-select" id="sortSelect" onchange="applySort()">
-                            <option value="title-asc" th:selected="${sort == 'title' and dir == 'asc'}">Title A–Z</option>
-                            <option value="title-desc" th:selected="${sort == 'title' and dir == 'desc'}">Title Z–A</option>
-                            <option value="price-asc" th:selected="${sort == 'price' and dir == 'asc'}">Price: Low to High</option>
-                            <option value="price-desc" th:selected="${sort == 'price' and dir == 'desc'}">Price: High to Low</option>
-                        </select>
+                    <!-- Active filter badge -->
+                    <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                        <span th:if="${q != null and !#strings.isEmpty(q)}"
+                              class="filter-active-badge">
+                            Search: "<span th:text="${q}"></span>"
+                        </span>
+                        <span th:if="${category != null and !#strings.isEmpty(category)}"
+                              class="filter-active-badge">
+                            Genre: <span th:each="cat : ${categories}" th:if="${cat.id == category}" th:text="${cat.name}"></span>
+                        </span>
                     </div>
                 </div>
 
@@ -68,6 +91,7 @@
                             <div th:unless="${book.thumbnail}" class="book-grid-placeholder"></div>
                         </div>
                         <div class="book-grid-info">
+                            <span class="book-category" th:if="${book.category != null}" th:text="${book.category.name}">Category</span>
                             <h3 class="book-grid-title" th:text="${book.title}">Book Title</h3>
                             <span class="book-grid-author" th:text="${book.author}">Author</span>
                             <div class="book-grid-price-row">
@@ -79,42 +103,27 @@
 
                 <!-- Empty State -->
                 <div th:if="${#lists.isEmpty(books)}" class="collections-empty">
-                    <p>Chưa có sách nào trong bộ sưu tập. Hãy thêm sách từ trang Admin!</p>
-                    <a href="/" class="btn btn-outline">← Về Trang Chủ</a>
+                    <p>No books found matching your filters.</p>
+                    <a href="/collections" class="btn btn-outline" style="margin-top:1rem;">← Browse All Titles</a>
                 </div>
 
                 <!-- Pagination -->
                 <div th:if="${totalPages > 1}" class="pagination">
                     <a th:if="${currentPage > 0}"
-                       th:href="@{/collections(page=${currentPage - 1}, sort=${sort}, dir=${dir})}"
+                       th:href="@{/collections(page=${currentPage - 1}, sort=${sort}, dir=${dir}, category=${category}, q=${q})}"
                        class="page-link">←</a>
                     <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
-                        <a th:href="@{/collections(page=${i}, sort=${sort}, dir=${dir})}"
+                        <a th:href="@{/collections(page=${i}, sort=${sort}, dir=${dir}, category=${category}, q=${q})}"
                            th:text="${i + 1}"
                            th:class="${i == currentPage} ? 'page-link active' : 'page-link'">1</a>
                     </th:block>
                     <a th:if="${currentPage < totalPages - 1}"
-                       th:href="@{/collections(page=${currentPage + 1}, sort=${sort}, dir=${dir})}"
+                       th:href="@{/collections(page=${currentPage + 1}, sort=${sort}, dir=${dir}, category=${category}, q=${q})}"
                        class="page-link">→</a>
                 </div>
             </div>
         </div>
     </section>
-
-    <script>
-        function applySort() {
-            const val = document.getElementById('sortSelect').value;
-            const [sort, dir] = val.split('-');
-            window.location.href = '/collections?sort=' + sort + '&dir=' + dir;
-        }
-        const slider = document.getElementById('priceRange');
-        const display = document.getElementById('priceRangeValue');
-        if (slider) {
-            slider.addEventListener('input', function() {
-                display.textContent = '₫' + Number(this.value).toLocaleString('vi-VN');
-            });
-        }
-    </script>
 </main>
 </body>
 </html>

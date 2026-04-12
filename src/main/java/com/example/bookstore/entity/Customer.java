@@ -37,6 +37,9 @@ public class Customer extends User {
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Order> orders = new LinkedHashSet<>();
 
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<CustomerAddress> addresses = new LinkedHashSet<>();
+
     {
         setRole(Role.CUSTOMER);
     }

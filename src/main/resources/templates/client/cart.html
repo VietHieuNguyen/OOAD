@@ -62,7 +62,14 @@
                                         <form th:action="@{/cart/toggle-item-gift-wrap/{id}(id=${item.cartItemId})}" method="post" style="display: flex; align-items: center; gap: 0.5rem; background: var(--surface-2); padding: 0.25rem 0.5rem; border-radius: 4px;">
                                             <input type="checkbox" id="gift-${item.cartItemId}" onchange="this.form.submit()" th:checked="${item.isGiftWrapped}" style="cursor: pointer;">
                                             <label for="gift-${item.cartItemId}" style="font-size: 0.85rem; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; gap: 4px;">
-                                                <span>🎁</span> Gói quà (+20k)
+                                                <span></span> Gói quà (+20k)
+                                            </label>
+                                        </form>
+                                        <!-- Checkbox Bọc bìa sách -->
+                                        <form th:action="@{/cart/toggle-item-book-cover/{id}(id=${item.cartItemId})}" method="post" style="display: flex; align-items: center; gap: 0.5rem; background: var(--surface-2); padding: 0.25rem 0.5rem; border-radius: 4px;">
+                                            <input type="checkbox" id="cover-${item.cartItemId}" onchange="this.form.submit()" th:checked="${item.isBookCovered}" style="cursor: pointer;">
+                                            <label for="cover-${item.cartItemId}" style="font-size: 0.85rem; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                                                <span>📖</span> Bọc bìa (+5k)
                                             </label>
                                         </form>
                                     </div>
@@ -113,6 +120,10 @@
                             <div class="breakdown-row" th:if="${priceBreakdown['giftWrapFee'] != null and priceBreakdown['giftWrapFee'].compareTo(T(java.math.BigDecimal).ZERO) > 0}">
                                 <span>Phí gói quà</span>
                                 <span class="fee-positive" th:text="'+' + ${#numbers.formatDecimal(priceBreakdown['giftWrapFee'], 0, 'COMMA', 0, 'POINT')} + ' ₫'">+0 ₫</span>
+                            </div>
+                            <div class="breakdown-row" th:if="${priceBreakdown['bookCoverFee'] != null and priceBreakdown['bookCoverFee'].compareTo(T(java.math.BigDecimal).ZERO) > 0}">
+                                <span>Phí bọc bìa sách</span>
+                                <span class="fee-positive" th:text="'+' + ${#numbers.formatDecimal(priceBreakdown['bookCoverFee'], 0, 'COMMA', 0, 'POINT')} + ' ₫'">+0 ₫</span>
                             </div>
                             <div class="breakdown-row discount" th:if="${cart.appliedVoucher != null and priceBreakdown['voucherDiscount'].compareTo(T(java.math.BigDecimal).ZERO) > 0}">
                                 <span th:text="'Mã giảm giá (' + ${cart.appliedVoucher.code} + ')'">Mã giảm giá</span>

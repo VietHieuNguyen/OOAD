@@ -1,30 +1,50 @@
 package com.example.bookstore.repository;
 
 import com.example.bookstore.entity.Book;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 /**
  * Repository cho entity Book.
- * Cung cap cac phuong thuc truy van co ban va mo rong cho chuc nang Admin CRUD.
  */
 public interface BookRepository extends JpaRepository<Book, String> {
 
     Optional<Book> findByIsbn(String isbn);
 
-    /** Kiem tra ISBN da ton tai chua (dung khi tao sach moi). */
     boolean existsByIsbn(String isbn);
 
-    /** Tim sach theo ten (khong phan biet hoa thuong), phuc vu chuc nang Search. */
     List<Book> findByTitleContainingIgnoreCase(String keyword);
 
-    /** Loc sach theo danh muc. */
     List<Book> findByCategoryId(String categoryId);
 
-    /** Tìm sách theo slug (URL thân thiện). */
     Optional<Book> findBySlug(String slug);
 
-    /** Lấy danh sách sách được đánh dấu Staff Pick. */
     List<Book> findByIsPickedTrue();
+
+    /** Paginated category filter. */
+    Page<Book> findByCategoryId(String categoryId, Pageable pageable);
+
+    /** Paginated search by title OR slug. */
+    @Query("SELECT b FROM Book b WHERE " +
+           "LOWER(b.title) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
+           "LOWER(b.slug) LIKE LOWER(CONCAT('%', :q, '%'))")
+    Page<Book> searchByTitleOrSlug(@Param("q") String q, Pageable pageable);
+
+    /** Paginated: category + search. */
+    @Query("SELECT b FROM Book b WHERE b.category.id = :catId AND " +
+           "(LOWER(b.title) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
+           "LOWER(b.slug)  LIKE LOWER(CONCAT('%', :q, '%')))")
+    Page<Book> searchByCategoryAndQuery(@Param("catId") String catId,
+                                        @Param("q") String q,
+                                        Pageable pageable);
+
+    /** Paginated: filter by max price. */
+    @Query("SELECT b FROM Book b WHERE b.price <= :maxPrice")
+    Page<Book> findByMaxPrice(@Param("maxPrice") BigDecimal maxPrice, Pageable pageable);
 }

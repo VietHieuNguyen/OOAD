@@ -3,12 +3,12 @@
 <body>
 <header th:fragment="header" class="client-header">
     <div class="header-container">
-        <a href="/" class="logo"><em>X-Books</em></a>
+        <a href="/" class="logo"><em th:text="${siteName != null ? siteName : 'X-Books'}">X-Books</em></a>
         <nav class="main-nav">
-            <a href="/" class="nav-link active">Shop</a>
-            <a href="/collections" class="nav-link">Collections</a>
-            <a href="#" class="nav-link">Staff Picks</a>
-            <a href="#" class="nav-link">Journals</a>
+            <a href="/" th:classappend="${requestUri == '/'} ? ' active'" class="nav-link">Shop</a>
+            <a href="/collections" th:classappend="${requestUri != null and #strings.startsWith(requestUri, '/collections')} ? ' active'" class="nav-link">Collections</a>
+            <a href="/staff-picks" th:classappend="${requestUri != null and #strings.startsWith(requestUri, '/staff-picks')} ? ' active'" class="nav-link">Staff Picks</a>
+            <a href="/journals" th:classappend="${requestUri != null and #strings.startsWith(requestUri, '/journals')} ? ' active'" class="nav-link">Journals</a>
         </nav>
         <div class="header-actions">
             <!-- ── Notification Bell (chỉ hiện khi đã đăng nhập) ── -->

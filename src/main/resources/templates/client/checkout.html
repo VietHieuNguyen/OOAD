@@ -92,8 +92,16 @@
 
                             <!-- Phí gói quà (Decorator: GiftWrapDecorator) -->
                             <div class="summary-row" th:if="${priceBreakdown['giftWrapFee'] != null and priceBreakdown['giftWrapFee'].compareTo(T(java.math.BigDecimal).ZERO) > 0}">
-                                <span>🎁 Phí gói quà</span>
+                                <span>Phí gói quà</span>
                                 <span class="fee-positive" th:text="'+' + ${#numbers.formatDecimal(priceBreakdown['giftWrapFee'], 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                    +0 ₫
+                                </span>
+                            </div>
+
+                            <!-- Phí bọc bìa sách (Decorator: BookCoverDecorator) -->
+                            <div class="summary-row" th:if="${priceBreakdown['bookCoverFee'] != null and priceBreakdown['bookCoverFee'].compareTo(T(java.math.BigDecimal).ZERO) > 0}">
+                                <span>Phí bọc bìa sách</span>
+                                <span class="fee-positive" th:text="'+' + ${#numbers.formatDecimal(priceBreakdown['bookCoverFee'], 0, 'COMMA', 0, 'POINT')} + ' ₫'">
                                     +0 ₫
                                 </span>
                             </div>

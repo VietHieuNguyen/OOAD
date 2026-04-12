@@ -45,6 +45,9 @@ public class CartItem {
     @Column(name = "is_gift_wrapped", nullable = false)
     private Boolean isGiftWrapped = false;
 
+    @Column(name = "is_book_covered", nullable = false)
+    private Boolean isBookCovered = false;
+
     @PrePersist
     protected void prePersist() {
         if (cartItemId == null || cartItemId.isBlank()) {

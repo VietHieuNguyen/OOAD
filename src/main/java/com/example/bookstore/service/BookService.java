@@ -10,7 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -136,6 +138,33 @@ public class BookService implements StockSubject {
             if (b.getCategory() != null) b.getCategory().getName();
         });
         return bookOpt;
+    }
+
+    /** Paginated search by title OR slug. */
+    @Transactional(readOnly = true)
+    public Page<Book> searchByTitleOrSlug(String q, Pageable pageable) {
+        return bookRepository.searchByTitleOrSlug(q, pageable);
+    }
+
+    /** Paginated: filter by category. */
+    @Transactional(readOnly = true)
+    public Page<Book> findByCategoryPaged(String categoryId, Pageable pageable) {
+        return bookRepository.findByCategoryId(categoryId, pageable);
+    }
+
+    /** Paginated: category + search. */
+    @Transactional(readOnly = true)
+    public Page<Book> searchByCategoryAndQuery(String categoryId, String q, Pageable pageable) {
+        return bookRepository.searchByCategoryAndQuery(categoryId, q, pageable);
+    }
+
+    /** Get latest N books by ID (proxy for creation order). */
+    @Transactional(readOnly = true)
+    public List<Book> findLatest(int limit) {
+        Page<Book> p = bookRepository.findAll(
+                PageRequest.of(0, limit, Sort.by("id").descending()));
+        p.getContent().forEach(b -> { if (b.getCategory() != null) b.getCategory().getName(); });
+        return p.getContent();
     }
 
     /**

@@ -163,6 +163,16 @@ public class CartController {
     }
 
     /**
+     * Bật/tắt bọc bìa sách cho 1 sản phẩm.
+     * Kích hoạt BookCoverDecorator (+5.000 VNĐ/quyển).
+     */
+    @PostMapping("/toggle-item-book-cover/{itemId}")
+    public String toggleItemBookCover(@PathVariable String itemId) {
+        cartService.toggleItemBookCover(itemId);
+        return "redirect:/cart";
+    }
+
+    /**
      * Bật/tắt trạng thái chọn mua cho 1 sản phẩm.
      */
     @PostMapping("/toggle-item-selection/{itemId}")

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{client/layout}">
+<head><title>Journals</title></head>
+<body>
+<main layout:fragment="content">
+
+    <!-- Journals Hero -->
+    <section class="journals-hero">
+        <div class="journals-hero-inner">
+            <span class="hero-label">EDITORIAL · ISSUE NO. 7</span>
+            <h1 class="journals-hero-title"><em>The Reader's<br>Journal</em></h1>
+            <p class="journals-hero-desc">Essays, dispatches, and critical observations from our editors — on the books that stay with you long after the final page.</p>
+            <div class="journals-meta-row">
+                <span class="journals-meta-item">SPRING 2025</span>
+                <span class="journals-meta-sep">·</span>
+                <span class="journals-meta-item">CURATED ESSAYS</span>
+                <span class="journals-meta-sep">·</span>
+                <span class="journals-meta-item">QUARTERLY</span>
+            </div>
+        </div>
+        <div class="journals-hero-rule"></div>
+    </section>
+
+    <!-- Featured Essay -->
+    <section class="section journals-section">
+        <div class="journals-layout">
+
+            <!-- Main Column: Journal Entries -->
+            <div class="journals-main">
+                <span class="journals-section-label">FEATURED ESSAYS</span>
+
+                <!-- Entry 1 -->
+                <article class="journal-entry journal-entry--featured">
+                    <div class="journal-entry-meta">
+                        <span class="journal-entry-issue">ISSUE 07</span>
+                        <span class="journal-entry-sep">·</span>
+                        <span class="journal-entry-date">March 2025</span>
+                    </div>
+                    <div class="journal-entry-body">
+                        <div class="journal-entry-text">
+                            <span class="journal-entry-category">ON MEMORY &amp; LANGUAGE</span>
+                            <h2 class="journal-entry-title"><em>Why We Return to Books We've Already Read</em></h2>
+                            <p class="journal-entry-excerpt">There is a particular kind of re-reading that has nothing to do with forgetting. It happens when a book finds you at a different angle of your life — when the words are unchanged but you are not. This is what separates literature from information: only the former can read you back.</p>
+                            <div class="journal-entry-author">
+                                <div class="journal-author-avatar">A</div>
+                                <div>
+                                    <span class="journal-author-name">Adrienne V.</span>
+                                    <span class="journal-author-role">Senior Editor</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="journal-entry-pull-quote">
+                            <blockquote>"A book is not a mirror — it is a window that slowly, over years, becomes one."</blockquote>
+                        </div>
+                    </div>
+                </article>
+
+                <div class="journal-rule"></div>
+
+                <!-- Entry 2 -->
+                <article class="journal-entry">
+                    <div class="journal-entry-meta">
+                        <span class="journal-entry-issue">ISSUE 07</span>
+                        <span class="journal-entry-sep">·</span>
+                        <span class="journal-entry-date">March 2025</span>
+                    </div>
+                    <span class="journal-entry-category">CRAFT &amp; INTENTION</span>
+                    <h2 class="journal-entry-title"><em>The Architecture of a First Sentence</em></h2>
+                    <p class="journal-entry-excerpt">Every first sentence contains within it the entire book — not as summary, but as tone. The reader agrees to something in those opening words, an unspoken contract about the kind of attention they will need to give. The great ones make refusal impossible.</p>
+                    <div class="journal-entry-author">
+                        <div class="journal-author-avatar">M</div>
+                        <div>
+                            <span class="journal-author-name">Marcus O.</span>
+                            <span class="journal-author-role">Literary Critic</span>
+                        </div>
+                    </div>
+                </article>
+
+                <div class="journal-rule"></div>
+
+                <!-- Entry 3 -->
+                <article class="journal-entry">
+                    <div class="journal-entry-meta">
+                        <span class="journal-entry-issue">ISSUE 06</span>
+                        <span class="journal-entry-sep">·</span>
+                        <span class="journal-entry-date">December 2024</span>
+                    </div>
+                    <span class="journal-entry-category">ON COLLECTING</span>
+                    <h2 class="journal-entry-title"><em>The Ethical Collector: When Ownership Meets Obsession</em></h2>
+                    <p class="journal-entry-excerpt">To collect books is to confess a belief that the physical object carries something beyond its text. Yet there is a threshold where curation curdles into hoarding, where the shelves become a performance of a self rather than an expression of one. Where is that line?</p>
+                    <div class="journal-entry-author">
+                        <div class="journal-author-avatar">S</div>
+                        <div>
+                            <span class="journal-author-name">Simone R.</span>
+                            <span class="journal-author-role">Contributing Editor</span>
+                        </div>
+                    </div>
+                </article>
+
+                <div class="journal-rule"></div>
+
+                <!-- Entry 4 -->
+                <article class="journal-entry">
+                    <div class="journal-entry-meta">
+                        <span class="journal-entry-issue">ISSUE 06</span>
+                        <span class="journal-entry-sep">·</span>
+                        <span class="journal-entry-date">December 2024</span>
+                    </div>
+                    <span class="journal-entry-category">RECOMMENDATIONS</span>
+                    <h2 class="journal-entry-title"><em>Five Novels for the Long Hours of Winter</em></h2>
+                    <p class="journal-entry-excerpt">There are books built for summer — light, swift, dissolving in the heat. And then there are the others: the dense, demanding ones that reward the particular patience that cold weather instills. These are five of the latter, chosen without mercy.</p>
+                    <div class="journal-entry-author">
+                        <div class="journal-author-avatar">L</div>
+                        <div>
+                            <span class="journal-author-name">Lena T.</span>
+                            <span class="journal-author-role">Staff Writer</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+
+            <!-- Sidebar: Staff Picks + Recent -->
+            <aside class="journals-sidebar">
+                <div class="journals-sidebar-card">
+                    <h3 class="journals-sidebar-title">Staff Picks</h3>
+                    <div th:if="${staffPicks != null and !#lists.isEmpty(staffPicks)}">
+                        <a th:each="pick : ${staffPicks}" th:href="@{/books/{id}(id=${pick.id})}" class="sidebar-book-item">
+                            <div class="sidebar-book-cover">
+                                <img th:if="${pick.thumbnail}" th:src="${pick.thumbnail}" th:alt="${pick.title}">
+                                <div th:unless="${pick.thumbnail}" class="sidebar-book-placeholder"></div>
+                            </div>
+                            <div class="sidebar-book-info">
+                                <span class="sidebar-book-title" th:text="${pick.title}">Title</span>
+                                <span class="sidebar-book-author" th:text="${pick.author}">Author</span>
+                            </div>
+                        </a>
+                    </div>
+                    <p th:if="${staffPicks == null or #lists.isEmpty(staffPicks)}" style="font-size: 0.8rem; color: var(--text-muted);">
+                        No staff picks yet.
+                    </p>
+                    <a href="/staff-picks" class="sidebar-view-all">View all Staff Picks →</a>
+                </div>
+
+                <div class="journals-sidebar-card">
+                    <h3 class="journals-sidebar-title">New Arrivals</h3>
+                    <div th:if="${latestBooks != null and !#lists.isEmpty(latestBooks)}">
+                        <a th:each="book : ${latestBooks}" th:href="@{/books/{id}(id=${book.id})}" class="sidebar-book-item">
+                            <div class="sidebar-book-cover">
+                                <img th:if="${book.thumbnail}" th:src="${book.thumbnail}" th:alt="${book.title}">
+                                <div th:unless="${book.thumbnail}" class="sidebar-book-placeholder"></div>
+                            </div>
+                            <div class="sidebar-book-info">
+                                <span class="sidebar-book-title" th:text="${book.title}">Title</span>
+                                <span class="sidebar-book-price" th:text="${#numbers.formatDecimal(book.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                            </div>
+                        </a>
+                    </div>
+                    <a href="/collections" class="sidebar-view-all">Browse Collection →</a>
+                </div>
+
+                <!-- Subscribe -->
+                <div class="journals-sidebar-card journals-subscribe-card">
+                    <span class="journal-entry-category">THE JOURNAL</span>
+                    <h3 class="journals-sidebar-title" style="margin-top: 0.5rem;"><em>Subscribe to our quarterly dispatch</em></h3>
+                    <p style="font-size: 0.82rem; color: var(--text-secondary); margin: 0.75rem 0;">Essays, curated lists, and rare-edition alerts — delivered four times a year.</p>
+                    <input type="email" placeholder="your@email.com" class="journals-subscribe-input" />
+                    <button class="btn btn-primary btn-full" style="margin-top: 0.5rem; font-size: 0.75rem;">SUBSCRIBE</button>
+                </div>
+            </aside>
+        </div>
+    </section>
+
+</main>
+</body>
+</html>
