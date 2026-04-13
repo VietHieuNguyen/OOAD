@@ -14,6 +14,7 @@ public class SiteSettingService {
 
     private static final String KEY_SITE_NAME = "site_name";
     private static final String KEY_HERO_IMAGE = "hero_image_url";
+    private static final String KEY_SUPPORT_EMAIL = "support_email";
 
     private static final String DEFAULT_SITE_NAME = "X-Books";
 
@@ -44,6 +45,16 @@ public class SiteSettingService {
     }
 
     /**
+     * Lấy email liên hệ / hỗ trợ.
+     */
+    @Transactional(readOnly = true)
+    public String getSupportEmail() {
+        return siteSettingRepository.findById(KEY_SUPPORT_EMAIL)
+                .map(SiteSetting::getSettingValue)
+                .orElse("support@xbooks.com");
+    }
+
+    /**
      * Lưu tên website.
      */
     @Transactional
@@ -58,6 +69,15 @@ public class SiteSettingService {
     public void saveHeroImageUrl(String url) {
         saveSetting(KEY_HERO_IMAGE, url != null ? url.trim() : null);
     }
+
+    /**
+     * Lưu email liên hệ.
+     */
+    @Transactional
+    public void saveSupportEmail(String email) {
+        saveSetting(KEY_SUPPORT_EMAIL, email != null ? email.trim() : null);
+    }
+
 
     /**
      * Lưu một cặp key-value vào bảng site_settings.

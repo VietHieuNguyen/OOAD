@@ -27,17 +27,29 @@ public interface BookRepository extends JpaRepository<Book, String> {
 
     List<Book> findByIsPickedTrue();
 
+    /** Sách active, không bị xoá và còn hàng — dùng cho hiển thị client (home, collections). */
+    List<Book> findByIsActiveTrueAndIsDeletedFalseAndStockQuantityGreaterThan(int minStock);
+
+    /** Tìm sách liên quan phân trang. */
+    @Query("SELECT b FROM Book b WHERE b.isActive = true AND b.isDeleted = false AND b.stockQuantity > 0 AND b.category.id = :categoryId AND b.id <> :bookId")
+    List<Book> findRelatedBooks(@Param("categoryId") String categoryId, @Param("bookId") String bookId, Pageable pageable);
+
     /** Paginated category filter. */
-    Page<Book> findByCategoryId(String categoryId, Pageable pageable);
+    @Query("SELECT b FROM Book b WHERE b.isActive = true AND b.isDeleted = false AND b.stockQuantity > :minStock AND b.category.id = :categoryId")
+    Page<Book> findByCategoryIdAndIsActiveTrueAndIsDeletedFalseAndStockQuantityGreaterThan(@Param("categoryId") String categoryId, @Param("minStock") int minStock, Pageable pageable);
+
+    /** Paginated all active. */
+    @Query("SELECT b FROM Book b WHERE b.isActive = true AND b.isDeleted = false AND b.stockQuantity > :minStock")
+    Page<Book> findByIsActiveTrueAndIsDeletedFalseAndStockQuantityGreaterThan(@Param("minStock") int minStock, Pageable pageable);
 
     /** Paginated search by title OR slug. */
-    @Query("SELECT b FROM Book b WHERE " +
-           "LOWER(b.title) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
-           "LOWER(b.slug) LIKE LOWER(CONCAT('%', :q, '%'))")
+    @Query("SELECT b FROM Book b WHERE b.isActive = true AND b.isDeleted = false AND b.stockQuantity > 0 AND " +
+           "(LOWER(b.title) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
+           "LOWER(b.slug) LIKE LOWER(CONCAT('%', :q, '%')))")
     Page<Book> searchByTitleOrSlug(@Param("q") String q, Pageable pageable);
 
     /** Paginated: category + search. */
-    @Query("SELECT b FROM Book b WHERE b.category.id = :catId AND " +
+    @Query("SELECT b FROM Book b WHERE b.isActive = true AND b.isDeleted = false AND b.stockQuantity > 0 AND b.category.id = :catId AND " +
            "(LOWER(b.title) LIKE LOWER(CONCAT('%', :q, '%')) OR " +
            "LOWER(b.slug)  LIKE LOWER(CONCAT('%', :q, '%')))")
     Page<Book> searchByCategoryAndQuery(@Param("catId") String catId,

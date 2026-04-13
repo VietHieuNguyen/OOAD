@@ -74,6 +74,38 @@ public class AdminCategoryController {
                 });
     }
 
+    // ======================== CREATE ========================
+
+    @GetMapping("/create")
+    public String showCreateForm(Model model) {
+        model.addAttribute("category", new Category());
+        model.addAttribute("allCategories", categoryService.findAll());
+        model.addAttribute("pageTitle", "Add New Category");
+        model.addAttribute("isEdit", false);
+        return "admin/category-form";
+    }
+
+    // ======================== UPDATE ========================
+
+    @GetMapping("/edit/{id}")
+    public String showEditForm(@PathVariable("id") String id,
+                               Model model,
+                               RedirectAttributes redirectAttributes) {
+        return categoryService.findById(id)
+                .map(category -> {
+                    model.addAttribute("category", category);
+                    model.addAttribute("allCategories", categoryService.findAll());
+                    model.addAttribute("pageTitle", "Edit Category");
+                    model.addAttribute("isEdit", true);
+                    return "admin/category-form";
+                })
+                .orElseGet(() -> {
+                    redirectAttributes.addFlashAttribute("errorMessage",
+                            "Không tìm thấy danh mục với ID: " + id);
+                    return "redirect:/admin/categories";
+                });
+    }
+
     // ======================== SAVE (CREATE or UPDATE) ========================
 
     /**
@@ -86,6 +118,7 @@ public class AdminCategoryController {
                                @RequestParam(value = "imageUrl", required = false) String imageUrl,
                                @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
                                @RequestParam(value = "parentId", required = false) String parentId,
+                               @RequestParam(value = "isActive", required = false) Boolean isActive,
                                @RequestParam(value = "returnTo", required = false) String returnTo,
                                RedirectAttributes redirectAttributes) {
         Category category;
@@ -98,6 +131,7 @@ public class AdminCategoryController {
         }
 
         category.setName(name.trim());
+        category.setIsActive(isActive != null ? isActive : false);
 
         // Set parent category
         if (parentId != null && !parentId.isBlank()) {

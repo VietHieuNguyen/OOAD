@@ -5,7 +5,9 @@ import com.example.bookstore.service.BookService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,6 +25,7 @@ public class CollectionController {
     }
 
     @GetMapping("/collections")
+    @Transactional(readOnly = true)
     public String collectionsPage(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size,
@@ -49,7 +52,7 @@ public class CollectionController {
         } else if (hasQuery) {
             booksPage = bookService.searchByTitleOrSlug(q, pageable);
         } else {
-            booksPage = bookService.findAll(pageable);
+            booksPage = bookService.findAllActivePaged(pageable);
         }
 
         // Force-init lazy Category
@@ -69,6 +72,7 @@ public class CollectionController {
     }
 
     @GetMapping("/staff-picks")
+    @Transactional(readOnly = true)
     public String staffPicksPage(Model model) {
         model.addAttribute("staffPicks", bookService.findStaffPicks());
         model.addAttribute("categories", bookService.findAllCategories());
@@ -76,6 +80,7 @@ public class CollectionController {
     }
 
     @GetMapping("/journals")
+    @Transactional(readOnly = true)
     public String journalsPage(Model model) {
         model.addAttribute("staffPicks", bookService.findStaffPicks());
         model.addAttribute("latestBooks", bookService.findLatest(6));

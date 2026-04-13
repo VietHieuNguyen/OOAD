@@ -41,6 +41,11 @@ public class BookDetailController {
         }
         model.addAttribute("isWishlisted", isWishlisted);
 
+        // Lấy sách liên quan (cùng category)
+        if (book.getCategory() != null) {
+            model.addAttribute("relatedBooks", bookService.findRelatedBooks(book.getCategory().getId(), book.getId(), 5));
+        }
+
         return "client/book-detail";
     }
 }

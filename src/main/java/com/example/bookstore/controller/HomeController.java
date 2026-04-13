@@ -19,7 +19,7 @@ public class HomeController {
 
     @GetMapping("/")
     public String homePage(Model model) {
-        model.addAttribute("books", bookService.findAll());
+        model.addAttribute("books", bookService.findActiveForClient());
         model.addAttribute("categories", bookService.findAllCategories());
         model.addAttribute("staffPicks", bookService.findStaffPicks());
         return "client/home";

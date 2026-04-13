@@ -15,6 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.http.ResponseEntity;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Controller quan ly sach (CRUD) danh cho Admin.
@@ -113,11 +117,30 @@ public class AdminBookController {
             }
         }
 
-        bookService.save(book);
-
-        redirectAttributes.addFlashAttribute("successMessage",
-                "Da luu sach \"" + book.getTitle() + "\" thanh cong!");
+        try {
+            bookService.save(book);
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Da luu sach \"" + book.getTitle() + "\" thanh cong!");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Loi luu sach: " + e.getMessage());
+        }
         return "redirect:/admin/books";
+    }
+
+    // ======================== TINYMCE UPLOAD ========================
+
+    @PostMapping("/upload-tinymce")
+    @ResponseBody
+    public ResponseEntity<Map<String, String>> uploadTinyMceImage(@RequestParam("file") MultipartFile file) {
+        try {
+            String uploadedUrl = cloudinaryService.uploadImage(file, "bookstore/tinymce");
+            Map<String, String> response = new HashMap<>();
+            response.put("location", uploadedUrl);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
     }
 
     // ======================== DELETE ========================
@@ -128,6 +151,21 @@ public class AdminBookController {
         try {
             bookService.deleteById(id);
             redirectAttributes.addFlashAttribute("successMessage", "Da xoa sach thanh cong!");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/admin/books";
+    }
+
+    // ======================== TOGGLE ACTIVE ========================
+
+    @PostMapping("/toggle-active/{id}")
+    public String toggleActive(@PathVariable("id") String id,
+                               RedirectAttributes redirectAttributes) {
+        try {
+            boolean newState = bookService.toggleActive(id);
+            redirectAttributes.addFlashAttribute("successMessage",
+                    newState ? "Đã kích hoạt sách." : "Đã vô hiệu hóa sách (ẩn khỏi client).");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }

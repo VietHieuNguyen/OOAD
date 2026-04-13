@@ -45,6 +45,9 @@ public class Category {
 
     // ===================================
 
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive = true;
+
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = false)
     private Set<Book> books = new LinkedHashSet<>();
 
@@ -52,6 +55,9 @@ public class Category {
     protected void prePersist() {
         if (id == null || id.isBlank()) {
             id = IdGenerator.newId();
+        }
+        if (isActive == null) {
+            isActive = true;
         }
     }
 

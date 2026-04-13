@@ -44,16 +44,6 @@
                     </button>
                 </form>
 
-                <div class="divider" th:if="${googleLoginEnabled}">
-                    <span>OR CONTINUE WITH</span>
-                </div>
-
-                <div class="social-buttons" th:if="${googleLoginEnabled}">
-                    <a th:href="@{/oauth2/authorization/google}" class="btn btn-social">
-                        <svg th:replace="~{client/fragments/icons :: google}"></svg>
-                        GOOGLE
-                    </a>
-                </div>
 
                 <p class="register-prompt">
                     New to the collection? <a href="/register" class="register-link"><strong>Create an account</strong></a>

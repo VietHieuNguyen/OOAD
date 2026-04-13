@@ -20,8 +20,13 @@
                         <!-- Địa chỉ giao hàng -->
                         <div class="checkout-card">
                             <h2 class="checkout-card-title">Địa chỉ giao hàng</h2>
-                            <div class="form-group">
-                                <label class="form-label" for="address">ĐỊA CHỈ NHẬN HÀNG</label>
+                            <div class="form-group" style="position: relative;">
+                                <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                                    <label class="form-label" for="address">ĐỊA CHỈ NHẬN HÀNG</label>
+                                    <button type="button" class="btn btn-sm" style="background:none; border:none; color:var(--primary); cursor:pointer; font-weight:600; font-size:0.875rem;" onclick="openAddressModal()">
+                                        + Chọn từ sổ địa chỉ
+                                    </button>
+                                </div>
                                 <input type="text" id="address" th:field="*{address}"
                                        class="form-input" placeholder="Nhập địa chỉ giao hàng..."
                                        required />
@@ -146,5 +151,77 @@
     </section>
 
 </main>
+
+<!-- Address Selection Modal (no Bootstrap) -->
+<div class="cat-modal-overlay" id="checkoutAddressModalOverlay" onclick="closeAddressModal(event)" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="cat-modal-box" id="checkoutAddressModalBox" style="background: white; width: 100%; max-width: 500px; border-radius: 8px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+            <h3 style="margin: 0; font-family: var(--font-heading);">Sổ địa chỉ của bạn</h3>
+            <button type="button" onclick="closeAddressModalForce()" style="background: none; border: none; cursor: pointer;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        
+        <div style="max-height: 400px; overflow-y: auto;">
+            <div th:if="${#lists.isEmpty(addresses)}" style="text-align: center; padding: 20px; color: #666;">
+                Bạn chưa lưu địa chỉ nào trong sổ địa chỉ.
+            </div>
+            
+            <!-- List of addresses -->
+            <div th:each="addr : ${addresses}" 
+                 style="border: 1px solid #e0e0e0; border-radius: 6px; padding: 15px; margin-bottom: 15px; cursor: pointer; transition: all 0.2s;"
+                 onmouseover="this.style.borderColor='var(--primary)';" 
+                 onmouseout="this.style.borderColor='#e0e0e0';"
+                 th:onclick="selectAddress([[${addr.address}]] + ', ' + [[${addr.city}]], [[${addr.recipientName}]], [[${addr.phone}]])">
+                
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <strong style="color: var(--text-dark);" th:text="${addr.recipientName}">Tên</strong>
+                    <span th:if="${addr.isDefault}" style="background: var(--primary-light); color: var(--primary); font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; font-weight: bold;">Mặc định</span>
+                </div>
+                <div style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 4px;" th:text="${addr.phone}">SĐT</div>
+                <div style="color: var(--text); font-size: 0.875rem;" th:text="${addr.address} + ', ' + ${addr.city}">Địa chỉ</div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px; text-align: right;">
+            <button type="button" class="btn btn-outline" style="padding: 0.5rem 1rem;" onclick="closeAddressModalForce()">Đóng</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    var addressOverlay = document.getElementById('checkoutAddressModalOverlay');
+
+    function openAddressModal() {
+        addressOverlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeAddressModal(event) {
+        if (event.target === addressOverlay) closeAddressModalForce();
+    }
+
+    function closeAddressModalForce() {
+        addressOverlay.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    function selectAddress(fullAddress, recipientName, phone) {
+        document.getElementById('address').value = fullAddress;
+        
+        // Cập nhật thẻ hển thị người nhận và SĐT nếu muốn (hiện tại hiển thị info của customer)
+        var infoValues = document.querySelectorAll('.checkout-customer-info .info-value');
+        if (infoValues.length >= 1) {
+            infoValues[0].textContent = recipientName;
+        }
+        if (infoValues.length >= 2 && phone) {
+            infoValues[1].textContent = phone;
+        }
+        
+        closeAddressModalForce();
+    }
+</script>
 </body>
 </html>
