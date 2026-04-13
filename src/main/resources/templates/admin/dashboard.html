@@ -60,10 +60,10 @@
     <section class="dashboard-panel line-chart-panel">
         <div class="panel-heading">
             <div>
-                <span class="panel-kicker">Hoạt động gần đây</span>
-                <h3>Đơn hàng 7 ngày qua</h3>
+                <span class="panel-kicker">Recent Activity</span>
+                <h3>Orders Last 7 Days</h3>
             </div>
-            <a th:href="@{/admin/orders}" class="dash-view-all-btn">Xem tất cả đơn →</a>
+            <a th:href="@{/admin/orders}" class="dash-view-all-btn">View all orders →</a>
         </div>
         <div class="line-chart-wrapper">
             <canvas id="orderLineChart" height="90"></canvas>
@@ -76,8 +76,8 @@
         <article class="dashboard-panel quick-stats-panel">
             <div class="panel-heading">
                 <div>
-                    <span class="panel-kicker">Quản lý nhanh</span>
-                    <h3>Truy cập nhanh</h3>
+                    <span class="panel-kicker">Quick Management</span>
+                    <h3>Quick Access</h3>
                 </div>
             </div>
             <div class="pie-chart-wrap" style="padding: 1rem; display: flex; justify-content: center; align-items: center; min-height: 250px;">
@@ -88,8 +88,8 @@
         <aside class="dashboard-panel activity-panel" id="activity-panel">
             <div class="panel-heading panel-heading-stack">
                 <div>
-                    <span class="panel-kicker">Hệ thống</span>
-                    <h3>Trạng thái</h3>
+                    <span class="panel-kicker">System</span>
+                    <h3>Status</h3>
                 </div>
             </div>
             <div class="activity-list">
@@ -110,10 +110,10 @@
         <div class="panel-heading inventory-heading">
             <div>
                 <span class="panel-kicker">Catalog Watchlist</span>
-                <h3>Danh sách sách gần đây</h3>
+                <h3>Recent Books</h3>
             </div>
             <div class="inventory-tools">
-                <a th:href="@{/admin/books}" class="dash-view-all-btn">Xem tất cả →</a>
+                <a th:href="@{/admin/books}" class="dash-view-all-btn">View all →</a>
             </div>
         </div>
 
@@ -121,10 +121,10 @@
             <table class="inventory-table" id="inventoryTable">
                 <thead>
                 <tr>
-                    <th>Tên sách &amp; Tác giả</th>
-                    <th>Trạng thái</th>
-                    <th>Danh mục</th>
-                    <th>Tồn kho</th>
+                    <th>Title &amp; Author</th>
+                    <th>Status</th>
+                    <th>Category</th>
+                    <th>Stock</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -146,7 +146,7 @@
                     <td th:text="${book.stockLabel}">0 cuốn</td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(dashboard.books)}">
-                    <td colspan="4" class="inventory-empty">Chưa có sách nào trong hệ thống.</td>
+                    <td colspan="4" class="inventory-empty">No books in the system.</td>
                 </tr>
                 </tbody>
             </table>
@@ -175,7 +175,7 @@
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Đơn hàng',
+                    label: 'Orders',
                     data: counts,
                     borderColor: '#1a2e1a',
                     backgroundColor: 'rgba(26,46,26,0.08)',
@@ -194,7 +194,7 @@
                     legend: { display: false },
                     tooltip: {
                         callbacks: {
-                            label: function(ctx) { return ' ' + ctx.parsed.y + ' đơn'; }
+                            label: function(ctx) { return ' ' + ctx.parsed.y + ' orders'; }
                         }
                     }
                 },

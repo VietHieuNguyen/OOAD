@@ -114,7 +114,7 @@ public class OrderService implements OrderStatusSubject {
         // 1. Lấy giỏ hàng
         Cart cart = cartService.getOrCreateCart(customer);
         if (cart.getItems() == null || cart.getItems().isEmpty()) {
-            throw new IllegalStateException("Giỏ hàng trống, không thể đặt hàng.");
+            throw new IllegalStateException("Cart is empty, cannot place order.");
         }
 
         logger.info("Bắt đầu tạo đơn hàng cho khách: {} | Phương thức: {}",
@@ -132,7 +132,7 @@ public class OrderService implements OrderStatusSubject {
                 .collect(java.util.stream.Collectors.toCollection(java.util.LinkedHashSet::new));
 
         if (selectedItems.isEmpty()) {
-            throw new IllegalStateException("Bạn chưa chọn sản phẩm nào để thanh toán.");
+            throw new IllegalStateException("No items selected for checkout.");
         }
 
         Order.Builder builder = Order.builder()
@@ -225,7 +225,7 @@ public class OrderService implements OrderStatusSubject {
         // → StockAdjustmentObserver có thể duyệt order.getItems() mà không bị LazyInitializationException
         Order order = orderRepository.findByIdWithItems(orderId)
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "Không tìm thấy đơn hàng với ID: " + orderId));
+                        "Order not found with ID: " + orderId));
 
         OrderStatus oldStatus = order.getStatus();
         if (oldStatus == newStatus) {
@@ -245,7 +245,7 @@ public class OrderService implements OrderStatusSubject {
             // Validate: Nếu trạng thái sau khi next không khớp với newStatus (admin truyền vào sai tuần tự)
             if (order.getStatus() != newStatus) {
                 throw new IllegalArgumentException(
-                        "Chuyển trạng thái không hợp lệ. Không thể chuyển từ " + oldStatus + " trực tiếp sang " + newStatus);
+                        "Invalid status transition. Cannot update from " + oldStatus + " directly to " + newStatus);
             }
         }
 

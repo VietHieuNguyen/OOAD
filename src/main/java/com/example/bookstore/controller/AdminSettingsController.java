@@ -68,9 +68,9 @@ public class AdminSettingsController {
                 siteSettingService.saveHeroImageUrl(heroImageUrl);
             }
 
-            redirectAttributes.addFlashAttribute("successMessage", "Đã lưu cài đặt thành công!");
+            redirectAttributes.addFlashAttribute("successMessage", "Settings saved successfully!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi lưu cài đặt: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Error saving settings: " + e.getMessage());
         }
 
         return "redirect:/admin/settings";

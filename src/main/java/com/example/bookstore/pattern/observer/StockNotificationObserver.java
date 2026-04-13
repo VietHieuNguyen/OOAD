@@ -62,15 +62,15 @@ public class StockNotificationObserver implements StockObserver {
 
         if (stock == 0) {
             type = NotificationType.OUT_OF_STOCK_ALERT;
-            title = "Sách đã HẾT HÀNG";
+            title = "Book OUT OF STOCK";
             message = String.format(
-                    "Sách \"%s\" (ID: %s) đã hết hàng hoàn toàn. Cần nhập thêm ngay!",
+                    "Book \"%s\" (ID: %s) is completely out of stock. Restock needed immediately!",
                     book.getTitle(), book.getId());
         } else if (stock > 0 && stock < LOW_STOCK_THRESHOLD) {
             type = NotificationType.LOW_STOCK_ALERT;
-            title = "Sách sắp hết hàng";
+            title = "Book running low";
             message = String.format(
-                    "Sách \"%s\" (ID: %s) chỉ còn %d cuốn. Cân nhắc nhập thêm.",
+                    "Book \"%s\" (ID: %s) has only %d units left. Consider restocking.",
                     book.getTitle(), book.getId(), stock);
         } else {
             return; // Stock >= 10 → không cần thông báo

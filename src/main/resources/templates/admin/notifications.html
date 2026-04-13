@@ -11,13 +11,13 @@
         <div>
             <span class="panel-kicker">Admin</span>
             <h2 class="books-page-title">
-                Thông báo
+                Notifications
                 <span th:if="${unreadCount > 0}"
                       class="inventory-status status-low-stock"
-                      th:text="${unreadCount} + ' chưa đọc'">0 chưa đọc</span>
+                      th:text="${unreadCount} + ' unread'">0 unread</span>
             </h2>
             <p class="orders-subtitle"
-               th:text="'Tổng cộng ' + ${totalCount} + ' thông báo'">Tổng cộng 0 thông báo</p>
+               th:text="'Total ' + ${totalCount} + ' notifications'">Total 0 notifications</p>
         </div>
         <div style="display:flex;gap:.75rem;align-items:center;">
             <!-- Mark all read -->
@@ -27,10 +27,10 @@
                      fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="20 6 9 17 4 12"/>
                 </svg>
-                Đánh dấu đã đọc tất cả
+                Mark all as read
             </button>
             <a th:href="@{/admin/dashboard}" class="btn-add-book">
-                ← Về Dashboard
+                ← Back to Dashboard
             </a>
         </div>
     </div>
@@ -91,7 +91,7 @@
                               th:classappend="${n.type.name().startsWith('ORDER')} ? ' status-pre-order' : ' status-low-stock'"
                               th:text="${n.type.name().startsWith('ORDER')} ? 'ORDER' : 'STOCK'">TYPE</span>
                         <span th:if="${!n.read}" class="notif-unread-dot" style="align-self:flex-end;margin:0;"></span>
-                        <span th:if="${n.read}" class="book-copy" style="font-size:.65rem;">Đã đọc</span>
+                        <span th:if="${n.read}" class="book-copy" style="font-size:.65rem;">Read</span>
                     </div>
 
                 </button>
@@ -100,7 +100,7 @@
 
         <!-- Empty state -->
         <div th:if="${#lists.isEmpty(notifications)}" class="inventory-empty">
-            Bạn chưa có thông báo nào.
+            You have no notifications.
         </div>
 
     </section>
@@ -108,8 +108,8 @@
     <!-- ── Pagination ────────────────────────────────── -->
     <div class="order-pagination" th:unless="${totalPages <= 1}">
         <span class="orders-footer"
-              th:text="'Trang ' + ${currentPage} + ' / ' + ${totalPages}
-                        + '  (' + ${totalCount} + ' thông báo)'">
+              th:text="'Page ' + ${currentPage} + ' of ' + ${totalPages}
+                        + '  (' + ${totalCount} + ' notifications)'">
         </span>
         <div class="pager">
             <a th:if="${currentPage > 1}"
@@ -154,7 +154,7 @@
 
     <!-- Count when single page -->
     <div class="orders-footer" th:if="${totalPages <= 1 and totalCount > 0}"
-         th:text="'Hiển thị tất cả ' + ${totalCount} + ' thông báo'">
+         th:text="'Showing all ' + ${totalCount} + ' notifications'">
     </div>
 
 </div>
@@ -183,7 +183,7 @@
                     });
                     btn.style.display = 'none';
                     const flash = document.getElementById('notifPageFlash');
-                    flash.textContent = 'Đã đánh dấu ' + data.marked + ' thông báo là đã đọc.';
+                    flash.textContent = 'Marked ' + data.marked + ' notifications as read.';
                     flash.style.display = 'block';
                     setTimeout(() => { flash.style.display = 'none'; }, 3000);
                 })

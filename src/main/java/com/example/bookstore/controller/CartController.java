@@ -50,7 +50,7 @@ public class CartController {
 
         Customer customer = findCustomer(currentUser);
         if (customer == null) {
-            redirectAttributes.addFlashAttribute("error", "Không tìm thấy thông tin khách hàng.");
+            redirectAttributes.addFlashAttribute("error", "Customer information not found.");
             return "redirect:/";
         }
 
@@ -79,13 +79,13 @@ public class CartController {
 
         Customer customer = findCustomer(currentUser);
         if (customer == null) {
-            redirectAttributes.addFlashAttribute("error", "Không tìm thấy thông tin khách hàng.");
+            redirectAttributes.addFlashAttribute("error", "Customer information not found.");
             return "redirect:/";
         }
 
         try {
             cartService.addCartItem(customer, bookId, quantity);
-            redirectAttributes.addFlashAttribute("success", "Đã thêm sách vào giỏ hàng!");
+            redirectAttributes.addFlashAttribute("success", "Book added to cart!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
@@ -131,7 +131,7 @@ public class CartController {
         if (error != null) {
             redirectAttributes.addFlashAttribute("voucherError", error);
         } else {
-            redirectAttributes.addFlashAttribute("voucherSuccess", "Áp dụng mã giảm giá thành công!");
+            redirectAttributes.addFlashAttribute("voucherSuccess", "Voucher applied successfully!");
         }
 
         return "redirect:/cart";

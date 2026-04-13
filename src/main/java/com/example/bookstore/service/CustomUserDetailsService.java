@@ -23,10 +23,10 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByUsername(usernameOrEmail)
                 .or(() -> userRepository.findByEmail(usernameOrEmail))
                 .orElseThrow(() -> new UsernameNotFoundException(
-                        "Không tìm thấy tài khoản: " + usernameOrEmail));
+                        "Account not found: " + usernameOrEmail));
 
         if (!Boolean.TRUE.equals(user.getIsActive())) {
-            throw new UsernameNotFoundException("Tài khoản đã bị khóa");
+            throw new UsernameNotFoundException("Account is locked");
         }
 
         return new org.springframework.security.core.userdetails.User(

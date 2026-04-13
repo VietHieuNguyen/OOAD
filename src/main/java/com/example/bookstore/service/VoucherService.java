@@ -41,7 +41,7 @@ public class VoucherService {
     @Transactional
     public void deleteById(String id) {
         if (!voucherRepository.existsById(id)) {
-            throw new IllegalArgumentException("Không tìm thấy voucher với ID: " + id);
+            throw new IllegalArgumentException("Voucher not found with ID: " + id);
         }
         voucherRepository.deleteById(id);
     }

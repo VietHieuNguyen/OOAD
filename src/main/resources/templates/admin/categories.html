@@ -1,148 +1,159 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{admin/layout}">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{admin/layout}">
+
 <head>
     <title>Manage Categories</title>
 </head>
+
 <body>
-<div layout:fragment="content" class="categories-shell">
+    <div layout:fragment="content" class="categories-shell">
 
-    <!-- Page Header -->
-    <div class="books-page-header">
-        <div>
-            <span class="panel-kicker">Catalog Configuration</span>
-            <h2 class="books-page-title">Genre &amp; Categories</h2>
+        <!-- Page Header -->
+        <div class="books-page-header">
+            <div>
+                <span class="panel-kicker">Catalog Configuration</span>
+                <h2 class="books-page-title">Genre &amp; Categories</h2>
+            </div>
+            <a th:href="@{/admin/categories/create}" class="btn-add-book">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                <span>Add New Category</span>
+            </a>
         </div>
-        <a th:href="@{/admin/categories/create}" class="btn-add-book">
+
+        <!-- Flash Messages -->
+        <div th:if="${successMessage}" class="flash-msg flash-success">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
-            <span>Add New Category</span>
-        </a>
-    </div>
-
-    <!-- Flash Messages -->
-    <div th:if="${successMessage}" class="flash-msg flash-success">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="20 6 9 17 4 12"></polyline>
-        </svg>
-        <span th:text="${successMessage}">Success</span>
-    </div>
-    <div th:if="${errorMessage}" class="flash-msg flash-error">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line>
-            <line x1="9" y1="9" x2="15" y2="15"></line>
-        </svg>
-        <span th:text="${errorMessage}">Error</span>
-    </div>
-
-    <!-- Stats Summary -->
-    <div class="cat-stats">
-        <span class="books-count" th:text="'Total: ' + ${#lists.size(categories)} + ' categories'">Total: 0 categories</span>
-    </div>
-
-    <!-- Categories Table -->
-    <section class="dashboard-panel">
-        <div class="inventory-table-wrap">
-            <table class="inventory-table" id="categoriesTable">
-                <thead>
-                <tr>
-                    <th style="width:50px">#</th>
-                    <th>Category Name</th>
-                    <th>Parent</th>
-                    <th>Image</th>
-                    <th>Books Count</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr th:each="cat, iter : ${categories}" class="inventory-row">
-                    <!-- # -->
-                    <td>
-                        <span class="cat-index" th:text="${iter.count}">1</span>
-                    </td>
-
-                    <!-- Category Name -->
-                    <td>
-                        <a th:href="@{/admin/categories/{id}(id=${cat.id})}" class="cat-name-link">
-                            <div class="cat-name-cell">
-                                <div class="cat-color-dot"></div>
-                                <strong th:text="${cat.name}">Fiction</strong>
-                            </div>
-                        </a>
-                    </td>
-
-                    <!-- Parent Category -->
-                    <td>
-                        <span th:if="${cat.parentCategory != null}" th:text="${cat.parentCategory.name}" class="cat-parent-label">Parent</span>
-                        <span th:unless="${cat.parentCategory != null}" class="cat-no-image">—</span>
-                    </td>
-
-                    <!-- Image Preview -->
-                    <td>
-                        <img th:if="${cat.imageUrl != null and !#strings.isEmpty(cat.imageUrl)}"
-                             th:src="${cat.imageUrl}" alt="" class="cat-thumb" />
-                        <span th:unless="${cat.imageUrl != null and !#strings.isEmpty(cat.imageUrl)}"
-                              class="cat-no-image">No image</span>
-                    </td>
-
-                    <!-- Books Count -->
-                    <td>
-                        <span class="cat-book-count" th:text="${bookCounts[cat.id]} + ' titles'">0 titles</span>
-                    </td>
-
-                    <!-- Status -->
-                    <td>
-                        <span class="inventory-status"
-                              th:classappend="${cat.isActive ? ' status-in-stock' : ' status-pre-order'}"
-                              th:text="${cat.isActive ? 'Active' : 'Inactive'}">
-                            Status
-                        </span>
-                    </td>
-
-                    <!-- Actions -->
-                    <td>
-                        <div class="inventory-actions">
-                            <!-- Edit Button -->
-                            <a th:href="@{/admin/categories/edit/{id}(id=${cat.id})}" class="icon-button btn-edit-cat" title="Edit">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                                     fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                                     stroke-linejoin="round">
-                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                                </svg>
-                            </a>
-                            <!-- Delete Button -->
-                            <form th:action="@{/admin/categories/delete/{id}(id=${cat.id})}"
-                                  method="post" style="display:inline;"
-                                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa danh mục này?');">
-                                <button type="submit" class="icon-button icon-button-danger" title="Delete">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                                         stroke-linecap="round" stroke-linejoin="round">
-                                        <polyline points="3 6 5 6 21 6"></polyline>
-                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                    </svg>
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-
-                <!-- Empty State -->
-                <tr th:if="${#lists.isEmpty(categories)}">
-                    <td colspan="7" class="inventory-empty">
-                        No categories yet. Click "Add New Category" to create one.
-                    </td>
-                </tr>
-                </tbody>
-            </table>
+            <span th:text="${successMessage}">Success</span>
         </div>
-    </section>
+        <div th:if="${errorMessage}" class="flash-msg flash-error">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+            <span th:text="${errorMessage}">Error</span>
+        </div>
 
-</div>
+        <!-- Stats Summary -->
+        <div class="cat-stats">
+            <span class="books-count" th:text="'Total: ' + ${#lists.size(categories)} + ' categories'">Total: 0
+                categories</span>
+        </div>
+
+        <!-- Categories Table -->
+        <section class="dashboard-panel">
+            <div class="inventory-table-wrap">
+                <table class="inventory-table" id="categoriesTable">
+                    <thead>
+                        <tr>
+                            <th style="width:50px">#</th>
+                            <th>Category Name</th>
+                            <th>Parent</th>
+                            <th>Image</th>
+                            <th>Books Count</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="cat, iter : ${categories}" class="inventory-row">
+                            <!-- # -->
+                            <td>
+                                <span class="cat-index" th:text="${iter.count}">1</span>
+                            </td>
+
+                            <!-- Category Name -->
+                            <td>
+                                <a th:href="@{/admin/categories/{id}(id=${cat.id})}" class="cat-name-link">
+                                    <div class="cat-name-cell">
+                                        <div class="cat-color-dot"></div>
+                                        <strong th:text="${cat.name}">Fiction</strong>
+                                    </div>
+                                </a>
+                            </td>
+
+                            <!-- Parent Category -->
+                            <td>
+                                <span th:if="${cat.parentCategory != null}" th:text="${cat.parentCategory.name}"
+                                    class="cat-parent-label">Parent</span>
+                                <span th:unless="${cat.parentCategory != null}" class="cat-no-image">—</span>
+                            </td>
+
+                            <!-- Image Preview -->
+                            <td>
+                                <img th:if="${cat.imageUrl != null and !#strings.isEmpty(cat.imageUrl)}"
+                                    th:src="${cat.imageUrl}" alt="" class="cat-thumb" />
+                                <span th:unless="${cat.imageUrl != null and !#strings.isEmpty(cat.imageUrl)}"
+                                    class="cat-no-image">No image</span>
+                            </td>
+
+                            <!-- Books Count -->
+                            <td>
+                                <span class="cat-book-count" th:text="${bookCounts[cat.id]} + ' titles'">0 titles</span>
+                            </td>
+
+                            <!-- Status -->
+                            <td>
+                                <span class="inventory-status"
+                                    th:classappend="${cat.isActive ? ' status-in-stock' : ' status-pre-order'}"
+                                    th:text="${cat.isActive ? 'Active' : 'Inactive'}">
+                                    Status
+                                </span>
+                            </td>
+
+                            <!-- Actions -->
+                            <td>
+                                <div class="inventory-actions">
+                                    <!-- Edit Button -->
+                                    <a th:href="@{/admin/categories/edit/{id}(id=${cat.id})}"
+                                        class="icon-button btn-edit-cat" title="Edit">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                        </svg>
+                                    </a>
+                                    <!-- Delete Button -->
+                                    <form th:action="@{/admin/categories/delete/{id}(id=${cat.id})}" method="post"
+                                        style="display:inline;"
+                                        onsubmit="return confirm('Are you sure you want to delete this category?');">
+                                        <button type="submit" class="icon-button icon-button-danger" title="Delete">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="3 6 5 6 21 6"></polyline>
+                                                <path
+                                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+                                                </path>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Empty State -->
+                        <tr th:if="${#lists.isEmpty(categories)}">
+                            <td colspan="7" class="inventory-empty">
+                                No categories yet. Click "Add New Category" to create one.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </div>
 </body>
+
 </html>

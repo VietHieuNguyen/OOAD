@@ -87,11 +87,11 @@ public class CartService {
     public void addCartItem(Customer customer, String bookId, int quantity) {
         Cart cart = getOrCreateCart(customer);
         Book book = bookRepository.findById(bookId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sách."));
+                .orElseThrow(() -> new IllegalArgumentException("Book not found."));
 
         if (quantity <= 0) quantity = 1;
         if (book.getStockQuantity() < quantity) {
-            throw new IllegalStateException("Sách không đủ số lượng trong kho.");
+            throw new IllegalStateException("Book is out of stock.");
         }
 
         // Kiểm tra xem sách đã có trong giỏ chưa
@@ -128,7 +128,7 @@ public class CartService {
     @Transactional
     public void updateQuantity(String cartItemId, int quantity) {
         CartItem item = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sản phẩm trong giỏ."));
+                .orElseThrow(() -> new IllegalArgumentException("Item not found in cart."));
 
         if (quantity <= 0) {
             cartItemRepository.delete(item);
@@ -179,7 +179,7 @@ public class CartService {
     @Transactional
     public void toggleItemGiftWrap(String cartItemId) {
         CartItem item = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sản phẩm trong giỏ."));
+                .orElseThrow(() -> new IllegalArgumentException("Item not found in cart."));
         item.setIsGiftWrapped(!Boolean.TRUE.equals(item.getIsGiftWrapped()));
         cartItemRepository.save(item);
     }
@@ -191,7 +191,7 @@ public class CartService {
     @Transactional
     public void toggleItemBookCover(String cartItemId) {
         CartItem item = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sản phẩm trong giỏ."));
+                .orElseThrow(() -> new IllegalArgumentException("Item not found in cart."));
         item.setIsBookCovered(!Boolean.TRUE.equals(item.getIsBookCovered()));
         cartItemRepository.save(item);
     }

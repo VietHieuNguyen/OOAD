@@ -130,20 +130,20 @@
 
 <div class="login-card">
     <h1 class="brand">X-Books Admin</h1>
-    <p class="brand-sub">Nhập thông tin quản trị để tiếp tục.</p>
+    <p class="brand-sub">Enter admin credentials to proceed.</p>
 
     <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
     <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
 
     <form th:action="@{/admin/login}" method="post">
         <div class="form-group">
-            <label class="form-label" for="username">Tên đăng nhập</label>
+            <label class="form-label" for="username">Username</label>
             <input class="form-input" type="text" id="username" name="username"
                    placeholder="admin" required autofocus>
         </div>
 
         <div class="form-group">
-            <label class="form-label" for="password">Mật khẩu</label>
+            <label class="form-label" for="password">Password</label>
             <div class="password-wrapper">
                 <input class="form-input" type="password" id="password" name="password"
                        placeholder="••••••••••" required>
@@ -151,7 +151,7 @@
             </div>
         </div>
 
-        <button type="submit" class="btn-primary">Đăng nhập</button>
+        <button type="submit" class="btn-primary">Sign in</button>
     </form>
 </div>
 

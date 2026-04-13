@@ -54,7 +54,7 @@ public class AuthController {
                                RedirectAttributes redirectAttributes) {
         try {
             userService.registerCustomer(username, email, password, fullName, phoneNumber, address);
-            redirectAttributes.addFlashAttribute("success", "Đăng ký thành công. Vui lòng đăng nhập.");
+            redirectAttributes.addFlashAttribute("success", "Registration successful. Please log in.");
             return "redirect:/login";
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -69,15 +69,15 @@ public class AuthController {
 
     private String resolveOauth2ErrorMessage(String oauth2Error) {
         return switch (oauth2Error) {
-            case "google_session_expired" -> "Phiên đăng nhập Google đã hết hạn hoặc cookie xác thực đã bị mất. Vui lòng bấm lại nút Google và thử lại.";
-            case "google_invalid_grant" -> "Mã xác thực Google đã hết hạn hoặc đã bị dừng lại. Vui lòng đăng nhập Google từ đầu, không refresh hay mở lại link callback cũ.";
-            case "google_invalid_client" -> "Cấu hình Google OAuth đang sai client secret hoặc client id.";
-            case "google_access_denied" -> "Bạn đã hủy hoặc từ chối quyền đăng nhập bằng Google.";
-            case "google_connection_failed" -> "Không kết nối được tới Google để hoàn tất đăng nhập.";
-            case "google_account_sync_failed" -> "Đăng nhập Google thành công nhưng không lưu được tài khoản vào database.";
-            case "invalid_google_account" -> "Tài khoản Google không hợp lệ hoặc thiếu email.";
-            case "account_disabled" -> "Tài khoản của bạn đã bị khóa.";
-            default -> "Đăng nhập Google thất bại. Vui lòng thử lại.";
+            case "google_session_expired" -> "Google session expired or auth cookie lost. Please try again.";
+            case "google_invalid_grant" -> "Google authentication code expired or revoked. Please log in again.";
+            case "google_invalid_client" -> "Google OAuth configuration issue.";
+            case "google_access_denied" -> "You cancelled or denied Google login.";
+            case "google_connection_failed" -> "Could not connect to Google to complete login.";
+            case "google_account_sync_failed" -> "Google login successful but could not save account.";
+            case "invalid_google_account" -> "Invalid Google account or missing email.";
+            case "account_disabled" -> "Your account is disabled.";
+            default -> "Google login failed. Please try again.";
         };
     }
 }

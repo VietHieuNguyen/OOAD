@@ -53,7 +53,7 @@ public class UserService {
     @Transactional
     public void toggleActive(String userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy user với ID: " + userId));
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
         user.setIsActive(!Boolean.TRUE.equals(user.getIsActive()));
         userRepository.save(user);
     }

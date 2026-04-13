@@ -79,10 +79,10 @@ public class OrderNotificationObserver implements OrderObserver {
 
     private String buildTitle(OrderStatus status) {
         return switch (status) {
-            case CONFIRMED -> "Đơn hàng đã được xác nhận";
-            case COMPLETED -> "Đơn hàng đã hoàn thành";
-            case CANCELLED -> "Đơn hàng đã bị hủy";
-            default -> "Cập nhật đơn hàng";
+            case CONFIRMED -> "Order confirmed";
+            case COMPLETED -> "Order completed";
+            case CANCELLED -> "Order cancelled";
+            default -> "Order update";
         };
     }
 
@@ -90,15 +90,15 @@ public class OrderNotificationObserver implements OrderObserver {
         String orderId = order.getOrderId().substring(0, 8).toUpperCase();
         return switch (status) {
             case CONFIRMED -> String.format(
-                    "Đơn hàng #%s (tổng: %s VND) của bạn đã được xác nhận và đang được xử lý.",
+                    "Your order #%s (total: %s VND) has been confirmed and is being processed.",
                     orderId, order.getTotalAmount().toPlainString());
             case COMPLETED -> String.format(
-                    "Đơn hàng #%s đã hoàn thành. Cảm ơn bạn đã mua sắm tại BookStore!",
+                    "Order #%s has been completed. Thank you for shopping at BookStore!",
                     orderId);
             case CANCELLED -> String.format(
-                    "Đơn hàng #%s đã bị hủy. Vui lòng liên hệ CSKH nếu cần hỗ trợ.",
+                    "Order #%s has been cancelled. Please contact customer support if you need assistance.",
                     orderId);
-            default -> String.format("Đơn hàng #%s có cập nhật mới.", orderId);
+            default -> String.format("Order #%s has new updates.", orderId);
         };
     }
 }

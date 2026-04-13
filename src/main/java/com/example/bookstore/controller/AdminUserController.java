@@ -41,7 +41,7 @@ public class AdminUserController {
                                RedirectAttributes redirectAttributes) {
         try {
             userService.toggleActive(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Đã cập nhật trạng thái user!");
+            redirectAttributes.addFlashAttribute("successMessage", "User status updated!");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }

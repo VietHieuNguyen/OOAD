@@ -130,7 +130,7 @@ public class AdminOrderController {
                 })
                 .orElseGet(() -> {
                     redirectAttributes.addFlashAttribute("errorMessage",
-                            "Không tìm thấy đơn hàng với ID: " + id);
+                            "Order not found with ID: " + id);
                     return "redirect:/admin/orders";
                 });
     }
@@ -154,10 +154,10 @@ public class AdminOrderController {
         try {
             orderService.updateStatus(id, newStatus);
             redirectAttributes.addFlashAttribute("successMessage",
-                    "Đã cập nhật trạng thái đơn hàng thành: " + newStatus.name());
+                    "Order status updated to: " + newStatus.name());
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage",
-                    "Lỗi cập nhật trạng thái: " + e.getMessage());
+                    "Error updating status: " + e.getMessage());
         }
 
         if ("list".equals(redirectTo)) {

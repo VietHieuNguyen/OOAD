@@ -101,7 +101,7 @@ public class AdminCategoryController {
                 })
                 .orElseGet(() -> {
                     redirectAttributes.addFlashAttribute("errorMessage",
-                            "Không tìm thấy danh mục với ID: " + id);
+                            "Category not found with ID: " + id);
                     return "redirect:/admin/categories";
                 });
     }

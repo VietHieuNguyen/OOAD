@@ -43,10 +43,10 @@ public class AdminAuthController {
                                  @RequestParam(value = "logout", required = false) String logout,
                                  Model model) {
         if (error != null) {
-            model.addAttribute("error", "Sai tên đăng nhập hoặc mật khẩu!");
+            model.addAttribute("error", "Invalid username or password!");
         }
         if (logout != null) {
-            model.addAttribute("success", "Đã đăng xuất thành công!");
+            model.addAttribute("success", "Logged out successfully!");
         }
         return "admin/login";
     }
@@ -59,7 +59,7 @@ public class AdminAuthController {
         // Header
         String today = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.ENGLISH));
         dto.setGreeting("Dashboard Overview");
-        dto.setSubtitle("Tổng quan hoạt động cửa hàng — " + today + ".");
+        dto.setSubtitle("Store activity overview \u2014 " + today + ".");
         dto.setSystemStatusLabel("Fully Synced");
         dto.setSystemStatusNote("Database online");
 
@@ -109,7 +109,7 @@ public class AdminAuthController {
                 .filter(o -> o.getStatus() == OrderStatus.CANCELLED)
                 .count();
 
-        model.addAttribute("pieChartLabels", "['Chờ xử lý', 'Hoàn thành', 'Bị huỷ']");
+        model.addAttribute("pieChartLabels", "['Pending', 'Completed', 'Cancelled']");
         model.addAttribute("pieChartData", "[" + pendingOrders + "," + completedOrders + "," + cancelledOrders + "]");
 
         long customerCount = userRepository.count();
@@ -127,32 +127,32 @@ public class AdminAuthController {
         }
 
         dto.setRevenueCard(new DashboardDTO.MetricCard(
-                "TỔNG DOANH THU",
+                "TOTAL REVENUE",
                 revenueStr,
                 "COMPLETED",
                 true,
-                totalOrders + " đơn hàng tổng cộng"));
+                totalOrders + " total orders"));
 
         dto.setOrdersCard(new DashboardDTO.MetricCard(
-                "ĐƠN HÀNG THÁNG NÀY",
+                "ORDERS THIS MONTH",
                 String.valueOf(ordersThisMonth),
-                pendingOrders > 0 ? pendingOrders + " đang chờ" : "Tất cả xử lý",
+                pendingOrders > 0 ? pendingOrders + " pending" : "All processed",
                 pendingOrders == 0,
-                "Tổng: " + totalOrders + " đơn hàng"));
+                "Total: " + totalOrders + " orders"));
 
         dto.setCustomersCard(new DashboardDTO.MetricCard(
-                "NGƯỜI DÙNG",
+                "USERS",
                 String.valueOf(customerCount),
                 "DB",
                 true,
-                "tài khoản trong hệ thống"));
+                "accounts in system"));
 
         dto.setStockCard(new DashboardDTO.MetricCard(
-                "TỔNG SÁCH",
+                "TOTAL BOOKS",
                 String.valueOf(totalBooks),
-                activeBooks + " đang active",
+                activeBooks + " active",
                 true,
-                "Tổng tồn kho: " + totalStock + " cuốn"));
+                "Total stock: " + totalStock + " units"));
 
         // ==================== LINE CHART DATA (7 ngày gần nhất) ====================
         // Build daily order counts and revenue for the last 7 days
@@ -206,23 +206,23 @@ public class AdminAuthController {
                         row.setStatusLabel("Out of Stock");
                         row.setStatusClass("out");
                     }
-                    row.setStockLabel(stock + " cuốn");
+                    row.setStockLabel(stock + " units");
                     return row;
                 })
                 .collect(Collectors.toList());
 
-        dto.setInventorySearchPlaceholder("Tìm kiếm sách...");
+        dto.setInventorySearchPlaceholder("Search books...");
         dto.setBooks(bookRows);
-        dto.setDataSourceNote("Dữ liệu thực từ database — cập nhật realtime");
+        dto.setDataSourceNote("Real-time data from database");
 
         // Activities still hardcoded but relevant
         dto.setActivities(Arrays.asList(
                 new DashboardDTO.ActivityItem("DB", "Database",
-                        "Kết nối database ổn định. Tất cả dữ liệu đang đồng bộ.", "Online", "positive"),
+                        "Database connection stable. All data synchronized.", "Online", "positive"),
                 new DashboardDTO.ActivityItem("G", "Google OAuth2",
-                        "Đăng nhập Google đang hoạt động. Tài khoản được lưu vào DB.", "Active", "positive"),
+                        "Google login active. Accounts are securely stored.", "Active", "positive"),
                 new DashboardDTO.ActivityItem("📊", "Dashboard",
-                        totalBooks + " sách, " + totalOrders + " đơn hàng, " + customerCount + " users.", "Live", "positive")
+                        totalBooks + " books, " + totalOrders + " orders, " + customerCount + " users.", "Live", "positive")
         ));
 
         model.addAttribute("dashboard", dto);

@@ -29,14 +29,14 @@
 
                     <div class="form-row-admin">
                         <div class="form-group-admin">
-                            <label class="form-label-admin" for="code">MÃ VOUCHER</label>
+                            <label class="form-label-admin" for="code">VOUCHER CODE</label>
                             <input type="text" id="code" th:field="*{code}"
                                    class="form-input-admin" placeholder="e.g. GIAM20, SALE50" required
                                    style="text-transform: uppercase;" />
-                            <small class="form-hint">Mã sẽ được tự động chuyển thành chữ IN HOA.</small>
+                            <small class="form-hint">Code will be automatically converted to UPPERCASE.</small>
                         </div>
                         <div class="form-group-admin">
-                            <label class="form-label-admin" for="discountPercentage">SỐ PHẦN TRĂM GIẢM (%)</label>
+                            <label class="form-label-admin" for="discountPercentage">DISCOUNT PERCENTAGE (%)</label>
                             <input type="number" id="discountPercentage" th:field="*{discountPercentage}"
                                    class="form-input-admin" placeholder="e.g. 10" min="1" max="100" step="0.5" required />
                         </div>
@@ -44,23 +44,23 @@
 
                     <div class="form-row-admin">
                         <div class="form-group-admin">
-                            <label class="form-label-admin" for="maxDiscountAmount">GIẢM TỐI ĐA (VNĐ)</label>
+                            <label class="form-label-admin" for="maxDiscountAmount">MAX DISCOUNT (VND)</label>
                             <input type="number" id="maxDiscountAmount" th:field="*{maxDiscountAmount}"
                                    class="form-input-admin" placeholder="e.g. 50000" min="0" step="1000" />
-                            <small class="form-hint">Để trống nếu không giới hạn số tiền giảm.</small>
+                            <small class="form-hint">Leave blank for no limit.</small>
                         </div>
                         <div class="form-group-admin">
-                            <label class="form-label-admin" for="usageLimit">SỐ LƯỢNG SỬ DỤNG TỐI ĐA</label>
+                            <label class="form-label-admin" for="usageLimit">MAX USAGE AMOUNT</label>
                             <input type="number" id="usageLimit" th:field="*{usageLimit}"
                                    class="form-input-admin" placeholder="e.g. 100" min="1" required />
                         </div>
                     </div>
 
                     <div class="form-group-admin">
-                        <label class="form-label-admin" for="expirationDate">THỜI GIAN HẾT HẠN</label>
+                        <label class="form-label-admin" for="expirationDate">EXPIRATION DATE</label>
                         <input type="datetime-local" id="expirationDate" th:field="*{expirationDate}"
                                class="form-input-admin" />
-                        <small class="form-hint">Để trống nếu voucher không có hạn sử dụng.</small>
+                        <small class="form-hint">Leave blank if voucher has no expiration date.</small>
                     </div>
                 </div>
             </div>
@@ -73,8 +73,8 @@
                         Voucher Guidelines
                     </h4>
                     <p class="tip-card-text">
-                        Mã voucher nên ngắn gọn, dễ nhớ (6-12 ký tự). Ví dụ: GIAM10, SALE50, WELCOME.
-                        Nên đặt giới hạn giảm tối đa để tránh lỗ trên đơn hàng lớn.
+                        Voucher code should be short, memorable (6-12 chars). Example: SAVE10, SALE50, WELCOME.
+                        You should set a maximum discount limit to prevent heavy losses on large orders.
                     </p>
                 </div>
 
