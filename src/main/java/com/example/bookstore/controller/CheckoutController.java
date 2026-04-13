@@ -9,6 +9,8 @@ import com.example.bookstore.entity.enums.PaymentMethodType;
 import com.example.bookstore.repository.CustomerRepository;
 import com.example.bookstore.service.CartService;
 import com.example.bookstore.service.OrderService;
+import com.example.bookstore.repository.CustomerAddressRepository;
+import com.example.bookstore.entity.CustomerAddress;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,13 +27,16 @@ public class CheckoutController {
     private final OrderService orderService;
     private final CartService cartService;
     private final CustomerRepository customerRepository;
+    private final CustomerAddressRepository customerAddressRepository;
 
     public CheckoutController(OrderService orderService,
                               CartService cartService,
-                              CustomerRepository customerRepository) {
+                              CustomerRepository customerRepository,
+                              CustomerAddressRepository customerAddressRepository) {
         this.orderService = orderService;
         this.cartService = cartService;
         this.customerRepository = customerRepository;
+        this.customerAddressRepository = customerAddressRepository;
     }
 
     /**
@@ -63,9 +68,18 @@ public class CheckoutController {
             return "redirect:/cart";
         }
 
-        // Pre-fill địa chỉ từ Customer.address
+        // Lấy danh sách địa chỉ của khách hàng
+        java.util.List<CustomerAddress> addresses = customerAddressRepository.findByCustomerIdOrderByIsDefaultDescIdAsc(customer.getId());
+
+        // Pre-fill địa chỉ mặc định hoặc từ Customer.address nếu ko có địa chỉ trong sổ
         CheckoutDTO dto = new CheckoutDTO();
-        dto.setAddress(customer.getAddress() != null ? customer.getAddress() : "");
+        if (!addresses.isEmpty()) {
+            dto.setAddress(addresses.get(0).getAddress() + ", " + addresses.get(0).getCity()); // Lấy địa chỉ đầu tiên (thường là mặc định)
+        } else if (customer.getAddress() != null) {
+            dto.setAddress(customer.getAddress());
+        } else {
+            dto.setAddress("");
+        }
         dto.setPaymentMethod(PaymentMethodType.COD);
 
         // Sử dụng Decorator Pattern để tính chi tiết giá (thread-safe: tính 1 lần, snapshot kết quả)
@@ -79,6 +93,7 @@ public class CheckoutController {
         model.addAttribute("paymentMethods", PaymentMethodType.values());
         model.addAttribute("priceBreakdown", priceBreakdown);
         model.addAttribute("shippingFee", shippingFee);
+        model.addAttribute("addresses", addresses);
 
         return "client/checkout";
     }

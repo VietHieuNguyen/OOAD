@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import jakarta.annotation.PostConstruct;
 
 /**
  * Service layer cho entity Book.
@@ -50,6 +51,36 @@ public class BookService implements StockSubject {
     }
 
     // ======================== OBSERVER PATTERN ========================
+
+    @PostConstruct
+    @Transactional
+    public void fixExistingBooksActiveState() {
+        // Cập nhật tất cả sách đang bị isActive = false thành true
+        // Đồng thời nếu sách có stockQuantity <= 0 thì set tạm thành 10 để có thể hiện ở Client
+        // Bổ sung isDeleted = false cho mượt mà
+        List<Book> allBooks = bookRepository.findAll();
+        boolean changed = false;
+        for (Book b : allBooks) {
+            if (!Boolean.TRUE.equals(b.getIsActive())) {
+                b.setIsActive(true);
+                changed = true;
+            }
+            if (!Boolean.TRUE.equals(b.getIsPicked())) {
+                b.setIsPicked(false);
+            }
+            if (b.getIsDeleted() == null || b.getIsDeleted()) {
+                b.setIsDeleted(false);
+                changed = true;
+            }
+            if (b.getStockQuantity() == null || b.getStockQuantity() <= 0) {
+                b.setStockQuantity(10);
+                changed = true;
+            }
+        }
+        if (changed) {
+            bookRepository.saveAll(allBooks);
+        }
+    }
 
     @Override
     public void addStockObserver(StockObserver observer) {
@@ -129,6 +160,18 @@ public class BookService implements StockSubject {
     }
 
     /**
+     * Lấy các sách liên quan (cùng chuyên mục, còn hàng, khác sách hiện tại).
+     */
+    @Transactional(readOnly = true)
+    public List<Book> findRelatedBooks(String categoryId, String currentBookId, int limit) {
+        List<Book> related = bookRepository.findRelatedBooks(categoryId, currentBookId, PageRequest.of(0, limit));
+        related.forEach(b -> {
+            if (b.getCategory() != null) b.getCategory().getName();
+        });
+        return related;
+    }
+
+    /**
      * Tìm sách theo slug (URL thân thiện).
      */
     @Transactional(readOnly = true)
@@ -149,13 +192,19 @@ public class BookService implements StockSubject {
     /** Paginated: filter by category. */
     @Transactional(readOnly = true)
     public Page<Book> findByCategoryPaged(String categoryId, Pageable pageable) {
-        return bookRepository.findByCategoryId(categoryId, pageable);
+        return bookRepository.findByCategoryIdAndIsActiveTrueAndIsDeletedFalseAndStockQuantityGreaterThan(categoryId, 0, pageable);
     }
 
     /** Paginated: category + search. */
     @Transactional(readOnly = true)
     public Page<Book> searchByCategoryAndQuery(String categoryId, String q, Pageable pageable) {
         return bookRepository.searchByCategoryAndQuery(categoryId, q, pageable);
+    }
+
+    /** Paginated: all active books for client. */
+    @Transactional(readOnly = true)
+    public Page<Book> findAllActivePaged(Pageable pageable) {
+        return bookRepository.findByIsActiveTrueAndIsDeletedFalseAndStockQuantityGreaterThan(0, pageable);
     }
 
     /** Get latest N books by ID (proxy for creation order). */
@@ -165,6 +214,30 @@ public class BookService implements StockSubject {
                 PageRequest.of(0, limit, Sort.by("id").descending()));
         p.getContent().forEach(b -> { if (b.getCategory() != null) b.getCategory().getName(); });
         return p.getContent();
+    }
+
+    /**
+     * Lấy tất cả sách active, chưa xoá và còn hàng cho hiển thị phía client.
+     * (isActive = true, isDeleted = false và stockQuantity > 0)
+     */
+    @Transactional(readOnly = true)
+    public List<Book> findActiveForClient() {
+        List<Book> books = bookRepository.findByIsActiveTrueAndIsDeletedFalseAndStockQuantityGreaterThan(0);
+        books.forEach(b -> { if (b.getCategory() != null) b.getCategory().getName(); });
+        return books;
+    }
+
+    /**
+     * Bật/tắt trạng thái active của sách (admin toggle).
+     */
+    @Transactional
+    public boolean toggleActive(String bookId) {
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sách: " + bookId));
+        boolean newState = !Boolean.TRUE.equals(book.getIsActive());
+        book.setIsActive(newState);
+        bookRepository.save(book);
+        return newState;
     }
 
     /**
@@ -213,17 +286,17 @@ public class BookService implements StockSubject {
     // ======================== DELETE ========================
 
     /**
-     * Xoa mot quyen sach theo ID.
+     * Xoa mot quyen sach theo ID (Soft delete - đánh dấu isDeleted = true thay vì xoá cứng).
      *
      * @param id ID cua sach can xoa
      * @throws IllegalArgumentException neu khong tim thay sach
      */
     @Transactional
     public void deleteById(String id) {
-        if (!bookRepository.existsById(id)) {
-            throw new IllegalArgumentException("Khong tim thay sach voi ID: " + id);
-        }
-        bookRepository.deleteById(id);
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Khong tim thay sach voi ID: " + id));
+        book.setIsDeleted(true);
+        bookRepository.save(book);
     }
 
     /**

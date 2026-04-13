@@ -91,7 +91,10 @@
 
                     <!-- Status -->
                     <td>
+                        <span class="inventory-status status-pre-order"
+                              th:if="${!book.isActive}">Inactive</span>
                         <span class="inventory-status"
+                              th:if="${book.isActive}"
                               th:classappend="${book.stockQuantity > 10 ? ' status-in-stock' : (book.stockQuantity > 0 ? ' status-low-stock' : ' status-out')}"
                               th:text="${book.stockQuantity > 10 ? 'In Stock' : (book.stockQuantity > 0 ? 'Low Stock' : 'Out of Stock')}">
                             Status
@@ -105,9 +108,21 @@
                                class="icon-button" title="Edit">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                             </a>
+                            <!-- Toggle Active/Inactive -->
+                            <form th:action="@{/admin/books/toggle-active/{id}(id=${book.id})}"
+                                  method="post" style="display:inline;">
+                                <button type="submit"
+                                        class="icon-button"
+                                        th:title="${book.isActive ? 'Vô hiệu hóa (ẩn khỏi client)' : 'Kích hoạt (hiển thị client)'}"
+                                        th:style="${book.isActive ? 'color:#2e7d32' : 'color:#c62828'}">
+                                    <!-- Eye icon when active, eye-off when inactive -->
+                                    <svg th:if="${book.isActive}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    <svg th:unless="${book.isActive}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                                </button>
+                            </form>
                             <form th:action="@{/admin/books/delete/{id}(id=${book.id})}"
                                   method="post" style="display:inline;"
-                                  onsubmit="return confirm('Ban co chac chan muon xoa sach nay?');">
+                                  onsubmit="return confirm('Bạn có chắc chắn muốn xóa sách này?');">
                                 <button type="submit" class="icon-button icon-button-danger" title="Delete">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                                 </button>

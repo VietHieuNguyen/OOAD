@@ -40,10 +40,12 @@
     display: flex;
     flex-direction: column;
     overflow-x: hidden;
+    padding-left: 2rem; /* Thêm padding-left để đẩy content ra xa sidebar */
 }
 
 .admin-content {
-    padding: 1.25rem 1.75rem 1.75rem;
+    /* Đã tăng khoảng cách (padding) so với 1.25rem 1.75rem mặc định */
+    padding: 2.5rem 3rem 2.5rem;
 }
 
 /* === Sidebar === */
@@ -237,7 +239,7 @@
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.25rem;
+    gap: 2.5rem; /* Đã tăng từ 1.25rem lên 2.5rem để giãn chóp các card ra */
 }
 
 .metric-card {

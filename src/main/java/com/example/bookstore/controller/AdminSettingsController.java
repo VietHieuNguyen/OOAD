@@ -35,6 +35,7 @@ public class AdminSettingsController {
     public String settingsPage(Model model) {
         model.addAttribute("siteName", siteSettingService.getSiteName());
         model.addAttribute("heroImageUrl", siteSettingService.getHeroImageUrl());
+        model.addAttribute("supportEmail", siteSettingService.getSupportEmail());
         model.addAttribute("pageTitle", "Site Settings");
         return "admin/settings";
     }
@@ -46,11 +47,17 @@ public class AdminSettingsController {
     public String saveSettings(@RequestParam(value = "siteName", required = false) String siteName,
                                @RequestParam(value = "heroImageUrl", required = false) String heroImageUrl,
                                @RequestParam(value = "heroImageFile", required = false) MultipartFile heroImageFile,
+                               @RequestParam(value = "supportEmail", required = false) String supportEmail,
                                RedirectAttributes redirectAttributes) {
         try {
             // Lưu Site Name
             if (siteName != null && !siteName.isBlank()) {
                 siteSettingService.saveSiteName(siteName);
+            }
+
+            // Lưu Support Email
+            if (supportEmail != null && !supportEmail.isBlank()) {
+                siteSettingService.saveSupportEmail(supportEmail);
             }
 
             // Hero Image: ưu tiên file upload, fallback URL

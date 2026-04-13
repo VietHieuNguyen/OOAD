@@ -60,6 +60,14 @@ public class Book {
     @Column(name = "is_picked", nullable = false)
     private Boolean isPicked = false;
 
+    /** Trạng thái hiển thị: true = active (hiển thị với khách), false = inactive (ẩn khỏi client). */
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive = true;
+
+    /** Đánh dấu sách đã bị xoá mềm (soft delete). false = bình thường, true = đã bị xoá. */
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
@@ -80,6 +88,12 @@ public class Book {
         }
         if (isPicked == null) {
             isPicked = false;
+        }
+        if (isActive == null) {
+            isActive = true;
+        }
+        if (isDeleted == null) {
+            isDeleted = false;
         }
         if ((slug == null || slug.isBlank()) && title != null) {
             slug = generateSlug(title);

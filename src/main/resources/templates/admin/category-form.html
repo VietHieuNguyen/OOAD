@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{admin/layout}">
+<head><title th:text="${pageTitle}">Category Form</title></head>
+<body>
+
+<!-- ═══════════════════ MAIN CONTENT ═══════════════════ -->
+<div layout:fragment="content" class="book-form-shell">
+
+    <a th:href="@{/admin/categories}" class="book-form-back">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Back to Categories
+    </a>
+
+    <h2 class="book-form-title" th:text="${isEdit ? 'Edit Category' : 'Add New Category'}">New Category</h2>
+
+    <div th:if="${errorMessage}" class="flash-msg flash-error">
+        <span th:text="${errorMessage}">Error</span>
+    </div>
+
+    <!-- Hỗ trợ upload ảnh nên cần enctype multipart -->
+    <form th:action="@{/admin/categories/save}" method="post" enctype="multipart/form-data" class="book-form-layout" th:object="${category}">
+
+        <input type="hidden" th:field="*{id}" />
+
+        <div class="book-form-grid">
+
+            <!-- LEFT COLUMN -->
+            <div class="book-form-left">
+
+                <div class="book-form-card">
+                    <h3 class="book-form-card-title"><em>Category Details</em></h3>
+
+                    <div class="form-group-admin">
+                        <label class="form-label-admin" for="name">CATEGORY NAME</label>
+                        <input type="text" id="name" name="name" th:value="*{name}"
+                               class="form-input-admin" placeholder="e.g. Science Fiction, Romance, History..." required />
+                    </div>
+
+                    <div class="form-group-admin">
+                        <label class="form-label-admin" for="parentId">PARENT CATEGORY (OPTIONAL)</label>
+                        <select id="parentId" name="parentId" class="form-input-admin">
+                            <option value="">— No Parent (Root Category) —</option>
+                            <option th:each="pc : ${allCategories}" 
+                                    th:if="${category.id == null or pc.id != category.id}"
+                                    th:value="${pc.id}" 
+                                    th:text="${pc.name}"
+                                    th:selected="${category.parentCategory != null and pc.id == category.parentCategory.id}">Cat</option>
+                        </select>
+                    </div>
+
+                    <!-- ══ Status Radio Buttons (isActive) ══ -->
+                    <div class="form-group-admin staff-pick-group">
+                        <label class="form-label-admin">STATUS</label>
+                        <div class="radio-group" style="display: flex; gap: 1.5rem; margin-top: 0.5rem;">
+                            <label style="cursor: pointer; display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary);">
+                                <input type="radio" name="isActive" value="true" 
+                                       th:checked="${category.isActive == null ? true : category.isActive}" 
+                                       style="accent-color: var(--green-dark); width: 16px; height: 16px;" />
+                                <span>Active (Visible on store)</span>
+                            </label>
+                            <label style="cursor: pointer; display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary);">
+                                <input type="radio" name="isActive" value="false" 
+                                       th:checked="${category.isActive != null and !category.isActive}" 
+                                       style="accent-color: var(--green-dark); width: 16px; height: 16px;" />
+                                <span>Inactive (Hidden)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN -->
+            <div class="book-form-right">
+                <div class="book-form-card cover-card">
+                    <h4 class="cover-card-title">CATEGORY IMAGE</h4>
+                    <div class="cover-preview" id="coverPreview">
+                        <img th:if="${category.imageUrl != null and !#strings.isEmpty(category.imageUrl)}"
+                             th:src="${category.imageUrl}" id="modalPreviewImg" alt="Thumbnail" />
+                        <span class="preview-placeholder" th:unless="${category.imageUrl != null and !#strings.isEmpty(category.imageUrl)}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline>
+                            </svg>
+                            <span style="font-size: 0.8rem; margin-top: 8px;">No image selected</span>
+                        </span>
+                    </div>
+
+                    <div class="form-group-admin" style="margin-top: 24px;">
+                        <label class="form-label-admin" for="imageUrl">IMAGE URL</label>
+                        <input type="url" id="imageUrl" name="imageUrl" th:value="*{imageUrl}"
+                               class="form-input-admin" placeholder="https://example.com/image.jpg" />
+                    </div>
+
+                    <div class="form-group-admin text-center" style="margin: 16px 0;">
+                        <span style="font-size: 0.8rem; color: #a0a0b0; font-weight: 500;">— OR UPLOAD LOCAL FILE —</span>
+                    </div>
+
+                    <div class="form-group-admin">
+                        <input type="file" id="imageFile" name="imageFile" accept="image/*" class="form-file-input" />
+                    </div>
+                </div>
+            </div>
+
+        </div> <!-- grid end -->
+
+        <div class="book-form-actions">
+            <a th:href="@{/admin/categories}" class="btn-cancel">Cancel</a>
+            <button type="submit" class="btn-publish">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span th:text="${isEdit ? 'Update Category' : 'Save Category'}">Save</span>
+            </button>
+        </div>
+    </form>
+</div>
+
+<script layout:fragment="script" th:inline="none">
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlInput = document.getElementById('imageUrl');
+        const previewDiv = document.getElementById('coverPreview');
+
+        urlInput.addEventListener('input', function() {
+            const val = this.value.trim();
+            if(val) {
+                previewDiv.innerHTML = `<img src="${val}" alt="Thumbnail" />`;
+            } else {
+                previewDiv.innerHTML = `
+                    <span class="preview-placeholder">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                        <span style="font-size: 0.8rem; margin-top: 8px;">No image selected</span>
+                    </span>`;
+            }
+        });
+    });
+</script>
+</body>
+</html>

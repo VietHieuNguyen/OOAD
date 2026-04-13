@@ -87,7 +87,24 @@
         </div>
     </section>
 
-    <script>
+    <!-- Related Books Cross-selling -->
+    <section class="section" th:if="${relatedBooks != null and !#lists.isEmpty(relatedBooks)}" style="border-top: none; padding-top: 1rem;">
+        <div class="section-header">
+            <h2 class="section-title" style="font-size: 1.5rem;"><em>Có thể bạn cũng thích...</em></h2>
+        </div>
+        <div class="books-grid" style="grid-template-columns: repeat(5, 1fr); gap: 2rem; margin-top: 1rem;">
+            <a th:each="rb : ${relatedBooks}" th:href="@{/books/{id}(id=${rb.id})}" class="book-card book-card-link">
+                <div class="book-card-image" style="margin-bottom: 1rem;">
+                    <img th:if="${rb.thumbnail}" th:src="${rb.thumbnail}" th:alt="${rb.title}">
+                </div>
+                <div class="book-card-info">
+                    <span class="book-category" th:if="${rb.category != null}" th:text="${rb.category.name}">Category</span>
+                    <h3 class="book-title" th:text="${rb.title}" style="font-size: 0.95rem;">Book Title</h3>
+                    <span class="book-price" th:text="${#numbers.formatDecimal(rb.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                </div>
+            </a>
+        </div>
+    </section>    <script>
         function changeQty(delta) {
             const input = document.getElementById('qtyInput');
             let val = parseInt(input.value) + delta;

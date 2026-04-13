@@ -5,6 +5,7 @@
 </head>
 <body>
 <div layout:fragment="content" class="dashboard-shell">
+    <!-- Stats Grid: 4 metric cards với data thực từ DB -->
     <section class="stats-grid">
         <article class="metric-card">
             <div class="metric-card-top">
@@ -14,7 +15,7 @@
                 <span class="metric-delta" th:classappend="${dashboard.revenueCard.positive} ? ' positive' : ' negative'" th:text="${dashboard.revenueCard.deltaText}">+12%</span>
             </div>
             <p class="metric-label" th:text="${dashboard.revenueCard.label}">Monthly Revenue</p>
-            <h2 class="metric-value" th:text="${dashboard.revenueCard.value}">$0.00</h2>
+            <h2 class="metric-value" th:text="${dashboard.revenueCard.value}">0 ₫</h2>
             <p class="metric-support" th:text="${dashboard.revenueCard.supportingText}">vs last month</p>
         </article>
 
@@ -39,7 +40,7 @@
             </div>
             <p class="metric-label" th:text="${dashboard.customersCard.label}">Active Readers</p>
             <h2 class="metric-value" th:text="${dashboard.customersCard.value}">0</h2>
-            <p class="metric-support" th:text="${dashboard.customersCard.supportingText}">accounts stored in database</p>
+            <p class="metric-support" th:text="${dashboard.customersCard.supportingText}">accounts</p>
         </article>
 
         <article class="metric-card">
@@ -47,75 +48,72 @@
                 <div class="metric-icon">
                     <svg th:replace="~{admin/fragments/icons :: stock}"></svg>
                 </div>
-                <span class="metric-delta" th:classappend="${dashboard.stockCard.positive} ? ' positive' : ' negative'" th:text="${dashboard.stockCard.deltaText}">Stable</span>
+                <span class="metric-delta positive" th:text="${dashboard.stockCard.deltaText}">Stable</span>
             </div>
-            <p class="metric-label" th:text="${dashboard.stockCard.label}">In Stock Units</p>
+            <p class="metric-label" th:text="${dashboard.stockCard.label}">Total Books</p>
             <h2 class="metric-value" th:text="${dashboard.stockCard.value}">0</h2>
-            <p class="metric-support" th:text="${dashboard.stockCard.supportingText}">titles need attention</p>
+            <p class="metric-support" th:text="${dashboard.stockCard.supportingText}">in catalog</p>
         </article>
     </section>
 
+    <!-- Biểu đồ đường: Đơn hàng 7 ngày gần nhất -->
+    <section class="dashboard-panel line-chart-panel">
+        <div class="panel-heading">
+            <div>
+                <span class="panel-kicker">Hoạt động gần đây</span>
+                <h3>Đơn hàng 7 ngày qua</h3>
+            </div>
+            <a th:href="@{/admin/orders}" class="dash-view-all-btn">Xem tất cả đơn →</a>
+        </div>
+        <div class="line-chart-wrapper">
+            <canvas id="orderLineChart" height="90"></canvas>
+        </div>
+        <p class="panel-footnote" th:text="${dashboard.dataSourceNote}">database online</p>
+    </section>
+
+    <!-- Dashboard Grid: Quick stats panel -->
     <section class="dashboard-grid">
-        <article class="dashboard-panel revenue-panel" id="revenue-panel">
+        <article class="dashboard-panel quick-stats-panel">
             <div class="panel-heading">
                 <div>
-                    <span class="panel-kicker">Performance</span>
-                    <h3>Revenue Performance</h3>
-                </div>
-                <div class="panel-tabs">
-                    <span class="panel-tab active">Weekly</span>
-                    <span class="panel-tab">Rolling 7 Days</span>
+                    <span class="panel-kicker">Quản lý nhanh</span>
+                    <h3>Truy cập nhanh</h3>
                 </div>
             </div>
-
-            <div class="revenue-chart">
-                <div class="chart-bar-group" th:each="bar : ${dashboard.revenueBars}">
-                    <span class="chart-bar-value" th:text="${bar.valueLabel}">$0.00</span>
-                    <div class="chart-bar" th:classappend="${bar.highlighted} ? ' highlighted' : ''" th:style="'height:' + ${bar.height} + 'px'"></div>
-                    <span class="chart-bar-label" th:text="${bar.label}">Mon</span>
-                </div>
+            <div class="pie-chart-wrap" style="padding: 1rem; display: flex; justify-content: center; align-items: center; min-height: 250px;">
+                <canvas id="orderPieChart" style="max-height: 220px;"></canvas>
             </div>
-
-            <p class="panel-footnote" th:text="${dashboard.dataSourceNote}">data.json + database online</p>
         </article>
 
         <aside class="dashboard-panel activity-panel" id="activity-panel">
             <div class="panel-heading panel-heading-stack">
                 <div>
-                    <span class="panel-kicker">Feature Status</span>
-                    <h3>Integration Activity</h3>
+                    <span class="panel-kicker">Hệ thống</span>
+                    <h3>Trạng thái</h3>
                 </div>
-                <span class="activity-note">Read from runtime config + data.json</span>
             </div>
-
             <div class="activity-list">
                 <article class="activity-item" th:each="activity : ${dashboard.activities}">
                     <div class="activity-avatar" th:text="${activity.initials}">G</div>
                     <div class="activity-copy">
-                        <h4 th:text="${activity.title}">Google Sign-In</h4>
-                        <p th:text="${activity.detail}">OAuth2 is active and successful logins are saved to the database.</p>
+                        <h4 th:text="${activity.title}">System</h4>
+                        <p th:text="${activity.detail}">Status detail</p>
                     </div>
-                    <span class="activity-meta" th:classappend="' tone-' + ${activity.tone}" th:text="${activity.meta}">DB sync ready</span>
+                    <span class="activity-meta" th:classappend="' tone-' + ${activity.tone}" th:text="${activity.meta}">Online</span>
                 </article>
             </div>
         </aside>
     </section>
 
+    <!-- Recent Books Table -->
     <section class="dashboard-panel inventory-panel" id="inventory-panel">
         <div class="panel-heading inventory-heading">
             <div>
                 <span class="panel-kicker">Catalog Watchlist</span>
-                <h3>Pending Editions</h3>
+                <h3>Danh sách sách gần đây</h3>
             </div>
             <div class="inventory-tools">
-                <label class="inventory-search">
-                    <svg th:replace="~{admin/fragments/icons :: search}"></svg>
-                    <input id="inventorySearch" type="search" th:placeholder="${dashboard.inventorySearchPlaceholder}">
-                </label>
-                <button type="button" class="inventory-filter">
-                    <svg th:replace="~{admin/fragments/icons :: filter}"></svg>
-                    <span>Filter</span>
-                </button>
+                <a th:href="@{/admin/books}" class="dash-view-all-btn">Xem tất cả →</a>
             </div>
         </div>
 
@@ -123,16 +121,14 @@
             <table class="inventory-table" id="inventoryTable">
                 <thead>
                 <tr>
-                    <th>Title &amp; Author</th>
-                    <th>Status</th>
-                    <th>Category</th>
-                    <th>Stock</th>
-                    <th>Actions</th>
+                    <th>Tên sách &amp; Tác giả</th>
+                    <th>Trạng thái</th>
+                    <th>Danh mục</th>
+                    <th>Tồn kho</th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="book : ${dashboard.books}" class="inventory-row"
-                    th:attr="data-search=${(book.title + ' ' + book.author + ' ' + book.category).toLowerCase()}">
+                <tr th:each="book : ${dashboard.books}" class="inventory-row">
                     <td>
                         <div class="book-summary">
                             <img th:if="${book.thumbnail != null and !#strings.isEmpty(book.thumbnail)}" th:src="${book.thumbnail}" alt="" class="book-thumb">
@@ -147,25 +143,111 @@
                         <span class="inventory-status" th:classappend="' status-' + ${book.statusClass}" th:text="${book.statusLabel}">In stock</span>
                     </td>
                     <td th:text="${book.category}">Category</td>
-                    <td th:text="${book.stockLabel}">0 copies</td>
-                    <td>
-                        <div class="inventory-actions">
-                            <button type="button" class="icon-button" aria-label="Edit item">
-                                <svg th:replace="~{admin/fragments/icons :: edit}"></svg>
-                            </button>
-                            <button type="button" class="icon-button" aria-label="More actions">
-                                <svg th:replace="~{admin/fragments/icons :: more}"></svg>
-                            </button>
-                        </div>
-                    </td>
+                    <td th:text="${book.stockLabel}">0 cuốn</td>
                 </tr>
                 <tr th:if="${#lists.isEmpty(dashboard.books)}">
-                    <td colspan="5" class="inventory-empty">No books found in the database yet.</td>
+                    <td colspan="4" class="inventory-empty">Chưa có sách nào trong hệ thống.</td>
                 </tr>
                 </tbody>
             </table>
         </div>
     </section>
 </div>
+
+<!-- Chart.js for line chart -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        var labels = /*[[${chartLabels}]]*/ '[]';
+        var counts = /*[[${chartOrderCounts}]]*/ '[]';
+
+        try {
+            labels = JSON.parse(labels);
+            counts = JSON.parse(counts);
+        } catch(e) {
+            labels = [];
+            counts = [];
+        }
+
+        var ctx = document.getElementById('orderLineChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Đơn hàng',
+                    data: counts,
+                    borderColor: '#1a2e1a',
+                    backgroundColor: 'rgba(26,46,26,0.08)',
+                    pointBackgroundColor: '#1a2e1a',
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    borderWidth: 2,
+                    tension: 0.35,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) { return ' ' + ctx.parsed.y + ' đơn'; }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                            precision: 0,
+                            font: { size: 11 },
+                            color: '#9ca39c'
+                        },
+                        grid: { color: 'rgba(0,0,0,0.05)' }
+                    },
+                    x: {
+                        ticks: { font: { size: 11 }, color: '#9ca39c' },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        // PIE CHART
+        var pieLabels = /*[[${pieChartLabels}]]*/ '[]';
+        var pieCounts = /*[[${pieChartData}]]*/ '[]';
+        try {
+            pieLabels = JSON.parse(pieLabels);
+            pieCounts = JSON.parse(pieCounts);
+        } catch(e) {}
+        
+        var pieCtx = document.getElementById('orderPieChart');
+        if (pieCtx) {
+            new Chart(pieCtx.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: pieLabels,
+                    datasets: [{
+                        data: pieCounts,
+                        backgroundColor: ['#f59e0b', '#10b981', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { position: 'right', labels: { font: {family: 'Inter', size: 11}, color: '#6b7c6b', padding: 15 } } 
+                    },
+                    cutout: '70%'
+                }
+            });
+        }
+    });
+</script>
 </body>
 </html>
