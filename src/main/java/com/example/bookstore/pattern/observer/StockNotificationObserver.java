@@ -65,13 +65,13 @@ public class StockNotificationObserver implements StockObserver {
             title = "Book OUT OF STOCK";
             message = String.format(
                     "Book \"%s\" (ID: %s) is completely out of stock. Restock needed immediately!",
-                    book.getTitle(), book.getId());
+                    book.getTitle(), book.getBookId());
         } else if (stock > 0 && stock < LOW_STOCK_THRESHOLD) {
             type = NotificationType.LOW_STOCK_ALERT;
             title = "Book running low";
             message = String.format(
                     "Book \"%s\" (ID: %s) has only %d units left. Consider restocking.",
-                    book.getTitle(), book.getId(), stock);
+                    book.getTitle(), book.getBookId(), stock);
         } else {
             return; // Stock >= 10 → không cần thông báo
         }
@@ -91,7 +91,7 @@ public class StockNotificationObserver implements StockObserver {
             notification.setType(type);
             notification.setTitle(title);
             notification.setMessage(message);
-            notification.setRelatedBookId(book.getId());
+            notification.setRelatedBookId(book.getBookId());
 
             notificationRepository.save(notification);
         }

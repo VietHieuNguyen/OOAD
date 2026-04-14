@@ -43,7 +43,7 @@ public class AdminCategoryController {
 
         java.util.Map<String, Long> bookCounts = new java.util.LinkedHashMap<>();
         for (Category cat : categories) {
-            bookCounts.put(cat.getId(), categoryService.countBooksInCategory(cat.getId()));
+            bookCounts.put(cat.getCategoryId(), categoryService.countBooksInCategory(cat.getCategoryId()));
         }
 
         model.addAttribute("categories", categories);
@@ -125,7 +125,7 @@ public class AdminCategoryController {
 
         if (id != null && !id.isBlank()) {
             category = categoryService.findById(id).orElse(new Category());
-            category.setId(id);
+            category.setCategoryId(id);
         } else {
             category = new Category();
         }
@@ -159,8 +159,8 @@ public class AdminCategoryController {
         redirectAttributes.addFlashAttribute("successMessage",
                 "Da luu danh muc \"" + name.trim() + "\" thanh cong!");
 
-        if ("detail".equals(returnTo) && saved.getId() != null) {
-            return "redirect:/admin/categories/" + saved.getId();
+        if ("detail".equals(returnTo) && saved.getCategoryId() != null) {
+            return "redirect:/admin/categories/" + saved.getCategoryId();
         }
         return "redirect:/admin/categories";
     }
@@ -213,7 +213,7 @@ public class AdminCategoryController {
                 cat.setImageUrl(imageUrl.trim());
             }
             Category saved = categoryService.save(cat);
-            result.put("id", saved.getId());
+            result.put("id", saved.getCategoryId());
             result.put("name", saved.getName());
             return ResponseEntity.ok(result);
         } catch (Exception e) {

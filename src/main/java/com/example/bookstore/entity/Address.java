@@ -22,7 +22,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table(name = "customer_addresses")
-public class CustomerAddress {
+public class Address {
 
     @Id
     @Column(name = "address_id", length = 36, nullable = false, updatable = false)

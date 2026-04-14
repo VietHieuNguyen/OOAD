@@ -43,7 +43,7 @@ public class BookDetailController {
 
         // Lấy sách liên quan (cùng category)
         if (book.getCategory() != null) {
-            model.addAttribute("relatedBooks", bookService.findRelatedBooks(book.getCategory().getId(), book.getId(), 5));
+            model.addAttribute("relatedBooks", bookService.findRelatedBooks(book.getCategory().getCategoryId(), book.getBookId(), 5));
         }
 
         return "client/book-detail";

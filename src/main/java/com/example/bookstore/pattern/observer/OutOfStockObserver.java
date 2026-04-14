@@ -30,7 +30,7 @@ public class OutOfStockObserver implements StockObserver {
     public void update(Book book) {
         if (book.getStockQuantity() == 0) {
             log.error("[OUT OF STOCK] Sách \"{}\" (ISBN: {}, ID: {}) đã HẾT HÀNG! Cần nhập thêm ngay.",
-                    book.getTitle(), book.getIsbn(), book.getId());
+                    book.getTitle(), book.getIsbn(), book.getBookId());
         }
     }
 }

@@ -85,7 +85,7 @@ public class CategoryService {
      */
     @Transactional(readOnly = true)
     public long countBooksInCategory(String categoryId) {
-        return bookRepository.findByCategoryId(categoryId).size();
+        return bookRepository.findByCategoryCategoryId(categoryId).size();
     }
 
     /**
@@ -102,7 +102,7 @@ public class CategoryService {
      */
     @Transactional(readOnly = true)
     public java.util.List<com.example.bookstore.entity.Book> findBooksInCategory(String categoryId) {
-        java.util.List<com.example.bookstore.entity.Book> books = bookRepository.findByCategoryId(categoryId);
+        java.util.List<com.example.bookstore.entity.Book> books = bookRepository.findByCategoryCategoryId(categoryId);
         books.forEach(b -> {
             if (b.getCategory() != null) b.getCategory().getName();
         });
@@ -122,6 +122,6 @@ public class CategoryService {
      */
     @Transactional(readOnly = true)
     public List<Category> findChildCategories(String parentId) {
-        return categoryRepository.findByParentCategoryId(parentId);
+        return categoryRepository.findByParentCategoryCategoryId(parentId);
     }
 }

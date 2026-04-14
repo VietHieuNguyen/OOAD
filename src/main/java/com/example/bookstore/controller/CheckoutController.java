@@ -9,8 +9,8 @@ import com.example.bookstore.entity.enums.PaymentMethodType;
 import com.example.bookstore.repository.CustomerRepository;
 import com.example.bookstore.service.CartService;
 import com.example.bookstore.service.OrderService;
-import com.example.bookstore.repository.CustomerAddressRepository;
-import com.example.bookstore.entity.CustomerAddress;
+import com.example.bookstore.repository.AddressRepository;
+import com.example.bookstore.entity.Address;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,27 +27,29 @@ public class CheckoutController {
     private final OrderService orderService;
     private final CartService cartService;
     private final CustomerRepository customerRepository;
-    private final CustomerAddressRepository customerAddressRepository;
+    private final AddressRepository addressRepository;
 
     public CheckoutController(OrderService orderService,
-                              CartService cartService,
-                              CustomerRepository customerRepository,
-                              CustomerAddressRepository customerAddressRepository) {
+            CartService cartService,
+            CustomerRepository customerRepository,
+            AddressRepository addressRepository) {
         this.orderService = orderService;
         this.cartService = cartService;
         this.customerRepository = customerRepository;
-        this.customerAddressRepository = customerAddressRepository;
+        this.addressRepository = addressRepository;
     }
 
     /**
      * Hiển thị trang Checkout.
-     * <p>Trang này cho phép khách hàng xem lại giỏ hàng, nhập địa chỉ giao hàng
-     * và chọn phương thức thanh toán (Strategy Pattern sẽ được áp dụng tại đây).</p>
+     * <p>
+     * Trang này cho phép khách hàng xem lại giỏ hàng, nhập địa chỉ giao hàng
+     * và chọn phương thức thanh toán (Strategy Pattern sẽ được áp dụng tại đây).
+     * </p>
      */
     @GetMapping("/checkout")
     public String checkoutPage(@ModelAttribute("currentUser") User currentUser,
-                               Model model,
-                               RedirectAttributes redirectAttributes) {
+            Model model,
+            RedirectAttributes redirectAttributes) {
         if (currentUser == null) {
             return "redirect:/login";
         }
@@ -69,20 +71,23 @@ public class CheckoutController {
         }
 
         // Lấy danh sách địa chỉ của khách hàng
-        java.util.List<CustomerAddress> addresses = customerAddressRepository.findByCustomerIdOrderByIsDefaultDescIdAsc(customer.getId());
+        java.util.List<Address> addresses = addressRepository
+                .findByCustomerIdOrderByIsDefaultDescIdAsc(customer.getId());
 
         // Pre-fill địa chỉ mặc định hoặc từ Customer.address nếu ko có địa chỉ trong sổ
         CheckoutDTO dto = new CheckoutDTO();
         if (!addresses.isEmpty()) {
-            dto.setAddress(addresses.get(0).getAddress() + ", " + addresses.get(0).getCity()); // Lấy địa chỉ đầu tiên (thường là mặc định)
-        } else if (customer.getAddress() != null) {
-            dto.setAddress(customer.getAddress());
+            dto.setAddress(addresses.get(0).getAddress() + ", " + addresses.get(0).getCity()); // Lấy địa chỉ đầu tiên
+                                                                                               // (thường là mặc định)
+        } else if (customer.getAddressLine() != null) {
+            dto.setAddress(customer.getAddressLine());
         } else {
             dto.setAddress("");
         }
         dto.setPaymentMethod(PaymentMethodType.COD);
 
-        // Sử dụng Decorator Pattern để tính chi tiết giá (thread-safe: tính 1 lần, snapshot kết quả)
+        // Sử dụng Decorator Pattern để tính chi tiết giá (thread-safe: tính 1 lần,
+        // snapshot kết quả)
         java.util.Map<String, java.math.BigDecimal> priceBreakdown = cartService.calculatePriceBreakdown(cart);
         double shippingFee = 30000;
 
@@ -100,14 +105,17 @@ public class CheckoutController {
 
     /**
      * Xử lý đặt hàng khi khách bấm nút "Đặt hàng".
-     * <p>Dữ liệu form (địa chỉ, phương thức thanh toán) được bind vào {@link CheckoutDTO}.
+     * <p>
+     * Dữ liệu form (địa chỉ, phương thức thanh toán) được bind vào
+     * {@link CheckoutDTO}.
      * Sau đó gọi {@link OrderService#createOrderFromCart} để tạo đơn hàng,
-     * nơi Strategy Pattern và Builder Pattern được thực thi.</p>
+     * nơi Strategy Pattern và Builder Pattern được thực thi.
+     * </p>
      */
     @PostMapping("/checkout")
     public String processCheckout(@ModelAttribute("currentUser") User currentUser,
-                                  @ModelAttribute CheckoutDTO checkoutDTO,
-                                  RedirectAttributes redirectAttributes) {
+            @ModelAttribute CheckoutDTO checkoutDTO,
+            RedirectAttributes redirectAttributes) {
         if (currentUser == null) {
             return "redirect:/login";
         }
@@ -122,8 +130,7 @@ public class CheckoutController {
             Order order = orderService.createOrderFromCart(
                     customer,
                     checkoutDTO.getAddress(),
-                    checkoutDTO.getPaymentMethod()
-            );
+                    checkoutDTO.getPaymentMethod());
             return "redirect:/order-success/" + order.getOrderId();
         } catch (IllegalStateException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());

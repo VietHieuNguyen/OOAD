@@ -84,7 +84,7 @@ public class UserService {
         customer.setPasswordHash(passwordEncoder.encode(normalizedPassword));
         customer.setFullName(normalizedFullName);
         customer.setPhoneNumber(trimToNull(phoneNumber));
-        customer.setAddress(trimToNull(address));
+        customer.setAddressLine(trimToNull(address));
         customer.setAuthProvider(AuthProvider.LOCAL);
 
         return userRepository.save(customer);
