@@ -70,7 +70,7 @@ public class StockAdjustmentObserver implements OrderObserver {
      */
     private void deductStock(Order order) {
         for (OrderItem item : order.getItems()) {
-            String bookId = item.getBook().getId();
+            String bookId = item.getBook().getBookId();
             int qty = item.getQuantity();
 
             bookService.findById(bookId).ifPresent(book -> {
@@ -98,7 +98,7 @@ public class StockAdjustmentObserver implements OrderObserver {
      */
     private void restoreStock(Order order) {
         for (OrderItem item : order.getItems()) {
-            String bookId = item.getBook().getId();
+            String bookId = item.getBook().getBookId();
             int qty = item.getQuantity();
 
             bookService.findById(bookId).ifPresent(book -> {

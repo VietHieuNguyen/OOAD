@@ -96,7 +96,7 @@ public class CartService {
 
         // Kiểm tra xem sách đã có trong giỏ chưa
         Optional<CartItem> existingItem = cart.getItems().stream()
-                .filter(item -> item.getBook().getId().equals(bookId))
+                .filter(item -> item.getBook().getBookId().equals(bookId))
                 .findFirst();
 
         if (existingItem.isPresent()) {

@@ -49,7 +49,7 @@
 
                     <!-- Add to Cart Form -->
                     <form th:action="@{/cart/add}" method="post" class="book-detail-cart-form">
-                        <input type="hidden" name="bookId" th:value="${book.id}">
+                        <input type="hidden" name="bookId" th:value="${book.bookId}">
                         <div class="qty-selector">
                             <button type="button" class="qty-btn" onclick="changeQty(-1)">−</button>
                             <input type="number" name="quantity" id="qtyInput" value="1" min="1" th:max="${book.stockQuantity}" class="qty-input" readonly>
@@ -63,8 +63,8 @@
 
                     <!-- Wishlist Toggle -->
                     <form th:action="@{/wishlist/toggle}" method="post" class="wishlist-toggle-form">
-                        <input type="hidden" name="bookId" th:value="${book.id}">
-                        <input type="hidden" name="redirectUrl" th:value="'/books/' + ${book.id}">
+                        <input type="hidden" name="bookId" th:value="${book.bookId}">
+                        <input type="hidden" name="redirectUrl" th:value="'/books/' + ${book.bookId}">
                         <button type="submit"
                                 th:class="${isWishlisted} ? 'btn btn-primary btn-full wishlist-toggle-btn wishlisted' : 'btn btn-outline btn-full wishlist-toggle-btn'">
                             <svg th:if="${!isWishlisted}" th:replace="~{client/fragments/icons :: heart}"></svg>
@@ -93,7 +93,7 @@
             <h2 class="section-title" style="font-size: 1.5rem;"><em>Có thể bạn cũng thích...</em></h2>
         </div>
         <div class="books-grid" style="grid-template-columns: repeat(5, 1fr); gap: 2rem; margin-top: 1rem;">
-            <a th:each="rb : ${relatedBooks}" th:href="@{/books/{id}(id=${rb.id})}" class="book-card book-card-link">
+            <a th:each="rb : ${relatedBooks}" th:href="@{/books/{id}(id=${rb.bookId})}" class="book-card book-card-link">
                 <div class="book-card-image" style="margin-bottom: 1rem;">
                     <img th:if="${rb.thumbnail}" th:src="${rb.thumbnail}" th:alt="${rb.title}">
                 </div>

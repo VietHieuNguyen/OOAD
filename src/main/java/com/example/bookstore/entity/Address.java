@@ -21,8 +21,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "customer_addresses")
-public class CustomerAddress {
+@Table(name = "addresses")
+public class Address {
 
     @Id
     @Column(name = "address_id", length = 36, nullable = false, updatable = false)

@@ -14,7 +14,7 @@
     <!-- Staff Picks Grid -->
     <section class="section">
         <div class="staff-picks-grid" th:if="${staffPicks != null and !#lists.isEmpty(staffPicks)}">
-            <a th:each="pick : ${staffPicks}" th:href="@{/books/{id}(id=${pick.id})}" class="staff-pick-card">
+            <a th:each="pick : ${staffPicks}" th:href="@{/books/{id}(id=${pick.bookId})}" class="staff-pick-card">
                 <div class="staff-pick-badge">STAFF PICK</div>
                 <div class="staff-pick-image">
                     <img th:if="${pick.thumbnail}" th:src="${pick.thumbnail}" th:alt="${pick.title}" />

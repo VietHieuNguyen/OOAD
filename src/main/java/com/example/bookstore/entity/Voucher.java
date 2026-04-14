@@ -27,7 +27,7 @@ public class Voucher {
 
     @Id
     @Column(name = "voucher_id", length = 36, nullable = false, updatable = false)
-    private String id;
+    private String voucherId;
 
     @Column(nullable = false, unique = true, length = 50)
     private String code;
@@ -52,8 +52,8 @@ public class Voucher {
 
     @PrePersist
     protected void prePersist() {
-        if (id == null || id.isBlank()) {
-            id = IdGenerator.newId();
+        if (voucherId == null || voucherId.isBlank()) {
+            voucherId = IdGenerator.newId();
         }
         if (usageLimit == null) usageLimit = 100;
         if (usedCount == null) usedCount = 0;

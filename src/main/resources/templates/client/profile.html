@@ -61,18 +61,18 @@
                         <a href="/collections" class="btn btn-outline" style="margin-top:0.75rem;font-size:0.7rem;">EXPLORE COLLECTIONS</a>
                     </div>
                     <div th:each="item : ${wishlist}" class="wishlist-item">
-                        <a th:href="@{/books/{id}(id=${item.book.id})}" class="wishlist-item-image">
+                        <a th:href="@{/books/{id}(id=${item.book.bookId})}" class="wishlist-item-image">
                             <img th:if="${item.book.thumbnail}" th:src="${item.book.thumbnail}" th:alt="${item.book.title}">
                             <div th:unless="${item.book.thumbnail}" class="wishlist-item-placeholder"></div>
                         </a>
                         <div class="wishlist-item-info">
-                            <a th:href="@{/books/{id}(id=${item.book.id})}" class="wishlist-item-title" th:text="${item.book.title}">Book Title</a>
+                            <a th:href="@{/books/{id}(id=${item.book.bookId})}" class="wishlist-item-title" th:text="${item.book.title}">Book Title</a>
                             <span class="wishlist-item-author" th:text="${item.book.author}">Author</span>
                             <span class="wishlist-item-price" th:text="${#numbers.formatDecimal(item.book.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
                         </div>
                         <div class="wishlist-item-actions">
                             <form th:action="@{/cart/add}" method="post" style="display:inline;">
-                                <input type="hidden" name="bookId" th:value="${item.book.id}">
+                                <input type="hidden" name="bookId" th:value="${item.book.bookId}">
                                 <input type="hidden" name="quantity" value="1">
                                 <button type="submit" class="wishlist-action-btn" title="Add to Cart">
                                     <svg th:replace="~{client/fragments/icons :: cart}"></svg>

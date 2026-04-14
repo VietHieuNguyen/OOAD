@@ -30,8 +30,8 @@
                         <h3 class="filter-title">Genre</h3>
                         <div class="filter-options">
                             <label class="filter-radio" th:each="cat : ${categories}">
-                                <input type="radio" name="category" th:value="${cat.id}"
-                                       th:checked="${cat.id == category}" />
+                                <input type="radio" name="category" th:value="${cat.categoryId}"
+                                       th:checked="${cat.categoryId == category}" />
                                 <span th:text="${cat.name}">Category</span>
                             </label>
                             <div th:if="${#lists.isEmpty(categories)}" class="filter-empty">No genres found.</div>
@@ -79,13 +79,13 @@
                         </span>
                         <span th:if="${category != null and !#strings.isEmpty(category)}"
                               class="filter-active-badge">
-                            Genre: <span th:each="cat : ${categories}" th:if="${cat.id == category}" th:text="${cat.name}"></span>
+                            Genre: <span th:each="cat : ${categories}" th:if="${cat.categoryId == category}" th:text="${cat.name}"></span>
                         </span>
                     </div>
                 </div>
 
                 <div class="books-grid-collection">
-                    <a th:each="book : ${books}" th:href="@{/books/{id}(id=${book.id})}" class="book-grid-card">
+                    <a th:each="book : ${books}" th:href="@{/books/{id}(id=${book.bookId})}" class="book-grid-card">
                         <div class="book-grid-image">
                             <img th:if="${book.thumbnail}" th:src="${book.thumbnail}" th:alt="${book.title}">
                             <div th:unless="${book.thumbnail}" class="book-grid-placeholder"></div>

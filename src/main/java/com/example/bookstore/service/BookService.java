@@ -192,7 +192,7 @@ public class BookService implements StockSubject {
     /** Paginated: filter by category. */
     @Transactional(readOnly = true)
     public Page<Book> findByCategoryPaged(String categoryId, Pageable pageable) {
-        return bookRepository.findByCategoryIdAndIsActiveTrueAndIsDeletedFalseAndStockQuantityGreaterThan(categoryId, 0, pageable);
+        return bookRepository.findByCategoryCategoryIdAndIsActiveTrueAndIsDeletedFalseAndStockQuantityGreaterThan(categoryId, 0, pageable);
     }
 
     /** Paginated: category + search. */
@@ -211,7 +211,7 @@ public class BookService implements StockSubject {
     @Transactional(readOnly = true)
     public List<Book> findLatest(int limit) {
         Page<Book> p = bookRepository.findAll(
-                PageRequest.of(0, limit, Sort.by("id").descending()));
+                PageRequest.of(0, limit, Sort.by("bookId").descending()));
         p.getContent().forEach(b -> { if (b.getCategory() != null) b.getCategory().getName(); });
         return p.getContent();
     }

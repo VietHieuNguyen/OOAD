@@ -97,7 +97,7 @@ public class AdminBookController {
                            RedirectAttributes redirectAttributes) {
         // Gan Category cho Book truoc khi luu
         Category category = new Category();
-        category.setId(categoryId);
+        category.setCategoryId(categoryId);
         book.setCategory(category);
 
         // Mac dinh stockQuantity = 0 neu null

@@ -18,7 +18,7 @@
     <form th:action="@{/admin/vouchers/save}" method="post" th:object="${voucher}" class="book-form-layout">
 
         <!-- Hidden ID (for Edit mode) -->
-        <input type="hidden" th:field="*{id}" />
+        <input type="hidden" th:field="*{voucherId}" />
 
         <div class="book-form-grid">
 

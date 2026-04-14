@@ -29,7 +29,7 @@ public class Customer extends User {
     private String phoneNumber;
 
     @Column(length = 255)
-    private String address;
+    private String addressLine;
 
     @OneToOne(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
     private Cart cart;
@@ -38,7 +38,7 @@ public class Customer extends User {
     private Set<Order> orders = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<CustomerAddress> addresses = new LinkedHashSet<>();
+    private Set<Address> addresses = new LinkedHashSet<>();
 
     {
         setRole(Role.CUSTOMER);

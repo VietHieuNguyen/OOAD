@@ -124,7 +124,7 @@
                 <div class="journals-sidebar-card">
                     <h3 class="journals-sidebar-title">Staff Picks</h3>
                     <div th:if="${staffPicks != null and !#lists.isEmpty(staffPicks)}">
-                        <a th:each="pick : ${staffPicks}" th:href="@{/books/{id}(id=${pick.id})}" class="sidebar-book-item">
+                        <a th:each="pick : ${staffPicks}" th:href="@{/books/{id}(id=${pick.bookId})}" class="sidebar-book-item">
                             <div class="sidebar-book-cover">
                                 <img th:if="${pick.thumbnail}" th:src="${pick.thumbnail}" th:alt="${pick.title}">
                                 <div th:unless="${pick.thumbnail}" class="sidebar-book-placeholder"></div>
@@ -144,7 +144,7 @@
                 <div class="journals-sidebar-card">
                     <h3 class="journals-sidebar-title">New Arrivals</h3>
                     <div th:if="${latestBooks != null and !#lists.isEmpty(latestBooks)}">
-                        <a th:each="book : ${latestBooks}" th:href="@{/books/{id}(id=${book.id})}" class="sidebar-book-item">
+                        <a th:each="book : ${latestBooks}" th:href="@{/books/{id}(id=${book.bookId})}" class="sidebar-book-item">
                             <div class="sidebar-book-cover">
                                 <img th:if="${book.thumbnail}" th:src="${book.thumbnail}" th:alt="${book.title}">
                                 <div th:unless="${book.thumbnail}" class="sidebar-book-placeholder"></div>

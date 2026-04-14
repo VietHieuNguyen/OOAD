@@ -29,7 +29,7 @@ public class Book {
 
     @Id
     @Column(name = "book_id", length = 36, nullable = false, updatable = false)
-    private String id;
+    private String bookId;
 
     @Column(nullable = false, unique = true, length = 20)
     private String isbn;
@@ -80,8 +80,8 @@ public class Book {
 
     @PrePersist
     protected void prePersist() {
-        if (id == null || id.isBlank()) {
-            id = IdGenerator.newId();
+        if (bookId == null || bookId.isBlank()) {
+            bookId = IdGenerator.newId();
         }
         if (stockQuantity == null) {
             stockQuantity = 0;

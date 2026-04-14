@@ -22,7 +22,7 @@
     <!-- Hỗ trợ upload ảnh nên cần enctype multipart -->
     <form th:action="@{/admin/categories/save}" method="post" enctype="multipart/form-data" class="book-form-layout" th:object="${category}">
 
-        <input type="hidden" th:field="*{id}" />
+        <input type="hidden" th:field="*{categoryId}" />
 
         <div class="book-form-grid">
 
@@ -43,10 +43,10 @@
                         <select id="parentId" name="parentId" class="form-input-admin">
                             <option value="">— No Parent (Root Category) —</option>
                             <option th:each="pc : ${allCategories}" 
-                                    th:if="${category.id == null or pc.id != category.id}"
-                                    th:value="${pc.id}" 
+                                    th:if="${category.categoryId == null or pc.categoryId != category.categoryId}"
+                                    th:value="${pc.categoryId}" 
                                     th:text="${pc.name}"
-                                    th:selected="${category.parentCategory != null and pc.id == category.parentCategory.id}">Cat</option>
+                                    th:selected="${category.parentCategory != null and pc.categoryId == category.parentCategory.categoryId}">Cat</option>
                         </select>
                     </div>
 

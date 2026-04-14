@@ -43,7 +43,7 @@ public class WishlistService {
      */
     @Transactional
     public boolean toggleWishlist(Customer customer, String bookId) {
-        var existing = wishlistRepository.findByCustomer_IdAndBook_Id(customer.getId(), bookId);
+        var existing = wishlistRepository.findByCustomer_IdAndBook_BookId(customer.getId(), bookId);
         if (existing.isPresent()) {
             wishlistRepository.delete(existing.get());
             return false; // đã xóa
@@ -63,7 +63,7 @@ public class WishlistService {
      */
     @Transactional(readOnly = true)
     public boolean isInWishlist(String customerId, String bookId) {
-        return wishlistRepository.existsByCustomer_IdAndBook_Id(customerId, bookId);
+        return wishlistRepository.existsByCustomer_IdAndBook_BookId(customerId, bookId);
     }
 
     /**

@@ -1,10 +1,10 @@
 package com.example.bookstore.controller;
 
 import com.example.bookstore.entity.Customer;
-import com.example.bookstore.entity.CustomerAddress;
+import com.example.bookstore.entity.Address;
 import com.example.bookstore.entity.User;
 import com.example.bookstore.entity.Wishlist;
-import com.example.bookstore.repository.CustomerAddressRepository;
+import com.example.bookstore.repository.AddressRepository;
 import com.example.bookstore.repository.CustomerRepository;
 import com.example.bookstore.repository.UserRepository;
 import com.example.bookstore.service.CloudinaryService;
@@ -26,15 +26,15 @@ public class ProfileController {
 
     private final UserRepository userRepository;
     private final CustomerRepository customerRepository;
-    private final CustomerAddressRepository addressRepository;
+    private final AddressRepository addressRepository;
     private final CloudinaryService cloudinaryService;
     private final WishlistService wishlistService;
 
     public ProfileController(UserRepository userRepository,
-                             CustomerRepository customerRepository,
-                             CustomerAddressRepository addressRepository,
-                             CloudinaryService cloudinaryService,
-                             WishlistService wishlistService) {
+            CustomerRepository customerRepository,
+            AddressRepository addressRepository,
+            CloudinaryService cloudinaryService,
+            WishlistService wishlistService) {
         this.userRepository = userRepository;
         this.customerRepository = customerRepository;
         this.addressRepository = addressRepository;
@@ -55,7 +55,8 @@ public class ProfileController {
                 .or(() -> userRepository.findByEmail(principalName))
                 .orElse(null);
 
-        if (user == null) return "redirect:/login?error=user_not_found";
+        if (user == null)
+            return "redirect:/login?error=user_not_found";
 
         model.addAttribute("user", user);
 
@@ -68,8 +69,7 @@ public class ProfileController {
         model.addAttribute("customer", customer);
 
         if (customer != null) {
-            List<CustomerAddress> addresses =
-                    addressRepository.findByCustomerIdOrderByIsDefaultDescIdAsc(user.getId());
+            List<Address> addresses = addressRepository.findByCustomerIdOrderByIsDefaultDescIdAsc(user.getId());
             model.addAttribute("addresses", addresses);
         } else {
             model.addAttribute("addresses", List.of());
@@ -82,8 +82,9 @@ public class ProfileController {
 
     @PostMapping("/profile/avatar")
     public String updateAvatar(@RequestParam("avatarFile") MultipartFile file,
-                               Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) return "redirect:/login";
+            Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated())
+            return "redirect:/login";
 
         String principalName = authentication.getName();
         User user = userRepository.findByUsername(principalName)
@@ -106,17 +107,19 @@ public class ProfileController {
 
     @PostMapping("/profile/address/add")
     public String addAddress(@ModelAttribute("currentUser") User currentUser,
-                             @RequestParam("recipientName") String recipientName,
-                             @RequestParam(value = "phone", required = false) String phone,
-                             @RequestParam("address") String address,
-                             @RequestParam(value = "city", required = false) String city,
-                             @RequestParam(value = "label", required = false) String label,
-                             @RequestParam(value = "makeDefault", required = false) Boolean makeDefault,
-                             RedirectAttributes redirectAttributes) {
-        if (currentUser == null) return "redirect:/login";
+            @RequestParam("recipientName") String recipientName,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam("address") String address,
+            @RequestParam(value = "city", required = false) String city,
+            @RequestParam(value = "label", required = false) String label,
+            @RequestParam(value = "makeDefault", required = false) Boolean makeDefault,
+            RedirectAttributes redirectAttributes) {
+        if (currentUser == null)
+            return "redirect:/login";
 
         Customer customer = customerRepository.findById(currentUser.getId()).orElse(null);
-        if (customer == null) return "redirect:/login";
+        if (customer == null)
+            return "redirect:/login";
 
         // If this is the first address or makeDefault is true → clear old default
         long count = addressRepository.countByCustomerId(customer.getId());
@@ -126,7 +129,7 @@ public class ProfileController {
             addressRepository.clearDefaultForCustomer(customer.getId());
         }
 
-        CustomerAddress addr = new CustomerAddress();
+        Address addr = new Address();
         addr.setCustomer(customer);
         addr.setRecipientName(recipientName.trim());
         addr.setPhone(phone != null ? phone.trim() : null);
@@ -144,11 +147,12 @@ public class ProfileController {
 
     @PostMapping("/profile/address/{id}/default")
     public String setDefaultAddress(@ModelAttribute("currentUser") User currentUser,
-                                    @PathVariable("id") String addressId,
-                                    RedirectAttributes redirectAttributes) {
-        if (currentUser == null) return "redirect:/login";
+            @PathVariable("id") String addressId,
+            RedirectAttributes redirectAttributes) {
+        if (currentUser == null)
+            return "redirect:/login";
 
-        CustomerAddress addr = addressRepository.findById(addressId).orElse(null);
+        Address addr = addressRepository.findById(addressId).orElse(null);
         if (addr == null || !addr.getCustomer().getId().equals(currentUser.getId())) {
             redirectAttributes.addFlashAttribute("addressError", "Address not found.");
             return "redirect:/profile#address-book";
@@ -166,11 +170,12 @@ public class ProfileController {
 
     @PostMapping("/profile/address/{id}/delete")
     public String deleteAddress(@ModelAttribute("currentUser") User currentUser,
-                                @PathVariable("id") String addressId,
-                                RedirectAttributes redirectAttributes) {
-        if (currentUser == null) return "redirect:/login";
+            @PathVariable("id") String addressId,
+            RedirectAttributes redirectAttributes) {
+        if (currentUser == null)
+            return "redirect:/login";
 
-        CustomerAddress addr = addressRepository.findById(addressId).orElse(null);
+        Address addr = addressRepository.findById(addressId).orElse(null);
         if (addr != null && addr.getCustomer().getId().equals(currentUser.getId())) {
             addressRepository.delete(addr);
             redirectAttributes.addFlashAttribute("addressSuccess", "Address deleted.");
@@ -182,19 +187,20 @@ public class ProfileController {
 
     @PostMapping("/wishlist/toggle")
     public String toggleWishlist(@ModelAttribute("currentUser") User currentUser,
-                                 @RequestParam String bookId,
-                                 @RequestParam(defaultValue = "/collections") String redirectUrl,
-                                 RedirectAttributes redirectAttributes) {
-        if (currentUser == null) return "redirect:/login";
+            @RequestParam String bookId,
+            @RequestParam(defaultValue = "/collections") String redirectUrl,
+            RedirectAttributes redirectAttributes) {
+        if (currentUser == null)
+            return "redirect:/login";
 
         Customer customer = customerRepository.findById(currentUser.getId()).orElse(null);
-        if (customer == null) return "redirect:/";
+        if (customer == null)
+            return "redirect:/";
 
         boolean added = wishlistService.toggleWishlist(customer, bookId);
         redirectAttributes.addFlashAttribute(
                 added ? "success" : "info",
-                added ? "Added to Wishlist!" : "Removed from Wishlist."
-        );
+                added ? "Added to Wishlist!" : "Removed from Wishlist.");
         return "redirect:" + redirectUrl;
     }
 

@@ -19,7 +19,7 @@
 
     <form th:action="@{/admin/books/save}" method="post" th:object="${book}" class="book-form-layout" enctype="multipart/form-data">
 
-        <input type="hidden" th:field="*{id}" />
+        <input type="hidden" th:field="*{bookId}" />
 
         <div class="book-form-grid">
 
@@ -77,9 +77,9 @@
                                 <select id="categoryId" name="categoryId" class="form-input-admin" required style="flex: 1;">
                                     <option value="">-- Select Genre --</option>
                                     <option th:each="cat : ${categories}"
-                                            th:value="${cat.id}"
+                                            th:value="${cat.categoryId}"
                                             th:text="${cat.name}"
-                                            th:selected="${book.category != null and book.category.id == cat.id}">
+                                            th:selected="${book.category != null and book.category.categoryId == cat.categoryId}">
                                         Category Name
                                     </option>
                                 </select>

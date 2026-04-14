@@ -26,7 +26,7 @@ public class Category {
 
     @Id
     @Column(name = "category_id", length = 36, nullable = false, updatable = false)
-    private String id;
+    private String categoryId;
 
     @Column(nullable = false, length = 120)
     private String name;
@@ -53,8 +53,8 @@ public class Category {
 
     @PrePersist
     protected void prePersist() {
-        if (id == null || id.isBlank()) {
-            id = IdGenerator.newId();
+        if (categoryId == null || categoryId.isBlank()) {
+            categoryId = IdGenerator.newId();
         }
         if (isActive == null) {
             isActive = true;

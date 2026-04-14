@@ -34,7 +34,7 @@ public class LowStockAlertObserver implements StockObserver {
         int stock = book.getStockQuantity();
         if (stock > 0 && stock < LOW_STOCK_THRESHOLD) {
             log.warn("[STOCK ALERT] Sách \"{}\" (ID: {}) sắp hết hàng! Còn lại: {} cuốn.",
-                    book.getTitle(), book.getId(), stock);
+                    book.getTitle(), book.getBookId(), stock);
         }
     }
 }
