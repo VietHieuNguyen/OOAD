@@ -165,7 +165,7 @@ public class AdminBookController {
         try {
             boolean newState = bookService.toggleActive(id);
             redirectAttributes.addFlashAttribute("successMessage",
-                    newState ? "Đã kích hoạt sách." : "Đã vô hiệu hóa sách (ẩn khỏi client).");
+                    newState ? "Book activated." : "Book disabled (hidden from client).");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }

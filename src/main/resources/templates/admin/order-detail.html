@@ -136,19 +136,19 @@
                                  fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                 <polyline points="20 6 9 17 4 12"/>
                             </svg>
-                            Xác nhận đơn hàng
+                            Confirm Order
                         </button>
                     </form>
                     <form th:action="@{/admin/orders/{id}/update-status(id=${order.orderId})}"
                           method="post"
-                          onsubmit="return confirm('Bạn chắc chắn muốn hủy đơn này?');">
+                          onsubmit="return confirm('Are you sure you want to cancel this order?');">
                         <input type="hidden" name="newStatus" value="CANCELLED"/>
                         <button type="submit" class="order-btn-danger-full">
                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
                                  fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                 <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                             </svg>
-                            Hủy đơn hàng
+                            Cancel Order
                         </button>
                     </form>
 
@@ -177,19 +177,19 @@
                                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
                                 <polyline points="22 4 12 14.01 9 11.01"/>
                             </svg>
-                            Hoàn thành đơn hàng
+                            Complete Order
                         </button>
                     </form>
                     <form th:action="@{/admin/orders/{id}/update-status(id=${order.orderId})}"
                           method="post"
-                          onsubmit="return confirm('Bạn chắc chắn muốn hủy đơn này?');">
+                          onsubmit="return confirm('Are you sure you want to cancel this order?');">
                         <input type="hidden" name="newStatus" value="CANCELLED"/>
                         <button type="submit" class="order-btn-danger-full">
                             <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24"
                                  fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                 <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
                             </svg>
-                            Hủy đơn hàng
+                            Cancel Order
                         </button>
                     </form>
 

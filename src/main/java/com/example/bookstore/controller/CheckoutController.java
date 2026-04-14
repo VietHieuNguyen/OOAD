@@ -54,7 +54,7 @@ public class CheckoutController {
 
         Customer customer = findCustomer(currentUser);
         if (customer == null) {
-            redirectAttributes.addFlashAttribute("error", "Không tìm thấy thông tin khách hàng.");
+            redirectAttributes.addFlashAttribute("error", "Customer information not found.");
             return "redirect:/";
         }
 
@@ -64,7 +64,7 @@ public class CheckoutController {
                 .toList();
 
         if (selectedItems.isEmpty()) {
-            redirectAttributes.addFlashAttribute("error", "Bạn chưa chọn sản phẩm nào để thanh toán.");
+            redirectAttributes.addFlashAttribute("error", "No items selected for checkout.");
             return "redirect:/cart";
         }
 
@@ -114,7 +114,7 @@ public class CheckoutController {
 
         Customer customer = findCustomer(currentUser);
         if (customer == null) {
-            redirectAttributes.addFlashAttribute("error", "Không tìm thấy thông tin khách hàng.");
+            redirectAttributes.addFlashAttribute("error", "Customer information not found.");
             return "redirect:/";
         }
 

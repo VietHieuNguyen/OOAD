@@ -39,8 +39,8 @@
                     <span class="voucher-code-cell" th:text="${v.code}">CODE</span>
                 </td>
                 <td th:text="${v.discountPercentage} + '%'">10%</td>
-                <td th:text="${v.maxDiscountAmount != null ? #numbers.formatDecimal(v.maxDiscountAmount, 0, 'COMMA', 0, 'POINT') + ' ₫' : 'Không giới hạn'}">—</td>
-                <td th:text="${v.expirationDate != null ? #temporals.format(v.expirationDate, 'dd/MM/yyyy HH:mm') : 'Không hết hạn'}">—</td>
+                <td th:text="${v.maxDiscountAmount != null ? #numbers.formatDecimal(v.maxDiscountAmount, 0, 'COMMA', 0, 'POINT') + ' ₫' : 'No Limit'}">—</td>
+                <td th:text="${v.expirationDate != null ? #temporals.format(v.expirationDate, 'dd/MM/yyyy HH:mm') : 'No Expiration'}">—</td>
                 <td>
                     <span class="usage-display" th:text="${v.usedCount} + ' / ' + ${v.usageLimit}">0 / 100</span>
                 </td>
@@ -55,13 +55,13 @@
                                 th:text="${v.isActive ? 'Disable' : 'Enable'}">Toggle</button>
                     </form>
                     <form th:action="@{/admin/vouchers/delete/{id}(id=${v.id})}" method="post" style="display:inline;"
-                          onsubmit="return confirm('Bạn có chắc muốn xóa voucher này?');">
+                          onsubmit="return confirm('Are you sure you want to delete this voucher?');">
                         <button type="submit" class="btn-action btn-delete-sm">Delete</button>
                     </form>
                 </td>
             </tr>
             <tr th:if="${#lists.isEmpty(vouchers)}">
-                <td colspan="7" class="empty-state">Chưa có voucher nào. Bấm "Create Voucher" để tạo mới.</td>
+                <td colspan="7" class="empty-state">No vouchers available. Click "Create Voucher" to add one.</td>
             </tr>
             </tbody>
         </table>

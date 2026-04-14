@@ -52,7 +52,7 @@ public class AdminVoucherController {
                 })
                 .orElseGet(() -> {
                     redirectAttributes.addFlashAttribute("errorMessage",
-                            "Không tìm thấy voucher với ID: " + id);
+                            "Voucher not found with ID: " + id);
                     return "redirect:/admin/vouchers";
                 });
     }
@@ -63,9 +63,9 @@ public class AdminVoucherController {
         try {
             voucherService.save(voucher);
             redirectAttributes.addFlashAttribute("successMessage",
-                    "Đã lưu voucher \"" + voucher.getCode() + "\" thành công!");
+                    "Voucher \"" + voucher.getCode() + "\" saved successfully!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Lỗi: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Error: " + e.getMessage());
         }
         return "redirect:/admin/vouchers";
     }
@@ -75,7 +75,7 @@ public class AdminVoucherController {
                                 RedirectAttributes redirectAttributes) {
         try {
             voucherService.deleteById(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Đã xóa voucher thành công!");
+            redirectAttributes.addFlashAttribute("successMessage", "Voucher deleted successfully!");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
@@ -87,7 +87,7 @@ public class AdminVoucherController {
                                 RedirectAttributes redirectAttributes) {
         try {
             voucherService.toggleActive(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Đã cập nhật trạng thái voucher!");
+            redirectAttributes.addFlashAttribute("successMessage", "Voucher status updated!");
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }

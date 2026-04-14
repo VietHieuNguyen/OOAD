@@ -11,14 +11,14 @@
         <!-- ── Page Header ──────────────────────── -->
         <div class="client-notif-page-header">
             <div>
-                <p class="client-notif-page-kicker">Tài khoản của tôi</p>
+                <p class="client-notif-page-kicker">My Account</p>
                 <h1 class="client-notif-page-title">
-                    Thông báo
+                    Notifications
                     <span th:if="${unreadCount > 0}" class="client-notif-page-badge"
-                          th:text="${unreadCount} + ' mới'">0 mới</span>
+                          th:text="${unreadCount} + ' new'">0 new</span>
                 </h1>
                 <p class="client-notif-page-subtitle"
-                   th:text="${totalCount} + ' thông báo tổng cộng'">0 thông báo</p>
+                   th:text="${totalCount} + ' total notifications'">0 notifications</p>
             </div>
             <div class="client-notif-page-actions">
                 <button class="client-notif-page-mark-all" id="clientNotifMarkAllPage"
@@ -28,9 +28,9 @@
                          stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="20 6 9 17 4 12"/>
                     </svg>
-                    Đánh dấu đã đọc tất cả
+                    Mark all as read
                 </button>
-                <a href="/profile" class="client-notif-page-back">← Về tài khoản</a>
+                <a href="/profile" class="client-notif-page-back">← Back to Account</a>
             </div>
         </div>
 
@@ -87,11 +87,11 @@
                         <div class="client-notif-page-status">
                             <span class="client-notif-type-tag"
                                   th:classappend="${n.type.name().startsWith('ORDER')} ? ' tag-order' : ' tag-info'"
-                                  th:text="${n.type.name().startsWith('ORDER')} ? 'Đơn hàng' : 'Thông tin'">
-                                Đơn hàng
+                                  th:text="${n.type.name().startsWith('ORDER')} ? 'Order' : 'Information'">
+                                Order
                             </span>
-                            <span th:if="${!n.read}" class="client-unread-dot" title="Chưa đọc"></span>
-                            <span th:if="${n.read}"  class="client-read-label">Đã đọc</span>
+                            <span th:if="${!n.read}" class="client-unread-dot" title="Unread"></span>
+                            <span th:if="${n.read}"  class="client-read-label">Read</span>
                         </div>
                     </button>
                 </form>
@@ -105,8 +105,8 @@
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
                     <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
                 </svg>
-                <p>Bạn chưa có thông báo nào.</p>
-                <a href="/">Tiếp tục mua sắm →</a>
+                <p>You have no notifications.</p>
+                <a href="/">Continue shopping →</a>
             </div>
         </div>
 
@@ -114,8 +114,8 @@
         <div class="client-notif-pagination" th:unless="${totalPages <= 1}">
             <a th:if="${currentPage > 1}"
                th:href="@{/notifications(page=${currentPage - 1})}"
-               class="client-pager-btn">&#8592; Trước</a>
-            <span th:if="${currentPage == 1}" class="client-pager-btn disabled">&#8592; Trước</span>
+               class="client-pager-btn">&#8592; Prev</a>
+            <span th:if="${currentPage == 1}" class="client-pager-btn disabled">&#8592; Prev</span>
 
             <th:block th:each="p : ${#numbers.sequence(1, totalPages)}">
                 <a th:if="${p != currentPage}"
@@ -127,12 +127,12 @@
 
             <a th:if="${currentPage < totalPages}"
                th:href="@{/notifications(page=${currentPage + 1})}"
-               class="client-pager-btn">Sau &#8594;</a>
-            <span th:if="${currentPage == totalPages}" class="client-pager-btn disabled">Sau &#8594;</span>
+               class="client-pager-btn">Next &#8594;</a>
+            <span th:if="${currentPage == totalPages}" class="client-pager-btn disabled">Next &#8594;</span>
         </div>
 
         <p class="client-notif-total" th:if="${totalPages <= 1 and totalCount > 0}"
-           th:text="'Hiển thị tất cả ' + ${totalCount} + ' thông báo'"></p>
+           th:text="'Showing all ' + ${totalCount} + ' notifications'"></p>
 
     </div>
 </main>
@@ -148,11 +148,11 @@
                     document.querySelectorAll('.client-notif-page-card.unread').forEach(el => {
                         el.classList.remove('unread');
                         const dot = el.querySelector('.client-unread-dot');
-                        if (dot) { dot.replaceWith(Object.assign(document.createElement('span'), { className: 'client-read-label', textContent: 'Đã đọc' })); }
+                        if (dot) { dot.replaceWith(Object.assign(document.createElement('span'), { className: 'client-read-label', textContent: 'Read' })); }
                     });
                     btn.style.display = 'none';
                     const flash = document.getElementById('clientNotifFlash');
-                    flash.textContent = 'Đã đánh dấu ' + data.marked + ' thông báo là đã đọc.';
+                    flash.textContent = 'Marked ' + data.marked + ' notifications as read.';
                     flash.style.display = 'block';
                     setTimeout(() => { flash.style.display = 'none'; }, 3000);
                 })

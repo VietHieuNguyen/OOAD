@@ -55,7 +55,7 @@ public class ForgotPasswordService {
         } catch (MailException ex) {
             user.setToken(null);
             userRepository.save(user);
-            throw new IllegalStateException("Không gửi được OTP. Vui lòng kiểm tra cấu hình email");
+            throw new IllegalStateException("Failed to send OTP. Please check email configuration");
         }
 
         return user.getEmail();
@@ -91,7 +91,7 @@ public class ForgotPasswordService {
         TokenState tokenState = parseToken(user.getToken());
 
         if (!tokenState.isVerifiedState() || tokenState.isExpired()) {
-            throw new IllegalStateException("Bạn cần xác thực OTP trước khi đổi mật khẩu.");
+            throw new IllegalStateException("You must verify the OTP before changing your password.");
         }
 
         return user.getEmail();
@@ -138,16 +138,16 @@ public class ForgotPasswordService {
         }
         message.setTo(recipient);
         message.setSubject("BookStore OTP reset password");
-        message.setText("Mã OTP đặt lại mật khẩu của bạn là: " + otp + "\n\n"
-                + "Mã có hiệu lực trong 10 phút.\n"
-                + "Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.");
+        message.setText("Your password reset OTP is: " + otp + "\n\n"
+                + "This OTP is valid for 10 minutes.\n"
+                + "If you did not request a password reset, please ignore this email.");
         mailSender.send(message);
     }
 
     private String normalizeEmail(String rawEmail) {
         String email = rawEmail == null ? "" : rawEmail.trim().toLowerCase(Locale.ROOT);
         if (email.isBlank()) {
-            throw new IllegalArgumentException("Email không được để trống.");
+            throw new IllegalArgumentException("Email cannot be empty.");
         }
         return email;
     }

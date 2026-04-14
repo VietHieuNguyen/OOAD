@@ -89,7 +89,7 @@ public class PaymentService {
         // 1. Tra cứu Strategy — đây là điểm mấu chốt của Strategy Pattern
         PaymentStrategy strategy = strategyMap.get(method);
         if (strategy == null) {
-            throw new IllegalArgumentException("Phương thức thanh toán không được hỗ trợ: " + method);
+            throw new IllegalArgumentException("Unsupported payment method: " + method);
         }
 
         // 2. Tạo đối tượng Payment

@@ -9,9 +9,9 @@
             <!-- Header -->
             <div class="order-detail-header">
                 <div>
-                    <a href="/orders" class="back-link">← Quay lại danh sách đơn hàng</a>
-                    <h1 class="order-detail-title"><em>Chi tiết đơn hàng</em></h1>
-                    <p class="order-detail-id">Mã đơn: <strong th:text="${order.orderId}">ORD-xxx</strong></p>
+                    <a href="/orders" class="back-link">← Back to Orders</a>
+                    <h1 class="order-detail-title"><em>Order Details</em></h1>
+                    <p class="order-detail-id">Order ID: <strong th:text="${order.orderId}">ORD-xxx</strong></p>
                 </div>
                 <span class="status-badge status-lg"
                       th:classappend="${order.status.name() == 'PENDING' ? ' status-pending' :
@@ -28,12 +28,12 @@
                 <div class="order-detail-left">
                     <!-- Danh sách sản phẩm -->
                     <div class="detail-card">
-                        <h2 class="detail-card-title">Sản phẩm đã đặt</h2>
+                        <h2 class="detail-card-title">Ordered Items</h2>
                         <div class="detail-items">
                             <div class="detail-item" th:each="item : ${order.items}">
                                 <div class="detail-item-info">
                                     <span class="detail-item-name" th:text="${item.book.title}">Tên sách</span>
-                                    <span class="detail-item-author" th:text="'Tác giả: ' + ${item.book.author}">Tác giả</span>
+                                    <span class="detail-item-author" th:text="'Author: ' + ${item.book.author}">Author</span>
                                 </div>
                                 <div class="detail-item-numbers">
                                     <span class="detail-item-price"
@@ -56,16 +56,16 @@
                     <!-- Thanh toán -->
                     <div class="detail-card" th:if="${!order.payments.isEmpty()}"
                          th:with="payment=${order.payments.iterator().next()}">
-                        <h2 class="detail-card-title">Thông tin thanh toán</h2>
+                        <h2 class="detail-card-title">Payment Information</h2>
                         <div class="detail-info-row">
-                            <span class="info-label">Phương thức</span>
+                            <span class="info-label">Method</span>
                             <span class="info-value"
-                                  th:text="${payment.method.name() == 'COD' ? 'Thanh toán khi nhận hàng (COD)' : 'Chuyển khoản ngân hàng'}">
-                                Phương thức
+                                  th:text="${payment.method.name() == 'COD' ? 'Cash on Delivery (COD)' : 'Bank Transfer'}">
+                                Method
                             </span>
                         </div>
                         <div class="detail-info-row">
-                            <span class="info-label">Trạng thái</span>
+                            <span class="info-label">Status</span>
                             <span class="info-value">
                                 <span class="status-badge"
                                       th:classappend="${payment.status.name() == 'UNPAID' ? ' status-pending' :
@@ -77,14 +77,14 @@
                             </span>
                         </div>
                         <div class="detail-info-row">
-                            <span class="info-label">Số tiền</span>
+                            <span class="info-label">Amount</span>
                             <span class="info-value"
                                   th:text="${#numbers.formatDecimal(payment.amount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
                                 0 ₫
                             </span>
                         </div>
                         <div class="detail-info-row">
-                            <span class="info-label">Ngày thanh toán</span>
+                            <span class="info-label">Payment Date</span>
                             <span class="info-value"
                                   th:text="${#temporals.format(payment.paymentDate, 'dd/MM/yyyy HH:mm')}">
                                 01/01/2026
@@ -95,9 +95,9 @@
                     <!-- Vận chuyển -->
                     <div class="detail-card" th:if="${!order.shippings.isEmpty()}"
                          th:with="shipping=${order.shippings.iterator().next()}">
-                        <h2 class="detail-card-title">Thông tin vận chuyển</h2>
+                        <h2 class="detail-card-title">Shipping Information</h2>
                         <div class="detail-info-row">
-                            <span class="info-label">Trạng thái</span>
+                            <span class="info-label">Status</span>
                             <span class="info-value">
                                 <span class="status-badge"
                                       th:classappend="${shipping.status.name() == 'PREPARING' ? ' status-pending' :
@@ -110,25 +110,25 @@
                             </span>
                         </div>
                         <div class="detail-info-row">
-                            <span class="info-label">Phí vận chuyển</span>
+                            <span class="info-label">Shipping Fee</span>
                             <span class="info-value"
-                                  th:text="${shipping.shippingFee != null ? #numbers.formatDecimal(shipping.shippingFee, 0, 'COMMA', 0, 'POINT') + ' ₫' : 'Miễn phí'}">
+                                  th:text="${shipping.shippingFee != null ? #numbers.formatDecimal(shipping.shippingFee, 0, 'COMMA', 0, 'POINT') + ' ₫' : 'Free'}">
                                 30,000 ₫
                             </span>
                         </div>
                         <div class="detail-info-row" th:if="${shipping.providerName}">
-                            <span class="info-label">Đơn vị vận chuyển</span>
+                            <span class="info-label">Shipping Provider</span>
                             <span class="info-value" th:text="${shipping.providerName}">GHN</span>
                         </div>
                         <div class="detail-info-row" th:if="${shipping.trackingCode}">
-                            <span class="info-label">Mã vận đơn</span>
+                            <span class="info-label">Tracking Code</span>
                             <span class="info-value" th:text="${shipping.trackingCode}">TRK-xxx</span>
                         </div>
                     </div>
 
                     <!-- Địa chỉ giao hàng -->
                     <div class="detail-card">
-                        <h2 class="detail-card-title">Địa chỉ giao hàng</h2>
+                        <h2 class="detail-card-title">Shipping Address</h2>
                         <p class="detail-address" th:text="${order.address}">Địa chỉ</p>
                         <p class="detail-customer-name" th:text="${order.customer.fullName}">Tên khách</p>
                         <p class="detail-customer-phone"
@@ -139,7 +139,7 @@
                     <!-- Tổng kết tiền -->
                     <div class="detail-card detail-total-card">
                         <div class="detail-info-row">
-                            <span class="info-label">Ngày đặt hàng</span>
+                            <span class="info-label">Order Date</span>
                             <span class="info-value"
                                   th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}">
                                 01/01/2026
@@ -147,7 +147,7 @@
                         </div>
                         <div class="summary-divider"></div>
                         <div class="detail-info-row detail-grand-total">
-                            <span>TỔNG CỘNG</span>
+                            <span>TOTAL</span>
                             <span th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
                                 0 ₫
                             </span>

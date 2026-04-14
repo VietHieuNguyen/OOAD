@@ -120,10 +120,10 @@ public class EmailNotifierObserver implements OrderObserver {
 
   private String buildSubject(OrderStatus status) {
     return switch (status) {
-      case CONFIRMED -> "X-Books — Đơn hàng của bạn đã được xác nhận!";
-      case COMPLETED -> "X-Books — Đơn hàng đã hoàn thành!";
-      case CANCELLED -> "X-Books — Đơn hàng đã bị hủy";
-      default -> "X-Books — Cập nhật đơn hàng";
+      case CONFIRMED -> "X-Books — Your order has been confirmed!";
+      case COMPLETED -> "X-Books — Your order has been completed!";
+      case CANCELLED -> "X-Books — Your order has been cancelled";
+      default -> "X-Books — Order update";
     };
   }
 
@@ -150,7 +150,7 @@ public class EmailNotifierObserver implements OrderObserver {
                     <h1 style="margin:0;color:#e0c97f;font-size:24px;font-weight:700;letter-spacing:1px;">
                       X-BOOKS
                     </h1>
-                    <p style="margin:8px 0 0;color:#a0a0b0;font-size:13px;">Hệ thống thông báo đơn hàng</p>
+                    <p style="margin:8px 0 0;color:#a0a0b0;font-size:13px;">Order Notification System</p>
                   </td>
                 </tr>
 
@@ -158,7 +158,7 @@ public class EmailNotifierObserver implements OrderObserver {
                 <tr>
                   <td style="padding:36px 40px;">
                     <p style="margin:0 0 20px;font-size:16px;color:#333;">
-                      Xin chào <strong>%s</strong>,
+                      Hello <strong>%s</strong>,
                     </p>
 
                     <!-- Status badge -->
@@ -174,7 +174,7 @@ public class EmailNotifierObserver implements OrderObserver {
                            style="margin:24px 0;border:1px solid #e8e8ec;border-radius:8px;overflow:hidden;">
                       <tr style="background:#f8f8fb;">
                         <td style="padding:14px 20px;font-size:13px;color:#666;border-bottom:1px solid #e8e8ec;">
-                          Mã đơn hàng
+                          Order ID
                         </td>
                         <td style="padding:14px 20px;font-size:14px;font-weight:600;color:#1a1a2e;
                                    border-bottom:1px solid #e8e8ec;text-align:right;">
@@ -182,7 +182,7 @@ public class EmailNotifierObserver implements OrderObserver {
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding:14px 20px;font-size:13px;color:#666;">Tổng tiền</td>
+                        <td style="padding:14px 20px;font-size:13px;color:#666;">Total Amount</td>
                         <td style="padding:14px 20px;font-size:14px;font-weight:600;color:#e0c97f;text-align:right;">
                           %s VND
                         </td>
@@ -200,10 +200,10 @@ public class EmailNotifierObserver implements OrderObserver {
                   <td style="background:#f8f8fb;padding:20px 40px;text-align:center;
                              border-top:1px solid #e8e8ec;">
                     <p style="margin:0;font-size:12px;color:#999;">
-                      Đây là email tự động từ hệ thống X-Books. Vui lòng không trả lời email này.
+                      This is an automated email from the X-Books system. Please do not reply to this email.
                     </p>
                     <p style="margin:8px 0 0;font-size:11px;color:#bbb;">
-                      © 2026 X-Books — Nhà sách trực tuyến
+                      © 2026 X-Books — Online Bookstore
                     </p>
                   </td>
                 </tr>
@@ -220,10 +220,10 @@ public class EmailNotifierObserver implements OrderObserver {
 
   private String getStatusVietnamese(OrderStatus status) {
     return switch (status) {
-      case CONFIRMED -> "ĐÃ XÁC NHẬN";
-      case COMPLETED -> "ĐÃ HOÀN THÀNH";
-      case CANCELLED -> "ĐÃ HỦY";
-      default -> "CẬP NHẬT";
+      case CONFIRMED -> "CONFIRMED";
+      case COMPLETED -> "COMPLETED";
+      case CANCELLED -> "CANCELLED";
+      default -> "UPDATE";
     };
   }
 
@@ -247,13 +247,13 @@ public class EmailNotifierObserver implements OrderObserver {
 
   private String getExtraMessage(OrderStatus status) {
     return switch (status) {
-      case CONFIRMED -> "Đơn hàng của bạn đã được xác nhận và đang được xử lý. "
-          + "Chúng tôi sẽ thông báo khi đơn hàng hoàn thành.";
-      case COMPLETED -> "Đơn hàng đã được giao thành công. "
-          + "Cảm ơn bạn đã mua sắm tại X-Books! Hẹn gặp lại bạn.";
-      case CANCELLED -> "Đơn hàng của bạn đã bị hủy. "
-          + "Nếu bạn có thắc mắc, vui lòng liên hệ bộ phận CSKH.";
-      default -> "Đơn hàng của bạn có cập nhật mới. Vui lòng kiểm tra chi tiết trên website.";
+      case CONFIRMED -> "Your order has been confirmed and is being processed. "
+          + "We will notify you when it's completed.";
+      case COMPLETED -> "Order has been delivered successfully. "
+          + "Thank you for shopping with X-Books! See you again.";
+      case CANCELLED -> "Your order has been cancelled. "
+          + "If you have any questions, please contact our support team.";
+      default -> "Your order has new updates. Please check the website for details.";
     };
   }
 }

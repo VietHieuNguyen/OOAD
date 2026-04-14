@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{client/layout}">
-<head><title>Đặt hàng thành công</title></head>
+<head><title>Order Successful</title></head>
 <body>
 <main layout:fragment="content">
 
@@ -16,39 +16,39 @@
                 </svg>
             </div>
 
-            <h1 class="success-title"><em>Đặt hàng thành công!</em></h1>
-            <p class="success-desc">Cảm ơn bạn đã đặt hàng. Đơn hàng của bạn đang được xử lý.</p>
+            <h1 class="success-title"><em>Order Successful!</em></h1>
+            <p class="success-desc">Thank you for your order. Your order is being processed.</p>
 
             <!-- Thông tin đơn hàng -->
             <div class="success-details">
                 <div class="success-detail-row">
-                    <span class="detail-label">Mã đơn hàng</span>
+                    <span class="detail-label">Order ID</span>
                     <span class="detail-value" th:text="${order.orderId}">ORD-xxx</span>
                 </div>
                 <div class="success-detail-row">
-                    <span class="detail-label">Ngày đặt</span>
+                    <span class="detail-label">Order Date</span>
                     <span class="detail-value"
                           th:text="${#temporals.format(order.orderDate, 'dd/MM/yyyy HH:mm')}">01/01/2026</span>
                 </div>
                 <div class="success-detail-row">
-                    <span class="detail-label">Trạng thái</span>
+                    <span class="detail-label">Status</span>
                     <span class="detail-value status-badge status-pending" th:text="${order.status}">PENDING</span>
                 </div>
                 <div class="success-detail-row">
-                    <span class="detail-label">Tổng tiền</span>
+                    <span class="detail-label">Total Amount</span>
                     <span class="detail-value detail-total"
                           th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
                 </div>
                 <div class="success-detail-row">
-                    <span class="detail-label">Địa chỉ giao hàng</span>
+                    <span class="detail-label">Shipping Address</span>
                     <span class="detail-value" th:text="${order.address}">Địa chỉ</span>
                 </div>
             </div>
 
             <!-- Action buttons -->
             <div class="success-actions">
-                <a th:href="@{'/orders/' + ${order.orderId}}" class="btn btn-primary">XEM CHI TIẾT ĐƠN HÀNG</a>
-                <a href="/" class="btn btn-outline">TIẾP TỤC MUA SẮM</a>
+                <a th:href="@{'/orders/' + ${order.orderId}}" class="btn btn-primary">VIEW ORDER DETAILS</a>
+                <a href="/" class="btn btn-outline">CONTINUE SHOPPING</a>
             </div>
         </div>
     </section>

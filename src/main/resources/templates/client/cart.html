@@ -14,7 +14,7 @@
                     <line x1="3" y1="6" x2="21" y2="6"></line>
                     <path d="M16 10a4 4 0 0 1-8 0"></path>
                 </svg>
-                <p>Giỏ hàng của bạn đang trống.</p>
+                <p>Your cart is empty.</p>
                 <a href="/collections" class="btn btn-primary" style="margin-top: 1rem;">EXPLORE COLLECTIONS</a>
             </div>
 
@@ -45,7 +45,7 @@
                                         </div>
                                     </div>
                                     <form th:action="@{/cart/remove/{id}(id=${item.cartItemId})}" method="post" style="display:inline;">
-                                        <button type="submit" class="cart-remove-btn" title="Xóa">✕</button>
+                                        <button type="submit" class="cart-remove-btn" title="Remove">✕</button>
                                     </form>
                                 </div>
                                 <div class="cart-item-bottom" style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
@@ -62,14 +62,14 @@
                                         <form th:action="@{/cart/toggle-item-gift-wrap/{id}(id=${item.cartItemId})}" method="post" style="display: flex; align-items: center; gap: 0.5rem; background: var(--surface-2); padding: 0.25rem 0.5rem; border-radius: 4px;">
                                             <input type="checkbox" id="gift-${item.cartItemId}" onchange="this.form.submit()" th:checked="${item.isGiftWrapped}" style="cursor: pointer;">
                                             <label for="gift-${item.cartItemId}" style="font-size: 0.85rem; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; gap: 4px;">
-                                                <span></span> Gói quà (+20k)
+                                                <span>🎁</span> Gift Wrap (+20k)
                                             </label>
                                         </form>
                                         <!-- Checkbox Bọc bìa sách -->
                                         <form th:action="@{/cart/toggle-item-book-cover/{id}(id=${item.cartItemId})}" method="post" style="display: flex; align-items: center; gap: 0.5rem; background: var(--surface-2); padding: 0.25rem 0.5rem; border-radius: 4px;">
                                             <input type="checkbox" id="cover-${item.cartItemId}" onchange="this.form.submit()" th:checked="${item.isBookCovered}" style="cursor: pointer;">
                                             <label for="cover-${item.cartItemId}" style="font-size: 0.85rem; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; gap: 4px;">
-                                                <span>📖</span> Bọc bìa (+5k)
+                                                <span>📖</span> Book Cover (+5k)
                                             </label>
                                         </form>
                                     </div>
@@ -104,8 +104,8 @@
                             </div>
 
                             <form th:if="${cart.appliedVoucher == null}" th:action="@{/cart/apply-voucher}" method="post" class="voucher-form">
-                                <input type="text" name="voucherCode" placeholder="Nhập mã giảm giá" class="form-input voucher-input">
-                                <button type="submit" class="btn btn-outline voucher-btn">ÁP DỤNG</button>
+                                <input type="text" name="voucherCode" placeholder="Enter voucher code" class="form-input voucher-input">
+                                <button type="submit" class="btn btn-outline voucher-btn">APPLY</button>
                             </form>
                         </div>
 
@@ -114,19 +114,19 @@
                         <!-- Price Breakdown (Decorator Pattern visual) -->
                         <div class="price-breakdown">
                             <div class="breakdown-row">
-                                <span>Tạm tính</span>
+                                <span>Subtotal</span>
                                 <span th:text="${#numbers.formatDecimal(priceBreakdown['subtotal'], 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
                             </div>
                             <div class="breakdown-row" th:if="${priceBreakdown['giftWrapFee'] != null and priceBreakdown['giftWrapFee'].compareTo(T(java.math.BigDecimal).ZERO) > 0}">
-                                <span>Phí gói quà</span>
+                                <span>Gift Wrap Fee</span>
                                 <span class="fee-positive" th:text="'+' + ${#numbers.formatDecimal(priceBreakdown['giftWrapFee'], 0, 'COMMA', 0, 'POINT')} + ' ₫'">+0 ₫</span>
                             </div>
                             <div class="breakdown-row" th:if="${priceBreakdown['bookCoverFee'] != null and priceBreakdown['bookCoverFee'].compareTo(T(java.math.BigDecimal).ZERO) > 0}">
-                                <span>Phí bọc bìa sách</span>
+                                <span>Book Cover Fee</span>
                                 <span class="fee-positive" th:text="'+' + ${#numbers.formatDecimal(priceBreakdown['bookCoverFee'], 0, 'COMMA', 0, 'POINT')} + ' ₫'">+0 ₫</span>
                             </div>
                             <div class="breakdown-row discount" th:if="${cart.appliedVoucher != null and priceBreakdown['voucherDiscount'].compareTo(T(java.math.BigDecimal).ZERO) > 0}">
-                                <span th:text="'Mã giảm giá (' + ${cart.appliedVoucher.code} + ')'">Mã giảm giá</span>
+                                <span th:text="'Voucher (' + ${cart.appliedVoucher.code} + ')'">Voucher</span>
                                 <span class="fee-negative" th:text="'-' + ${#numbers.formatDecimal(priceBreakdown['voucherDiscount'], 0, 'COMMA', 0, 'POINT')} + ' ₫'">-0 ₫</span>
                             </div>
                         </div>
@@ -134,7 +134,7 @@
                         <div class="summary-divider"></div>
 
                         <div class="breakdown-total">
-                            <span>Tổng cộng</span>
+                            <span>Total</span>
                             <span class="total-amount" th:text="${#numbers.formatDecimal(priceBreakdown['total'], 0, 'COMMA', 0, 'POINT')} + ' ₫'">0 ₫</span>
                         </div>
 

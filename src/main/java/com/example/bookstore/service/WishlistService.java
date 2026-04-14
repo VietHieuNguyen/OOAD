@@ -49,7 +49,7 @@ public class WishlistService {
             return false; // đã xóa
         } else {
             Book book = bookRepository.findById(bookId)
-                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy sách."));
+                    .orElseThrow(() -> new IllegalArgumentException("Book not found."));
             Wishlist w = new Wishlist();
             w.setCustomer(customer);
             w.setBook(book);
