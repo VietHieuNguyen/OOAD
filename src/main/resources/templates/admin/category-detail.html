@@ -65,9 +65,12 @@
                 </div>
 
                 <!-- Inline Edit Form -->
-                <form th:action="@{/admin/categories/save}" method="post" class="cat-detail-edit-form">
+                <form th:action="@{/admin/categories/save}" method="post" enctype="multipart/form-data" class="cat-detail-edit-form">
                     <input type="hidden" name="id" th:value="${category.categoryId}" />
                     <input type="hidden" name="returnTo" value="detail" />
+                    <input type="hidden" name="parentId"
+                           th:value="${category.parentCategory != null ? category.parentCategory.categoryId : ''}" />
+                    <input type="hidden" name="isActive" th:value="${category.isActive}" />
 
                     <div class="form-row-admin">
                         <div class="form-group-admin">
@@ -79,6 +82,9 @@
                             <label class="form-label-admin" for="catImage">IMAGE URL</label>
                             <input type="url" id="catImage" name="imageUrl" th:value="${category.imageUrl}"
                                    class="form-input-admin" placeholder="https://..." />
+                            <label class="form-label-admin" for="catImageFile" style="margin-top: 0.5rem;">OR UPLOAD FILE</label>
+                            <input type="file" id="catImageFile" name="imageFile" accept="image/*"
+                                   class="form-input-admin form-file-input" />
                         </div>
                     </div>
 

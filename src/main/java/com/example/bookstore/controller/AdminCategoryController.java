@@ -114,6 +114,7 @@ public class AdminCategoryController {
      */
     @PostMapping("/save")
     public String saveCategory(@RequestParam(value = "id", required = false) String id,
+                               @RequestParam(value = "categoryId", required = false) String categoryId,
                                @RequestParam("name") String name,
                                @RequestParam(value = "imageUrl", required = false) String imageUrl,
                                @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
@@ -121,11 +122,12 @@ public class AdminCategoryController {
                                @RequestParam(value = "isActive", required = false) Boolean isActive,
                                @RequestParam(value = "returnTo", required = false) String returnTo,
                                RedirectAttributes redirectAttributes) {
+        String resolvedId = categoryId != null && !categoryId.isBlank() ? categoryId : id;
         Category category;
 
-        if (id != null && !id.isBlank()) {
-            category = categoryService.findById(id).orElse(new Category());
-            category.setCategoryId(id);
+        if (resolvedId != null && !resolvedId.isBlank()) {
+            category = categoryService.findById(resolvedId).orElse(new Category());
+            category.setCategoryId(resolvedId);
         } else {
             category = new Category();
         }
